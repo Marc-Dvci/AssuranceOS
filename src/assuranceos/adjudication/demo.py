@@ -22,6 +22,7 @@ from typing import Any
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+from ..connectors.transport import FixtureTransport, HttpResponse
 from ..control_testing.demo import DEMO_TENANT
 from ..db.models import Engagement, EngagementTask, Tenant
 from ..db.repositories import AuditEventRepository, TenantRepository
@@ -38,18 +39,35 @@ from ..registry import AgentRegistry
 from .definitions import (
     AdjudicationRequest,
     ClosureSubmission,
+    DisputeGround,
+    DisputeRequest,
+    DisputeResolution,
+    DisputeResolutionRequest,
     FindingStatus,
     HumanDecision,
+    MaterialityRequest,
+    QualityReviewRequest,
     RemediationRequest,
     RetestOutcome,
     RetestRequest,
 )
+from .exceptions import IndependenceError, QualityGateError
+from .materiality import FactorAssertion, MaterialityInputs, QualitativeFactor
 from .service import AdjudicationService, finding_from_exceptions
 from .skeptic import SkepticReviewer
+from .ticketing import JiraTicketWriter, correlation_key
 
 LOOP_ENGAGEMENT_ID = "eng_asteria_scm_loop"
 AGENT_ROLE = "operating-effectiveness"
 AUDIT_PERIOD = (date(2026, 7, 1), date(2026, 7, 31))
+
+#: The tested population behind SCM-01 for the seeded period. Carried as a
+#: constant so the materiality score in the report can be recomputed by hand.
+TESTED_POPULATION = 40
+
+#: The Jira project the demo remediation files into.
+JIRA_PROJECT = "AUD"
+JIRA_BASE_URL = "https://asteria.atlassian.net"
 
 #: The exceptions the deterministic SCM-01 test raises over the seeded population,
 #: with the attributes the skeptic needs. Two of the three are not findings, which
@@ -140,7 +158,10 @@ def run_assurance_loop_demo(
     proposed = finding_from_exceptions(
         code="SCM-01",
         title="Production changes merged without an approved change ticket",
-        severity="high",
+        # The agent proposes ``medium``. It is left to the materiality step to
+        # decide whether that holds, so the escalation below is something the
+        # system computed rather than something this script arranged.
+        severity="medium",
         criteria="Change policy v4 requires an approved change ticket before merge.",
         # The model contributes judgment. The count and the population are
         # computed from the deterministic run, not narrated.
@@ -149,6 +170,12 @@ def run_assurance_loop_demo(
         evidence_ids=["ev_policy", "ev_changes", "ev_pr_1002"],
         source_run_id="run_scm_01_demo",
         period=AUDIT_PERIOD,
+        limitations=[
+            "Two of the three exceptions SCM-01 raised are explained by canonical "
+            "records - an approved exception and a merge outside the audit period - "
+            "and are not reported as findings. The conclusion rests on the remaining "
+            "exception.",
+        ],
     )
     finding_id, verdict = service.propose(
         tenant_id=DEMO_TENANT,
@@ -159,7 +186,49 @@ def run_assurance_loop_demo(
         exception_rows=SEEDED_EXCEPTIONS,
     )
 
-    # -- 3. the human gate ----------------------------------------------------
+    # -- 3. approval is refused before the gates in front of it are cleared ----
+    # Attempted first, and reported. A gate that is never tried is a gate nobody
+    # has evidence works.
+    premature_approval = _attempt_premature_approval(service, finding_id)
+
+    # -- 4. materiality is computed, not asserted -----------------------------
+    assessment = service.assess_materiality(
+        tenant_id=DEMO_TENANT,
+        request=MaterialityRequest(
+            finding_id=finding_id,
+            inputs=MaterialityInputs(
+                population_size=TESTED_POPULATION,
+                exception_count=1,
+                factors=[
+                    FactorAssertion(
+                        factor=QualitativeFactor.REGULATORY_REPORTABLE,
+                        rationale=(
+                            "Unauthorised production change in a payment service is "
+                            "reportable under the operational-resilience regime "
+                            "Asteria is in scope for."
+                        ),
+                        evidence_ids=["ev_dora_scope"],
+                    )
+                ],
+            ),
+            assessed_by=f"agent:{AGENT_ROLE}",
+        ),
+    )
+
+    # -- 5. the methodology gate, held by someone other than the author -------
+    quality = service.review_quality(
+        tenant_id=DEMO_TENANT,
+        request=QualityReviewRequest(
+            finding_id=finding_id,
+            reviewer_id="carol.qa@asteria.example",
+            notes="Support traced to the change register; population reconciles to 40.",
+        ),
+    )
+
+    # -- 6. the reviewer cannot also be the approver --------------------------
+    reviewer_as_approver = _attempt_reviewer_approval(service, finding_id)
+
+    # -- 7. the human gate ----------------------------------------------------
     approved_status = service.adjudicate(
         tenant_id=DEMO_TENANT,
         request=AdjudicationRequest(
@@ -174,7 +243,36 @@ def run_assurance_loop_demo(
         ),
     )
 
-    # -- 4. remediation opens once, proven by replay --------------------------
+    # -- 8. management disputes the severity, and the dispute is adjudicated --
+    dispute_id = service.raise_dispute(
+        tenant_id=DEMO_TENANT,
+        request=DisputeRequest(
+            finding_id=finding_id,
+            ground=DisputeGround.SEVERITY_OVERSTATED,
+            statement=(
+                "One exception in forty is not a high-severity control failure; the "
+                "merge was reviewed out of band by the on-call engineer."
+            ),
+            raised_by="platform-team@asteria.example",
+            evidence_ids=["ev_oncall_log"],
+        ),
+    )
+    disputed_status = service.view(tenant_id=DEMO_TENANT, finding_id=finding_id).status
+    dispute_blocks_remediation = _attempt_remediation_under_dispute(service, finding_id)
+    dispute_status = service.resolve_dispute(
+        tenant_id=DEMO_TENANT,
+        request=DisputeResolutionRequest(
+            dispute_id=dispute_id,
+            resolution=DisputeResolution.UPHELD,
+            reason=(
+                "Out-of-band review is not the control. The severity floor is "
+                "computed from the reportability of the change, not from the count."
+            ),
+            resolved_by="dana.director@asteria.example",
+        ),
+    )
+
+    # -- 9. remediation opens once, proven by replay --------------------------
     action_id, created_first = service.open_remediation(
         tenant_id=DEMO_TENANT,
         request=_remediation(finding_id),
@@ -184,7 +282,10 @@ def run_assurance_loop_demo(
         request=_remediation(finding_id),
     )
 
-    # -- 5. management submits closure evidence -------------------------------
+    # -- 10. the ticket is filed once in Jira, proven by a second sync --------
+    ticket_first, ticket_replay = _file_remediation_ticket(service, action_id)
+
+    # -- 11. management submits closure evidence ------------------------------
     service.submit_closure(
         tenant_id=DEMO_TENANT,
         submission=ClosureSubmission(
@@ -198,7 +299,7 @@ def run_assurance_loop_demo(
         ),
     )
 
-    # -- 6. an independent retest verifies it ---------------------------------
+    # -- 12. an independent retest verifies it --------------------------------
     non_independent = _attempt_non_independent_retest(service, action_id)
     retest_id, final_status = service.retest(
         tenant_id=DEMO_TENANT,
@@ -234,10 +335,32 @@ def run_assurance_loop_demo(
         ),
         "skeptic_kinds": sorted({c.kind.value for c in verdict.contradictions}),
         "exceptions_raised": sorted(view.evidence_ids),
+        "premature_approval_refused": premature_approval,
+        "materiality_score": assessment.score,
+        "materiality_policy": assessment.policy_id,
+        "materiality_severity_floor": assessment.severity_floor,
+        "materiality_rationale": assessment.rationale,
+        # The agent proposed medium. Nothing in this script set the severity to
+        # high; the policy did, and this reads it back from canonical state.
+        "severity_escalated_by_materiality": view.severity == "high",
+        "quality_review_passed": quality.passed,
+        "quality_checks": [item.check.value for item in quality.checks],
+        "reviewer_cannot_approve": reviewer_as_approver,
         "approved_status": approved_status.value,
+        "dispute_id": dispute_id,
+        "dispute_status_while_open": disputed_status.value,
+        "dispute_blocks_remediation": dispute_blocks_remediation,
+        "dispute_resolution_status": dispute_status.value,
         "remediation_action_id": action_id,
         "remediation_opened_once": created_first and not created_again
         and action_id == replay_action_id,
+        "jira_correlation_key": correlation_key(action_id),
+        "jira_ticket_ref": ticket_first["external_ref"],
+        # Filed on the first sync, adopted on the second. A ``created`` that stays
+        # True across syncs is the duplicate-ticket bug this is here to exclude.
+        "jira_ticket_filed_once": bool(ticket_first["created"])
+        and not ticket_replay["created"]
+        and ticket_first["external_ref"] == ticket_replay["external_ref"],
         "non_independent_retest_refused": non_independent,
         "retest_id": retest_id,
         "final_status": final_status.value,
@@ -261,7 +384,120 @@ def _remediation(finding_id: str) -> RemediationRequest:
         action_plan="Enforce an approved change ticket in the merge gate.",
         idempotency_key=f"remediate:{finding_id}",
         external_system="jira",
+        external_target=JIRA_PROJECT,
     )
+
+
+def _attempt_premature_approval(service: AdjudicationService, finding_id: str) -> str:
+    """Show that approval is refused before materiality and quality review."""
+    try:
+        service.adjudicate(
+            tenant_id=DEMO_TENANT,
+            request=AdjudicationRequest(
+                finding_id=finding_id,
+                decision=HumanDecision.APPROVE,
+                actor_id="alice.auditor@asteria.example",
+                reason="Looks right to me.",
+                idempotency_key=f"approve-premature:{finding_id}",
+            ),
+        )
+    except QualityGateError as exc:
+        return str(exc)
+    return ""
+
+
+def _attempt_reviewer_approval(service: AdjudicationService, finding_id: str) -> str:
+    """Show that the quality reviewer cannot also sign the approval."""
+    try:
+        service.adjudicate(
+            tenant_id=DEMO_TENANT,
+            request=AdjudicationRequest(
+                finding_id=finding_id,
+                decision=HumanDecision.APPROVE,
+                actor_id="carol.qa@asteria.example",
+                reason="I reviewed it, so I will approve it too.",
+                idempotency_key=f"approve-by-reviewer:{finding_id}",
+            ),
+        )
+    except IndependenceError as exc:
+        return str(exc)
+    return ""
+
+
+def _attempt_remediation_under_dispute(
+    service: AdjudicationService, finding_id: str
+) -> str:
+    """Show that a disputed finding cannot be sent to remediation.
+
+    Opening a remediation obligation records that the organisation accepted the
+    finding. Doing that while the disagreement is open would put an agreement on
+    the record that nobody made.
+    """
+    from .exceptions import InvalidTransitionError
+
+    try:
+        service.open_remediation(tenant_id=DEMO_TENANT, request=_remediation(finding_id))
+    except InvalidTransitionError as exc:
+        return str(exc)
+    return ""
+
+
+def _file_remediation_ticket(
+    service: AdjudicationService, action_id: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """File the remediation in Jira through the real adapter, twice.
+
+    The transport is a recorded cassette, but the adapter under it is the
+    production ``JiraTicketWriter``: the correlation JQL, the create body and the
+    second-sync lookup are the code paths that would run against a live instance.
+    The second call is made with the *same* cassette state a fresh process would
+    see — an empty local ``external_ref`` is not what stops it, the provider-side
+    correlation lookup is.
+    """
+    key = correlation_key(action_id)
+    search_url = f"{JIRA_BASE_URL}/rest/api/3/search/jql"
+    created_issue = {"key": "AUD-417", "id": "10417"}
+    transport = FixtureTransport(
+        {
+            ("POST", search_url): [
+                # First sync: nothing filed under this correlation key yet.
+                HttpResponse(status_code=200, headers={}, json_body={"issues": []}),
+                # Second sync: the ticket the first one created is found.
+                HttpResponse(
+                    status_code=200,
+                    headers={},
+                    json_body={"issues": [{**created_issue, "fields": {"labels": [key]}}]},
+                ),
+            ],
+            ("POST", f"{JIRA_BASE_URL}/rest/api/3/issue"): [
+                HttpResponse(status_code=201, headers={}, json_body=created_issue)
+            ],
+        }
+    )
+    writer = JiraTicketWriter(base_url=JIRA_BASE_URL, transport=transport)
+    first = service.sync_remediation_ticket(
+        tenant_id=DEMO_TENANT, action_id=action_id, writer=writer
+    )
+    # Clear the local shortcut so the second sync has to reach the provider. This
+    # reproduces the failure that matters: a crash after the provider created the
+    # ticket but before the local commit.
+    _forget_external_ref(service, action_id)
+    second = service.sync_remediation_ticket(
+        tenant_id=DEMO_TENANT, action_id=action_id, writer=writer
+    )
+    return first, second
+
+
+def _forget_external_ref(service: AdjudicationService, action_id: str) -> None:
+    """Erase the local ticket reference, leaving the provider's copy in place."""
+    from .repository import AdjudicationRepository
+
+    with service.database.transaction() as session:
+        action = AdjudicationRepository(session).get_action(DEMO_TENANT, action_id)
+        assert action is not None
+        action.external_ref = None
+        action.external_url = None
+        action.external_sync_state = "pending"
 
 
 def _attempt_non_independent_retest(service: AdjudicationService, action_id: str) -> str:

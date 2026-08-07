@@ -29,7 +29,10 @@ from assuranceos.adjudication import (
     IdempotencyConflictError,
     IndependenceError,
     InvalidTransitionError,
+    MaterialityInputs,
+    MaterialityRequest,
     ProposedFinding,
+    QualityReviewRequest,
     RemediationRequest,
     RetestOutcome,
     RetestRequest,
@@ -104,7 +107,34 @@ def scm_finding(**overrides) -> ProposedFinding:
     return finding_from_exceptions(**defaults)
 
 
+def clear_gates(service, finding_id, reviewer="carol.qa@asteria.example", **inputs):
+    """Satisfy the two preconditions that sit in front of approval.
+
+    Approval now requires a materiality assessment and a passing quality review
+    against the current text of the finding. The cases below are about the
+    lifecycle rather than about those gates — the gates have their own cases — so
+    the shared helper clears them the way an engagement would.
+    """
+    service.assess_materiality(
+        tenant_id=TENANT,
+        request=MaterialityRequest(
+            finding_id=finding_id,
+            inputs=MaterialityInputs(
+                population_size=inputs.pop("population_size", 40),
+                exception_count=inputs.pop("exception_count", 2),
+                **inputs,
+            ),
+            assessed_by="agent:finding-adjudicator",
+        ),
+    )
+    return service.review_quality(
+        tenant_id=TENANT,
+        request=QualityReviewRequest(finding_id=finding_id, reviewer_id=reviewer),
+    )
+
+
 def approve(service, finding_id, actor="alice.auditor@asteria.example"):
+    clear_gates(service, finding_id)
     return service.adjudicate(
         tenant_id=TENANT,
         request=AdjudicationRequest(
@@ -707,6 +737,8 @@ def test_every_transition_is_reconstructable_from_canonical_state(service, datab
     types = [event["event_type"] for event in events]
     assert types == [
         "finding.proposed",
+        "finding.materiality_assessed",
+        "finding.quality_review_passed",
         "finding.approve",
         "remediation.opened",
         "remediation.closure_submitted",

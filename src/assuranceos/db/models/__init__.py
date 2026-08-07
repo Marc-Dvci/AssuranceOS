@@ -25,7 +25,16 @@ from .evidence import (
     EvidenceRecord,
     EvidenceTransformation,
 )
-from .findings import ApprovalDecision, Finding, ManagementResponse, RemediationAction, Retest
+from .findings import (
+    ApprovalDecision,
+    Finding,
+    FindingDispute,
+    ManagementResponse,
+    MaterialityAssessment,
+    QualityReview,
+    RemediationAction,
+    Retest,
+)
 from .governance import AgentRelease, AuditEventRow, ExecutionTrace, IdempotencyRecord, OutboxEvent
 from .organization import (
     AuditUniverseEntity,
@@ -74,13 +83,16 @@ __all__ = [
     "EvidenceTransformation",
     "ExecutionTrace",
     "Finding",
+    "FindingDispute",
     "GatewayDecisionRecord",
     "GuardrailFindingRecord",
     "IdempotencyRecord",
     "ManagementResponse",
+    "MaterialityAssessment",
     "OrganizationFact",
     "OrganizationProfile",
     "OutboxEvent",
+    "QualityReview",
     "ReasoningSpanRecord",
     "RemediationAction",
     "Retest",

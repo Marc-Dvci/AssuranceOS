@@ -87,17 +87,77 @@ def test_the_transitions_are_reconstructable_from_audit_events(database):
     ]
     assert lifecycle == [
         "finding.proposed",
+        "finding.materiality_assessed",
+        "finding.quality_review_passed",
         "finding.approve",
+        "finding.disputed",
+        "finding.dispute_upheld",
         "remediation.opened",
+        "remediation.ticket_filed",
+        # The second sync adopts the ticket the first one created rather than
+        # filing another. A run in which both events read ``ticket_filed`` is a
+        # duplicate-ticket regression.
+        "remediation.ticket_reconciled",
         "remediation.closure_submitted",
         "finding.closed_verified",
     ]
 
 
-def test_only_a_human_appears_in_the_decision_trail(database):
-    """The agent proposed; a person approved. That distinction is the gate."""
+def test_only_people_appear_in_the_decision_trail(database):
+    """The agent proposed and scored; people approved and adjudicated.
+
+    Both entries name a person. An agent reaching either of these decisions is the
+    failure the component exists to make impossible.
+    """
     result = run(database)
-    assert result["decision_trail"] == ["human:approve by alice.auditor@asteria.example"]
+    assert result["decision_trail"] == [
+        "human:approve by alice.auditor@asteria.example",
+        "dispute:upheld by dana.director@asteria.example",
+    ]
+
+
+def test_approval_is_refused_until_materiality_and_quality_review_exist(database):
+    result = run(database)
+    refusal = result["premature_approval_refused"]
+    assert "no materiality assessment exists" in refusal
+    assert "no passing quality review exists" in refusal
+
+
+def test_materiality_escalates_a_severity_the_agent_understated(database):
+    """The agent proposed ``medium``; the policy computed a ``high`` floor.
+
+    Nothing in the demo sets the severity. It is read back from canonical state
+    after the assessment, so the escalation is the policy's and not the script's.
+    """
+    result = run(database)
+    assert result["materiality_score"] == 2.0
+    assert result["materiality_severity_floor"] == "high"
+    assert result["severity_escalated_by_materiality"]
+
+
+def test_the_quality_reviewer_cannot_also_approve(database):
+    result = run(database)
+    assert "cannot also approve it" in result["reviewer_cannot_approve"]
+
+
+def test_an_open_dispute_blocks_remediation(database):
+    result = run(database)
+    assert result["dispute_status_while_open"] == "disputed"
+    assert "cannot move to 'remediation_open'" in result["dispute_blocks_remediation"]
+    assert result["dispute_resolution_status"] == "approved"
+
+
+def test_the_jira_ticket_is_filed_once_even_when_local_state_forgets_it(database):
+    """The second sync runs with no local reference and still files nothing new.
+
+    That is the case the correlation lookup exists for: a crash between the
+    provider's create and this side's commit. A local guard alone would open a
+    second ticket here.
+    """
+    result = run(database)
+    assert result["jira_ticket_filed_once"]
+    assert result["jira_ticket_ref"] == "AUD-417"
+    assert result["jira_correlation_key"].startswith("assuranceos:")
 
 
 def test_the_loop_is_repeatable(database):

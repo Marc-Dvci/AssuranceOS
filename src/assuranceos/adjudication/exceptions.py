@@ -55,3 +55,26 @@ class ClosureEvidenceError(AdjudicationError):
 
 class IdempotencyConflictError(AdjudicationError):
     """An idempotency key was reused with different inputs."""
+
+
+class MaterialityError(AdjudicationError):
+    """A materiality assessment is missing, stale, or contradicted."""
+
+
+class QualityGateError(AdjudicationError):
+    """The methodology gate has not been passed for this version of the finding.
+
+    Distinct from :class:`HumanGateError`. That one refuses an approval attributed
+    to a machine; this one refuses an approval — by anyone, machine or person —
+    of work that has not been independently reviewed. An organisation can have a
+    perfectly attributable approval of an unsupported finding, and this is the
+    error that stops it.
+    """
+
+
+class DisputeError(AdjudicationError):
+    """A dispute cannot be raised or resolved as requested."""
+
+
+class TicketingError(AdjudicationError):
+    """An external remediation system refused or could not be reconciled."""

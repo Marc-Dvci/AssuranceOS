@@ -75,6 +75,28 @@ def proposal(**overrides) -> dict:
     return body
 
 
+def clear_gates(client, finding_id, reviewer="carol.qa@asteria.example") -> dict:
+    """Score materiality and pass the quality review, as an engagement would.
+
+    Approval sits behind both. The cases below are about the lifecycle over HTTP;
+    the gates themselves are exercised separately further down.
+    """
+    scored = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/materiality",
+        json={
+            "inputs": {"population_size": 40, "exception_count": 2},
+            "assessed_by": "agent:finding-adjudicator",
+        },
+    )
+    assert scored.status_code == 200, scored.text
+    reviewed = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/quality-review",
+        json={"reviewer_id": reviewer, "notes": "Support traced."},
+    )
+    assert reviewed.status_code == 200, reviewed.text
+    return reviewed.json()
+
+
 def test_the_whole_lifecycle_runs_over_http(client):
     proposed = client.post(
         f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
@@ -82,6 +104,8 @@ def test_the_whole_lifecycle_runs_over_http(client):
     assert proposed.status_code == 200, proposed.text
     assert proposed.json()["supported"] is True
     finding_id = proposed.json()["finding_id"]
+
+    assert clear_gates(client, finding_id)["passed"] is True
 
     decided = client.post(
         f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
@@ -142,6 +166,7 @@ def test_replayed_remediation_returns_the_same_action(client):
     finding_id = client.post(
         f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
     ).json()["finding_id"]
+    clear_gates(client, finding_id)
     client.post(
         f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
         json={
@@ -254,3 +279,265 @@ def test_only_approver_and_admin_may_adjudicate():
     assert Permission.FINDING_WRITE in ROLE_PERMISSIONS["worker"]
     assert Permission.FINDING_ADJUDICATE not in ROLE_PERMISSIONS["worker"]
     assert Permission.FINDING_ADJUDICATE not in ROLE_PERMISSIONS["auditor"]
+
+
+def test_review_and_approval_are_different_permissions():
+    """Preparer, reviewer and approver are three roles, not one with three verbs.
+
+    The service refuses a reviewer who also approves, but that check only fires
+    once someone has reached both endpoints. Keeping the permissions disjoint
+    means no single non-admin role can reach both in the first place.
+    """
+    reviewers = {
+        role
+        for role, permissions in ROLE_PERMISSIONS.items()
+        if Permission.FINDING_REVIEW in permissions
+    }
+    approvers = {
+        role
+        for role, permissions in ROLE_PERMISSIONS.items()
+        if Permission.FINDING_ADJUDICATE in permissions
+    }
+    assert reviewers & approvers == {"admin"}
+    # An agent runs as `worker`. It may write a finding and must not be able to
+    # pass its own work through the methodology gate.
+    assert Permission.FINDING_REVIEW not in ROLE_PERMISSIONS["worker"]
+
+
+def test_management_may_dispute_and_nothing_else():
+    permissions = ROLE_PERMISSIONS["business_owner"]
+    assert Permission.FINDING_DISPUTE in permissions
+    assert Permission.FINDING_WRITE not in permissions
+    assert Permission.FINDING_REVIEW not in permissions
+    assert Permission.FINDING_ADJUDICATE not in permissions
+
+
+# -- the gates in front of approval --------------------------------------------
+
+
+def test_approval_is_refused_before_the_gates(client):
+    """403, and the reply names every blocker rather than the first."""
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+
+    refused = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
+        json={
+            "decision": "approve",
+            "reason": "Confirmed against the change register.",
+            "idempotency_key": "approve-1",
+            "actor_id": "alice.auditor@asteria.example",
+        },
+    )
+    assert refused.status_code == 403
+    detail = refused.json()["detail"]
+    assert "no materiality assessment exists" in detail
+    assert "no passing quality review exists" in detail
+
+
+def test_the_view_reports_what_is_blocking_approval(client):
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+
+    before = client.get(f"/api/v1/tenants/{TENANT}/findings/{finding_id}").json()
+    assert before["approval_ready"] is False
+    assert len(before["approval_blockers"]) == 2
+
+    clear_gates(client, finding_id)
+    after = client.get(f"/api/v1/tenants/{TENANT}/findings/{finding_id}").json()
+    assert after["approval_ready"] is True
+    assert after["approval_blockers"] == []
+
+
+def test_editing_the_finding_spends_the_review_it_already_passed(client):
+    """A severity override moves the content hash, so the review no longer applies.
+
+    This is the case a status column cannot express: the finding really was
+    reviewed, and the text that was reviewed is not the text on the record.
+    """
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    scored = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/materiality",
+        json={
+            "inputs": {
+                "population_size": 40,
+                "exception_count": 2,
+                "factors": [
+                    {
+                        "factor": "regulatory_reportable",
+                        "rationale": "In scope for the operational-resilience regime.",
+                        "evidence_ids": ["ev_scope"],
+                    }
+                ],
+            },
+            "assessed_by": "agent:finding-adjudicator",
+        },
+    )
+    assert scored.json()["severity_floor"] == "high"
+    client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/quality-review",
+        json={"reviewer_id": "carol.qa@asteria.example"},
+    )
+    assert client.get(f"/api/v1/tenants/{TENANT}/findings/{finding_id}").json()[
+        "approval_ready"
+    ]
+
+    lowered = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/severity-override",
+        json={
+            "severity": "medium",
+            "reason": "Compensating detective control covers the exposure window.",
+            "actor_id": "dana.director@asteria.example",
+        },
+    )
+    assert lowered.status_code == 200, lowered.text
+
+    view = client.get(f"/api/v1/tenants/{TENANT}/findings/{finding_id}").json()
+    assert view["approval_ready"] is False
+    assert view["approval_blockers"] == [
+        "the finding changed after its last passing quality review"
+    ]
+    assert view["quality_reviews"][0]["applies_to_current_text"] is False
+
+
+def test_an_override_that_does_not_lower_the_severity_is_refused(client):
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/materiality",
+        json={"inputs": {"population_size": 40, "exception_count": 2}},
+    )
+
+    refused = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/severity-override",
+        json={
+            "severity": "critical",
+            "reason": "I would like this to be more serious than it is.",
+            "actor_id": "dana.director@asteria.example",
+        },
+    )
+    assert refused.status_code == 422
+    assert "records a reduction" in refused.json()["detail"]
+
+
+def test_a_disputed_finding_cannot_reach_remediation(client):
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    clear_gates(client, finding_id)
+    client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
+        json={
+            "decision": "approve",
+            "reason": "Confirmed against the change register.",
+            "idempotency_key": "approve-1",
+            "actor_id": "alice.auditor@asteria.example",
+        },
+    )
+    disputed = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/disputes",
+        json={
+            "ground": "severity_overstated",
+            "statement": "Two in forty is not a high-severity control failure.",
+            "raised_by": "platform-team@asteria.example",
+        },
+    )
+    assert disputed.status_code == 200, disputed.text
+    dispute_id = disputed.json()["dispute_id"]
+
+    blocked = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/remediation",
+        json={
+            "owner_ref": "platform-team@asteria.example",
+            "due_date": "2026-10-31",
+            "action_plan": "Enforce the ticket in the merge gate.",
+            "idempotency_key": "rem-1",
+        },
+    )
+    assert blocked.status_code == 409
+
+    resolved = client.post(
+        f"/api/v1/tenants/{TENANT}/disputes/{dispute_id}/resolution",
+        json={
+            "resolution": "upheld",
+            "reason": "The severity floor follows from reportability, not the count.",
+            "resolved_by": "dana.director@asteria.example",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["finding_status"] == "approved"
+
+    opened = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/remediation",
+        json={
+            "owner_ref": "platform-team@asteria.example",
+            "due_date": "2026-10-31",
+            "action_plan": "Enforce the ticket in the merge gate.",
+            "idempotency_key": "rem-1",
+        },
+    )
+    assert opened.status_code == 200, opened.text
+
+
+def test_the_party_that_raised_a_dispute_cannot_resolve_it(client):
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    dispute_id = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/disputes",
+        json={
+            "ground": "condition_inaccurate",
+            "statement": "The population includes merges from a different repository.",
+            "raised_by": "platform-team@asteria.example",
+        },
+    ).json()["dispute_id"]
+
+    refused = client.post(
+        f"/api/v1/tenants/{TENANT}/disputes/{dispute_id}/resolution",
+        json={
+            "resolution": "withdrawn",
+            "reason": "We contested it, so we will also close it in our favour.",
+            "resolved_by": "platform-team@asteria.example",
+        },
+    )
+    assert refused.status_code == 403
+    assert "raised this dispute and cannot resolve it" in refused.json()["detail"]
+
+
+def test_filing_a_ticket_without_a_configured_writer_is_a_bad_gateway(client):
+    """A remediation registered against Jira is not quietly filed nowhere."""
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    clear_gates(client, finding_id)
+    client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
+        json={
+            "decision": "approve",
+            "reason": "Confirmed against the change register.",
+            "idempotency_key": "approve-1",
+            "actor_id": "alice.auditor@asteria.example",
+        },
+    )
+    action_id = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/remediation",
+        json={
+            "owner_ref": "platform-team@asteria.example",
+            "due_date": "2026-10-31",
+            "action_plan": "Enforce the ticket in the merge gate.",
+            "idempotency_key": "rem-1",
+            "external_system": "jira",
+            "external_target": "AUD",
+        },
+    ).json()["action_id"]
+
+    refused = client.post(
+        f"/api/v1/tenants/{TENANT}/remediation-actions/{action_id}/ticket"
+    )
+    assert refused.status_code == 502
+    assert "files into 'none'" in refused.json()["detail"]

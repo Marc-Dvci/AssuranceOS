@@ -36,6 +36,16 @@ class Permission(StrEnum):
     # an automated actor; keeping the same separation in the permission model
     # means the worker role that runs agents cannot reach the endpoint at all.
     FINDING_ADJUDICATE = "findings:adjudicate"
+    # The methodology gate is its own permission and is held by the auditor role,
+    # never by the approver. Separating them in the permission model means the two
+    # gates cannot be cleared by one person through role membership alone, before
+    # the service ever compares identities. `worker` does not hold it either: an
+    # agent must not be able to pass its own work through review.
+    FINDING_REVIEW = "findings:review"
+    # Contesting a finding is management's move, not the audit function's. It is
+    # separated so a business-owner principal can be granted the ability to push
+    # back without being granted the ability to write or decide findings.
+    FINDING_DISPUTE = "findings:dispute"
     REMEDIATION_WRITE = "remediation:write"
 
 
@@ -65,6 +75,19 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_EXECUTE,
             Permission.FINDING_READ,
             Permission.FINDING_WRITE,
+            Permission.FINDING_REVIEW,
+            Permission.REMEDIATION_WRITE,
+        }
+    ),
+    # Management: may contest a finding and respond to it, and may do nothing else
+    # to it. The role exists so the dispute workflow has a principal that is
+    # plainly not part of the audit function.
+    "business_owner": frozenset(
+        {
+            Permission.ENGAGEMENT_READ,
+            Permission.EVIDENCE_READ,
+            Permission.FINDING_READ,
+            Permission.FINDING_DISPUTE,
             Permission.REMEDIATION_WRITE,
         }
     ),

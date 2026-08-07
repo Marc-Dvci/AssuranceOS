@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 717,
+  "file_count": 723,
   "files": [
     {
       "path": ".dockerignore",
@@ -1931,8 +1931,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 108127,
-      "sha256": "446f32f546a856ae62f89d89520d410f3b932d93c0743181d6802ce9f8ef973d"
+      "size_bytes": 126069,
+      "sha256": "7c3e10c96d188e97fd9a4bd220988afb26f3f64daee34134fa9cf30851f41f57"
     },
     {
       "path": "api/protobuf/README.md",
@@ -2210,6 +2210,11 @@
       "sha256": "759f138fc401ed13d17572359abefc69aabbaf7b89b54e782ba10b5db4d203de"
     },
     {
+      "path": "docs/architecture/assurance-review-gates.md",
+      "size_bytes": 12494,
+      "sha256": "b4c306ecd98e45d1e1e659c8c7348dacc67a47553a7b757178ee9568803f47f3"
+    },
+    {
       "path": "docs/architecture/canonical-data-model.md",
       "size_bytes": 3714,
       "sha256": "f7afa5b3764b2b5b9440bac2eeb3157cbfc7303d59ffe65cbe823f00bc1f0951"
@@ -2438,6 +2443,11 @@
       "path": "migrations/versions/0009_finding_adjudication.py",
       "size_bytes": 4029,
       "sha256": "aa083c9679cca49a222bdfaffc76ce4fc3de0b8686aa58450199090daa523ad7"
+    },
+    {
+      "path": "migrations/versions/0010_assurance_review_gates.py",
+      "size_bytes": 9299,
+      "sha256": "7c6cb3d977b1f0ab5752d8507834fe54e8a6e42917fc099a7d7eefc41fe7f9f7"
     },
     {
       "path": "migrations/versions/fa73e07500b5_canonical_domain_schema.py",
@@ -2776,38 +2786,53 @@
     },
     {
       "path": "src/assuranceos/adjudication/__init__.py",
-      "size_bytes": 1751,
-      "sha256": "62b4a63edcb23a4c53f2aff401466262d0bc708b4b5b3b744593cf3aca2abeda"
+      "size_bytes": 3265,
+      "sha256": "17d09842e05d3e4fa01299eef431dd62f72ccbaa5ab7ae1e9263be6cb6035272"
     },
     {
       "path": "src/assuranceos/adjudication/definitions.py",
-      "size_bytes": 8896,
-      "sha256": "b5284972b72691c0d691080244ce44e166fecfcf8374c7ef5a8c15109b0f1af2"
+      "size_bytes": 13540,
+      "sha256": "6b092987bd0b6076f623c93d68ab83eac950e748ee35a28d03fa1c4664bde8a2"
     },
     {
       "path": "src/assuranceos/adjudication/demo.py",
-      "size_bytes": 17281,
-      "sha256": "dfd780a1e9ee876d4d0fbf516fd0e67548023e66b1520bdc162fd3714be35c2d"
+      "size_bytes": 27558,
+      "sha256": "6fe7619468ff888f385234026213c3cb8bbc6beaff25efcc1b0b1e4919efac33"
     },
     {
       "path": "src/assuranceos/adjudication/exceptions.py",
-      "size_bytes": 1732,
-      "sha256": "fc324a4adbf5b5686c4aeca6e8096fa06e0b6348147d1e2605ced41afb7286cb"
+      "size_bytes": 2559,
+      "sha256": "c31f1f9240cf86563b3992a8400ad7face968a6033206025e48495d8448a424c"
+    },
+    {
+      "path": "src/assuranceos/adjudication/materiality.py",
+      "size_bytes": 11493,
+      "sha256": "12f22b613b102813e0499d76d06bd0f61ec22aaa8cac6212cca3297e28f8db97"
+    },
+    {
+      "path": "src/assuranceos/adjudication/quality.py",
+      "size_bytes": 8533,
+      "sha256": "a4005fb5b144dc23bb594d2d77f14d9d2d7d62c5594e976881da7dcade944259"
     },
     {
       "path": "src/assuranceos/adjudication/repository.py",
-      "size_bytes": 6069,
-      "sha256": "ab06ba9982ddcb0574d4e5b04dfcefe7cd8e8aa1a67fae9506e48718b45b4120"
+      "size_bytes": 10287,
+      "sha256": "d31782ca4bb3795d2181b7c2e085e52f945037cc38bf3931a1f13ba81f9d3689"
     },
     {
       "path": "src/assuranceos/adjudication/service.py",
-      "size_bytes": 31986,
-      "sha256": "c8e06852661e77113c1c701324a1638848a58a88d643ab0e920517054115cc84"
+      "size_bytes": 68109,
+      "sha256": "f948b1785825c8eaa4fbf1b6a2ed416ba1086930faaa97ffa888a742c6722861"
     },
     {
       "path": "src/assuranceos/adjudication/skeptic.py",
       "size_bytes": 8789,
       "sha256": "2c92a9e5542f3a0a9ab1ada4f9f8ee19c403623ffda4a411e1bdbc3bd6d2a109"
+    },
+    {
+      "path": "src/assuranceos/adjudication/ticketing.py",
+      "size_bytes": 11056,
+      "sha256": "40baba4e81c680ce5dfd59082d5c9850cf766f557a4dbfc14adf2cccce871571"
     },
     {
       "path": "src/assuranceos/adk.py",
@@ -2821,8 +2846,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 57713,
-      "sha256": "68cdca5053c9ce399a0a9117662c33921cd0a26a514aab3deea7c597222174e8"
+      "size_bytes": 66942,
+      "sha256": "3b549cfc6c85104f5e04e7f2cc89023da3f53cc7ffabd32962e56a4b5056449b"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -2991,8 +3016,8 @@
     },
     {
       "path": "src/assuranceos/db/models/__init__.py",
-      "size_bytes": 2257,
-      "sha256": "edeec0af4bdce2d79b9007391486b8577a4ed56a3611cb8dd9dc00d08daadfb7"
+      "size_bytes": 2420,
+      "sha256": "c091db50dac23de158f4870e4a83650cbbdbe3b77f1da519ca2b13339a355c81"
     },
     {
       "path": "src/assuranceos/db/models/agent_governance.py",
@@ -3026,8 +3051,8 @@
     },
     {
       "path": "src/assuranceos/db/models/findings.py",
-      "size_bytes": 8034,
-      "sha256": "575cbf88c9f3f45fe66f67133edd88d1a1f0e30fa13e718df9a56449d9b58817"
+      "size_bytes": 15381,
+      "sha256": "36ffdee93e127ab7f1ab43a475c4458c7e72588ef5929ea93825949f94aa9319"
     },
     {
       "path": "src/assuranceos/db/models/governance.py",
@@ -3261,8 +3286,8 @@
     },
     {
       "path": "src/assuranceos/security.py",
-      "size_bytes": 12052,
-      "sha256": "eab501801509e4ecc3f3023a23b3bb2f4388a6b615f274fd8854fb3a527a008b"
+      "size_bytes": 13287,
+      "sha256": "bd8f01976f6a2c1411943967506ca60cff8fc1ae97363b1afb285c3cbca98ecb"
     },
     {
       "path": "src/assuranceos/vault/__init__.py",
@@ -3426,13 +3451,13 @@
     },
     {
       "path": "tests/test_adjudication.py",
-      "size_bytes": 26551,
-      "sha256": "b7291755285b912266e5acb34f72329bf23fcbeeb1d61edc708d4332381ac711"
+      "size_bytes": 27771,
+      "sha256": "a01d9d0135bf44cc3378181c7ec945d390e0fe59c205b095b6558a673c53c602"
     },
     {
       "path": "tests/test_adjudication_api.py",
-      "size_bytes": 9028,
-      "sha256": "ba5ed0568ff7d53e782ba16fecb02cc4e68124a44fd1aa1c91dd62afb1987e3f"
+      "size_bytes": 20015,
+      "sha256": "b9e1c8695ede7cb61b645cbf7438a0c7d15f730e9d310f6bcf886aac667454d7"
     },
     {
       "path": "tests/test_adk_gateway_tools.py",
@@ -3445,9 +3470,14 @@
       "sha256": "8edc9ce7d09dcbd03b05eb1d33617e293ac3f7b9f9cf8d41ca0de02bb4ae93ad"
     },
     {
+      "path": "tests/test_assurance_gates.py",
+      "size_bytes": 30702,
+      "sha256": "1097f2268f4ab7e1efc0f2cba7e53b649025912688cdd905df76f033f0abff88"
+    },
+    {
       "path": "tests/test_assurance_loop_demo.py",
-      "size_bytes": 3720,
-      "sha256": "97f79da42734f385e1017a1af78370b77bfed2d666771054c6629de8564bda84"
+      "size_bytes": 6133,
+      "sha256": "65e950ee0e6673b97528939453572c4a76da89ca904394acc74d2a37fa2cb7e6"
     },
     {
       "path": "tests/test_connector_api.py",

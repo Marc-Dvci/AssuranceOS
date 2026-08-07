@@ -2318,6 +2318,259 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/materiality:
+    post:
+      summary: Assess Materiality
+      description: 'Score whether a finding is material, from measured inputs under
+        a policy.
+
+
+        Granted with ``findings:write`` rather than ``findings:adjudicate``: this
+        is
+
+        the step an agent is *supposed* to perform. The score may raise the finding''s
+
+        severity to the computed floor; lowering it is a separate endpoint that
+
+        requires a person and a reason.'
+      operationId: assess_materiality_api_v1_tenants__tenant_id__findings__finding_id__materiality_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessMaterialityRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Assess Materiality Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Materiality Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/severity-override:
+    post:
+      summary: Override Finding Severity
+      description: 'Set a severity below the computed materiality floor.
+
+
+        Behind ``findings:adjudicate`` because talking a finding down is a decision,
+
+        not a computation. The service additionally refuses an automated actor and
+
+        refuses an "override" that does not actually lower the severity.'
+      operationId: override_finding_severity_api_v1_tenants__tenant_id__findings__finding_id__severity_override_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OverrideSeverityRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Override Finding Severity Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Severity Override Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/quality-review:
+    post:
+      summary: Review Finding Quality
+      description: 'Run the methodology gate over a finding.
+
+
+        ``findings:review`` is deliberately a permission of its own. The auditor role
+
+        holds it and the approver role does not, so the two gates cannot be cleared
+        by
+
+        one person through role membership even before the service checks identities.
+
+
+        A failed review returns 200 with ``passed: false``. The review ran; what it
+
+        found is the payload, not an error.'
+      operationId: review_finding_quality_api_v1_tenants__tenant_id__findings__finding_id__quality_review_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewQualityRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Review Finding Quality Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Quality Review Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/disputes:
+    post:
+      summary: Raise Finding Dispute
+      description: 'Record management''s contest of a finding.
+
+
+        A disputed finding cannot move to remediation, so this endpoint stops the
+
+        lifecycle rather than annotating it.'
+      operationId: raise_finding_dispute_api_v1_tenants__tenant_id__findings__finding_id__disputes_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaiseDisputeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Raise Finding Dispute Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Disputes Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/disputes/{dispute_id}/resolution:
+    post:
+      summary: Resolve Finding Dispute
+      description: 'Answer a dispute.
+
+
+        Refused when the resolver raised the dispute or authored the finding. A
+
+        ``modified`` resolution returns the finding to ``proposed`` and voids the
+
+        approval it held, because the text that was approved is about to change.'
+      operationId: resolve_finding_dispute_api_v1_tenants__tenant_id__disputes__dispute_id__resolution_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: dispute_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Dispute Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveDisputeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Resolve Finding Dispute Api V1 Tenants  Tenant Id  Disputes  Dispute
+                  Id  Resolution Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/tenants/{tenant_id}/findings/{finding_id}/remediation:
     post:
       summary: Open Remediation
@@ -2360,6 +2613,53 @@ paths:
                 additionalProperties: true
                 title: Response Open Remediation Api V1 Tenants  Tenant Id  Findings  Finding
                   Id  Remediation Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/ticket:
+    post:
+      summary: Sync Remediation Ticket
+      description: 'File the remediation in its external system, at most once.
+
+
+        No writer is passed here, so an action registered against Jira or ServiceNow
+
+        is refused rather than silently filed nowhere. Live provider credentials are
+
+        resolved through the connector registry in a deployed environment; until one
+
+        is configured, this endpoint serves the ``none`` case and reports the mismatch
+
+        for the others instead of pretending to have written.'
+      operationId: sync_remediation_ticket_api_v1_tenants__tenant_id__remediation_actions__action_id__ticket_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Action Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Sync Remediation Ticket Api V1 Tenants  Tenant Id  Remediation
+                  Actions  Action Id  Ticket Post
         '422':
           description: Validation Error
           content:
@@ -2533,6 +2833,32 @@ components:
       - reason
       - idempotency_key
       title: AdjudicateFindingRequest
+    AssessMaterialityRequest:
+      properties:
+        inputs:
+          $ref: '#/components/schemas/MaterialityInputs'
+        policy:
+          anyOf:
+          - $ref: '#/components/schemas/MaterialityPolicy'
+          - type: 'null'
+        assessed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assessed By
+      type: object
+      required:
+      - inputs
+      title: AssessMaterialityRequest
+      description: 'Measured inputs for a materiality score, and the policy to score
+        them under.
+
+
+        ``assessed_by`` is not restricted to a person the way a decision is. An agent
+
+        may compute this: the score is arithmetic over declared inputs, and what an
+
+        agent must not reach is the approval that follows it.'
     AuditPeriodRule:
       properties:
         kind:
@@ -2855,6 +3181,39 @@ components:
       required:
       - task_key
       title: DependencyDefinition
+    DisputeGround:
+      type: string
+      enum:
+      - criteria_incorrect
+      - condition_inaccurate
+      - severity_overstated
+      - materiality_disputed
+      - evidence_superseded
+      - compensating_control_omitted
+      - out_of_scope
+      title: DisputeGround
+      description: 'The grounds on which management may contest a finding.
+
+
+        A closed set, for the same reason the contradiction kinds are: "we disagree"
+
+        is not reviewable, whereas "the criteria cite a superseded policy version"
+        is.'
+    DisputeResolution:
+      type: string
+      enum:
+      - upheld
+      - modified
+      - withdrawn
+      title: DisputeResolution
+      description: 'How a dispute ends.
+
+
+        ``MODIFIED`` is the consequential one: accepting that the finding needs to
+
+        change voids the quality review and the approval it was granted under, because
+
+        both were given for text that no longer stands.'
     EvidenceExportRequest:
       properties:
         evidence_ids:
@@ -2934,6 +3293,36 @@ components:
       - actor_id
       - reason
       title: EvidenceRetentionRequest
+    FactorAssertion:
+      properties:
+        factor:
+          $ref: '#/components/schemas/QualitativeFactor'
+        rationale:
+          type: string
+          maxLength: 2000
+          minLength: 3
+          title: Rationale
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Evidence Ids
+      additionalProperties: false
+      type: object
+      required:
+      - factor
+      - rationale
+      - evidence_ids
+      title: FactorAssertion
+      description: 'A qualitative factor claimed to apply, with what supports it.
+
+
+        ``evidence_ids`` is required and non-empty. This is the single control that
+
+        stops materiality inflation: an agent that wants a higher severity has to
+
+        point at a record, and a reviewer can follow the pointer.'
     FailureClass:
       type: string
       enum:
@@ -3015,6 +3404,95 @@ components:
       - preflight_then_approval
       - automatic
       title: LaunchMode
+    MaterialityInputs:
+      properties:
+        population_size:
+          type: integer
+          minimum: 0.0
+          title: Population Size
+        exception_count:
+          type: integer
+          minimum: 0.0
+          title: Exception Count
+        monetary_exposure:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Monetary Exposure
+        factors:
+          items:
+            $ref: '#/components/schemas/FactorAssertion'
+          type: array
+          title: Factors
+      additionalProperties: false
+      type: object
+      required:
+      - population_size
+      - exception_count
+      title: MaterialityInputs
+      description: 'The measured facts a materiality score is computed from.
+
+
+        The population and the exception count are counts from the deterministic test,
+
+        not estimates. Requiring them here is what makes the score reproducible: two
+
+        people with the same inputs and the same policy get the same number.'
+    MaterialityPolicy:
+      properties:
+        policy_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Policy Id
+          default: default-v1
+        exception_rate_threshold:
+          type: number
+          maximum: 1.0
+          exclusiveMinimum: 0.0
+          title: Exception Rate Threshold
+          default: 0.05
+        population_floor:
+          type: integer
+          minimum: 0.0
+          title: Population Floor
+          default: 20
+        monetary_threshold:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Monetary Threshold
+        factor_weights:
+          additionalProperties:
+            type: number
+          propertyNames:
+            $ref: '#/components/schemas/QualitativeFactor'
+          type: object
+          title: Factor Weights
+        severity_bands:
+          items:
+            prefixItems:
+            - type: number
+            - type: string
+            type: array
+            maxItems: 2
+            minItems: 2
+          type: array
+          title: Severity Bands
+      additionalProperties: false
+      type: object
+      title: MaterialityPolicy
+      description: 'The configured thresholds a materiality score is measured against.
+
+
+        Held as data, versioned by ``policy_id``, and stored with every assessment
+        so
+
+        a score computed under an old policy stays interpretable after the policy
+
+        changes.'
     MissedOccurrencePolicy:
       type: string
       enum:
@@ -3079,6 +3557,12 @@ components:
           - servicenow
           title: External System
           default: none
+        external_target:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: External Target
       type: object
       required:
       - owner_ref
@@ -3092,6 +3576,31 @@ components:
       - prevent
       - allow
       title: OverlapPolicy
+    OverrideSeverityRequest:
+      properties:
+        severity:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+          title: Severity
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        actor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actor Id
+      type: object
+      required:
+      - severity
+      - reason
+      title: OverrideSeverityRequest
     PreflightContext:
       properties:
         connector_health:
@@ -3269,6 +3778,51 @@ components:
         ``confidence`` is the agent''s, and it is never sufficient on its own: the
 
         human gate is a separate record, not a threshold on this number.'
+    QualitativeFactor:
+      type: string
+      enum:
+      - regulatory_reportable
+      - fraud_indicator
+      - repeat_finding
+      - customer_impact
+      - financial_statement_impact
+      - pervasive_across_units
+      - control_environment_weakness
+      - management_override
+      title: QualitativeFactor
+      description: 'The named ways a numerically small exception can still matter.
+
+
+        A closed set rather than free text. Free-text factors cannot be weighted by
+        a
+
+        policy, cannot be compared across engagements, and cannot be audited for
+
+        over-use by an agent that has learned they raise severity.'
+    RaiseDisputeRequest:
+      properties:
+        ground:
+          $ref: '#/components/schemas/DisputeGround'
+        statement:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Statement
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+        raised_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Raised By
+      type: object
+      required:
+      - ground
+      - statement
+      title: RaiseDisputeRequest
     RecordRetestRequest:
       properties:
         procedure_ref:
@@ -3310,6 +3864,25 @@ components:
       - idempotency_key
       - outcome
       title: RecordRetestRequest
+    ResolveDisputeRequest:
+      properties:
+        resolution:
+          $ref: '#/components/schemas/DisputeResolution'
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        resolved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolved By
+      type: object
+      required:
+      - resolution
+      - reason
+      title: ResolveDisputeRequest
     RetestOutcome:
       type: string
       enum:
@@ -3351,6 +3924,21 @@ components:
       additionalProperties: false
       type: object
       title: RetryPolicy
+    ReviewQualityRequest:
+      properties:
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 4000
+          - type: 'null'
+          title: Notes
+        reviewer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reviewer Id
+      type: object
+      title: ReviewQualityRequest
     ScheduleDecision:
       properties:
         actor_id:

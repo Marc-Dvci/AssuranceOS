@@ -17,21 +17,34 @@ from .adjudication import (
     AdjudicationRequest,
     AdjudicationService,
     ClosureSubmission,
+    DisputeGround,
+    DisputeRequest,
+    DisputeResolution,
+    DisputeResolutionRequest,
     HumanDecision,
+    MaterialityInputs,
+    MaterialityPolicy,
+    MaterialityRequest,
     ProposedFinding,
+    QualityReviewRequest,
     RemediationRequest,
     RetestOutcome,
     RetestRequest,
+    SeverityOverrideRequest,
     SkepticReviewer,
 )
 from .adjudication.exceptions import (
     ClosureEvidenceError,
+    DisputeError,
     FindingNotFoundError,
     HumanGateError,
     IdempotencyConflictError,
     IndependenceError,
     InvalidTransitionError,
+    MaterialityError,
+    QualityGateError,
     RemediationNotFoundError,
+    TicketingError,
 )
 from .config import settings
 from .control_testing import (
@@ -322,6 +335,43 @@ class AdjudicateFindingRequest(BaseModel):
     actor_id: str | None = None
 
 
+class AssessMaterialityRequest(BaseModel):
+    """Measured inputs for a materiality score, and the policy to score them under.
+
+    ``assessed_by`` is not restricted to a person the way a decision is. An agent
+    may compute this: the score is arithmetic over declared inputs, and what an
+    agent must not reach is the approval that follows it.
+    """
+
+    inputs: MaterialityInputs
+    policy: MaterialityPolicy | None = None
+    assessed_by: str | None = None
+
+
+class OverrideSeverityRequest(BaseModel):
+    severity: Literal["low", "medium", "high", "critical"]
+    reason: str = Field(min_length=10, max_length=4000)
+    actor_id: str | None = None
+
+
+class ReviewQualityRequest(BaseModel):
+    notes: str | None = Field(default=None, max_length=4000)
+    reviewer_id: str | None = None
+
+
+class RaiseDisputeRequest(BaseModel):
+    ground: DisputeGround
+    statement: str = Field(min_length=10, max_length=4000)
+    evidence_ids: list[str] = Field(default_factory=list)
+    raised_by: str | None = None
+
+
+class ResolveDisputeRequest(BaseModel):
+    resolution: DisputeResolution
+    reason: str = Field(min_length=10, max_length=4000)
+    resolved_by: str | None = None
+
+
 class OpenRemediationRequest(BaseModel):
     owner_ref: str = Field(min_length=1, max_length=255)
     due_date: date
@@ -330,6 +380,7 @@ class OpenRemediationRequest(BaseModel):
     closure_evidence_required: bool = True
     escalation_policy: dict = Field(default_factory=dict)
     external_system: Literal["none", "jira", "servicenow"] = "none"
+    external_target: str | None = Field(default=None, max_length=128)
 
 
 class SubmitClosureRequest(BaseModel):
@@ -408,12 +459,17 @@ def _raise_http(exc: Exception) -> None:
     # the caller was authenticated; the system declined to let this actor cause
     # this effect. Reporting it as a validation error would invite a client to
     # "fix" the payload and retry.
-    if isinstance(exc, (HumanGateError, IndependenceError)):
+    if isinstance(exc, (HumanGateError, IndependenceError, QualityGateError)):
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-    if isinstance(exc, (InvalidTransitionError, IdempotencyConflictError)):
+    if isinstance(exc, (InvalidTransitionError, IdempotencyConflictError, DisputeError)):
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    if isinstance(exc, ClosureEvidenceError):
+    if isinstance(exc, (ClosureEvidenceError, MaterialityError)):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    # The request was valid and the system tried; the provider refused or could not
+    # be reconciled. 502 says the failure is downstream, which is what a caller
+    # needs in order to decide whether retrying is sensible.
+    if isinstance(exc, TicketingError):
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     if isinstance(exc, (TestInputValidationError, ReproducibilityMismatchError)):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     if isinstance(exc, ControlTestError):
@@ -1513,6 +1569,191 @@ def adjudicate_finding(
 
 
 @app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/materiality",
+    dependencies=[Depends(require_permission(Permission.FINDING_WRITE))],
+)
+def assess_materiality(
+    tenant_id: str,
+    finding_id: str,
+    body: AssessMaterialityRequest,
+    request: Request,
+) -> dict:
+    """Score whether a finding is material, from measured inputs under a policy.
+
+    Granted with ``findings:write`` rather than ``findings:adjudicate``: this is
+    the step an agent is *supposed* to perform. The score may raise the finding's
+    severity to the computed floor; lowering it is a separate endpoint that
+    requires a person and a reason.
+    """
+    try:
+        assessment = _adjudication_service().assess_materiality(
+            tenant_id=tenant_id,
+            request=MaterialityRequest(
+                finding_id=finding_id,
+                inputs=body.inputs,
+                policy=body.policy,
+                assessed_by=body.assessed_by or _actor(request),
+            ),
+        )
+        return {
+            "assessment_id": assessment.assessment_id,
+            "finding_id": finding_id,
+            "score": assessment.score,
+            "material": assessment.material,
+            "severity_floor": assessment.severity_floor,
+            "policy_id": assessment.policy_id,
+            "components": dict(assessment.components_json or {}),
+            "rationale": assessment.rationale,
+            "content_hash": assessment.content_hash,
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/severity-override",
+    dependencies=[Depends(require_permission(Permission.FINDING_ADJUDICATE))],
+)
+def override_finding_severity(
+    tenant_id: str,
+    finding_id: str,
+    body: OverrideSeverityRequest,
+    request: Request,
+) -> dict:
+    """Set a severity below the computed materiality floor.
+
+    Behind ``findings:adjudicate`` because talking a finding down is a decision,
+    not a computation. The service additionally refuses an automated actor and
+    refuses an "override" that does not actually lower the severity.
+    """
+    try:
+        assessment = _adjudication_service().override_severity(
+            tenant_id=tenant_id,
+            request=SeverityOverrideRequest(
+                finding_id=finding_id,
+                severity=body.severity,
+                actor_id=_actor(request, body.actor_id),
+                reason=body.reason,
+            ),
+        )
+        return {
+            "finding_id": finding_id,
+            "assessment_id": assessment.assessment_id,
+            "computed_floor": assessment.severity_floor,
+            "override_severity": assessment.override_severity,
+            "override_by": assessment.override_by,
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/quality-review",
+    dependencies=[Depends(require_permission(Permission.FINDING_REVIEW))],
+)
+def review_finding_quality(
+    tenant_id: str,
+    finding_id: str,
+    body: ReviewQualityRequest,
+    request: Request,
+) -> dict:
+    """Run the methodology gate over a finding.
+
+    ``findings:review`` is deliberately a permission of its own. The auditor role
+    holds it and the approver role does not, so the two gates cannot be cleared by
+    one person through role membership even before the service checks identities.
+
+    A failed review returns 200 with ``passed: false``. The review ran; what it
+    found is the payload, not an error.
+    """
+    try:
+        outcome = _adjudication_service().review_quality(
+            tenant_id=tenant_id,
+            request=QualityReviewRequest(
+                finding_id=finding_id,
+                reviewer_id=_actor(request, body.reviewer_id),
+                notes=body.notes,
+            ),
+        )
+        return {
+            "finding_id": finding_id,
+            "passed": outcome.passed,
+            "reviewer_id": outcome.reviewer_id,
+            "content_hash": outcome.content_hash,
+            "summary": outcome.summary,
+            "checks": [item.model_dump(mode="json") for item in outcome.checks],
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/disputes",
+    dependencies=[Depends(require_permission(Permission.FINDING_DISPUTE))],
+)
+def raise_finding_dispute(
+    tenant_id: str,
+    finding_id: str,
+    body: RaiseDisputeRequest,
+    request: Request,
+) -> dict:
+    """Record management's contest of a finding.
+
+    A disputed finding cannot move to remediation, so this endpoint stops the
+    lifecycle rather than annotating it.
+    """
+    try:
+        dispute_id = _adjudication_service().raise_dispute(
+            tenant_id=tenant_id,
+            request=DisputeRequest(
+                finding_id=finding_id,
+                ground=body.ground,
+                statement=body.statement,
+                raised_by=_actor(request, body.raised_by),
+                evidence_ids=body.evidence_ids,
+            ),
+        )
+        return {"dispute_id": dispute_id, "finding_id": finding_id, "status": "open"}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/disputes/{dispute_id}/resolution",
+    dependencies=[Depends(require_permission(Permission.FINDING_ADJUDICATE))],
+)
+def resolve_finding_dispute(
+    tenant_id: str,
+    dispute_id: str,
+    body: ResolveDisputeRequest,
+    request: Request,
+) -> dict:
+    """Answer a dispute.
+
+    Refused when the resolver raised the dispute or authored the finding. A
+    ``modified`` resolution returns the finding to ``proposed`` and voids the
+    approval it held, because the text that was approved is about to change.
+    """
+    try:
+        status = _adjudication_service().resolve_dispute(
+            tenant_id=tenant_id,
+            request=DisputeResolutionRequest(
+                dispute_id=dispute_id,
+                resolution=body.resolution,
+                reason=body.reason,
+                resolved_by=_actor(request, body.resolved_by),
+            ),
+        )
+        return {
+            "dispute_id": dispute_id,
+            "resolution": body.resolution.value,
+            "finding_status": status.value,
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
     "/api/v1/tenants/{tenant_id}/findings/{finding_id}/remediation",
     dependencies=[Depends(require_permission(Permission.REMEDIATION_WRITE))],
 )
@@ -1534,9 +1775,31 @@ def open_remediation(tenant_id: str, finding_id: str, body: OpenRemediationReque
                 closure_evidence_required=body.closure_evidence_required,
                 escalation_policy=body.escalation_policy,
                 external_system=body.external_system,
+                external_target=body.external_target,
             ),
         )
         return {"action_id": action_id, "created": created}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/ticket",
+    dependencies=[Depends(require_permission(Permission.REMEDIATION_WRITE))],
+)
+def sync_remediation_ticket(tenant_id: str, action_id: str) -> dict:
+    """File the remediation in its external system, at most once.
+
+    No writer is passed here, so an action registered against Jira or ServiceNow
+    is refused rather than silently filed nowhere. Live provider credentials are
+    resolved through the connector registry in a deployed environment; until one
+    is configured, this endpoint serves the ``none`` case and reports the mismatch
+    for the others instead of pretending to have written.
+    """
+    try:
+        return _adjudication_service().sync_remediation_ticket(
+            tenant_id=tenant_id, action_id=action_id
+        )
     except Exception as exc:
         _raise_http(exc)
 

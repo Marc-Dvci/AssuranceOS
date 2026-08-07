@@ -9,7 +9,10 @@ from assuranceos.db.models import (
     ApprovalDecision,
     ControlTestException,
     Finding,
+    FindingDispute,
     ManagementResponse,
+    MaterialityAssessment,
+    QualityReview,
     RemediationAction,
     Retest,
 )
@@ -154,6 +157,115 @@ class AdjudicationRepository:
                 .where(Retest.tenant_id == tenant_id, Retest.action_id == action_id)
                 .order_by(Retest.created_at)
             )
+        )
+
+    # -- materiality -----------------------------------------------------------
+
+    def add_assessment(self, assessment: MaterialityAssessment) -> MaterialityAssessment:
+        self.session.add(assessment)
+        self.session.flush()
+        return assessment
+
+    def latest_assessment(
+        self, tenant_id: str, finding_id: str, content_hash: str | None = None
+    ) -> MaterialityAssessment | None:
+        """The most recent assessment, optionally restricted to one content hash.
+
+        Restricting by hash is how a caller asks the question that matters at the
+        approval gate — "is there an assessment of *this* text" — rather than the
+        weaker "has this finding ever been assessed".
+        """
+        statement = select(MaterialityAssessment).where(
+            MaterialityAssessment.tenant_id == tenant_id,
+            MaterialityAssessment.finding_id == finding_id,
+        )
+        if content_hash is not None:
+            statement = statement.where(MaterialityAssessment.content_hash == content_hash)
+        return self.session.scalar(
+            statement.order_by(MaterialityAssessment.assessed_at.desc())
+        )
+
+    def assessments(self, tenant_id: str, finding_id: str) -> list[MaterialityAssessment]:
+        return list(
+            self.session.scalars(
+                select(MaterialityAssessment)
+                .where(
+                    MaterialityAssessment.tenant_id == tenant_id,
+                    MaterialityAssessment.finding_id == finding_id,
+                )
+                .order_by(MaterialityAssessment.assessed_at)
+            )
+        )
+
+    # -- quality review --------------------------------------------------------
+
+    def add_quality_review(self, review: QualityReview) -> QualityReview:
+        self.session.add(review)
+        self.session.flush()
+        return review
+
+    def passing_review(
+        self, tenant_id: str, finding_id: str, content_hash: str
+    ) -> QualityReview | None:
+        return self.session.scalar(
+            select(QualityReview)
+            .where(
+                QualityReview.tenant_id == tenant_id,
+                QualityReview.finding_id == finding_id,
+                QualityReview.content_hash == content_hash,
+                QualityReview.passed.is_(True),
+            )
+            .order_by(QualityReview.reviewed_at.desc())
+        )
+
+    def quality_reviews(self, tenant_id: str, finding_id: str) -> list[QualityReview]:
+        return list(
+            self.session.scalars(
+                select(QualityReview)
+                .where(
+                    QualityReview.tenant_id == tenant_id,
+                    QualityReview.finding_id == finding_id,
+                )
+                .order_by(QualityReview.reviewed_at)
+            )
+        )
+
+    # -- disputes --------------------------------------------------------------
+
+    def add_dispute(self, dispute: FindingDispute) -> FindingDispute:
+        self.session.add(dispute)
+        self.session.flush()
+        return dispute
+
+    def get_dispute(self, tenant_id: str, dispute_id: str) -> FindingDispute | None:
+        return self.session.scalar(
+            select(FindingDispute).where(
+                FindingDispute.tenant_id == tenant_id,
+                FindingDispute.dispute_id == dispute_id,
+            )
+        )
+
+    def disputes(self, tenant_id: str, finding_id: str) -> list[FindingDispute]:
+        return list(
+            self.session.scalars(
+                select(FindingDispute)
+                .where(
+                    FindingDispute.tenant_id == tenant_id,
+                    FindingDispute.finding_id == finding_id,
+                )
+                .order_by(FindingDispute.round_no)
+            )
+        )
+
+    def open_dispute(self, tenant_id: str, finding_id: str) -> FindingDispute | None:
+        return self.session.scalar(
+            select(FindingDispute)
+            .where(
+                FindingDispute.tenant_id == tenant_id,
+                FindingDispute.finding_id == finding_id,
+                FindingDispute.status == "open",
+            )
+            .order_by(FindingDispute.round_no.desc())
         )
 
     # -- source exceptions -----------------------------------------------------
