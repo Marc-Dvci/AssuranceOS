@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 769,
+  "file_count": 770,
   "files": [
     {
       "path": ".dockerignore",
@@ -2223,6 +2223,11 @@
       "path": "docs/ASSURANCEOS_DEVELOPER_HANDOFF.md",
       "size_bytes": 50872,
       "sha256": "d24357e116d694ac8aebbec7250a10e895ea3c0cf41302cecc6769e8cabcf648"
+    },
+    {
+      "path": "docs/HANDOFF_NEXT.md",
+      "size_bytes": 8952,
+      "sha256": "8ae9fba754b8f88da8afcb96c2fa7c83ca8bd751a3ffe6fae1c0de2d451fef1d"
     },
     {
       "path": "docs/SUBMISSION.md",
