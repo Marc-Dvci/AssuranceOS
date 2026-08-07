@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["expected_population_count", "required_approvals"],
+  "properties": {
+    "expected_population_count": {"type": "integer", "minimum": 0},
+    "required_approvals": {"type": "integer", "minimum": 1, "maximum": 20}
+  },
+  "additionalProperties": false
+}

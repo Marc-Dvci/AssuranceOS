@@ -1,0 +1,65 @@
+schema_version: assurance.control_test_manifest.v1
+test_id: IAM-01
+version: 1.0.0
+domain: iam
+title: Timely terminated-user deprovisioning
+description: Tests whether terminated workforce identities were disabled by the approved deprovisioning deadline, excluding active approved exceptions.
+engine: sql
+entrypoint: test.sql
+input_schema: input.schema.json
+output_schema: output.schema.json
+parameter_schema: parameters.schema.json
+datasets:
+  - name: terminated_users
+    role: population
+    primary_key: [user_id]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [user_id, terminated_at, disable_due_at]
+      properties:
+        user_id: {type: string}
+        terminated_at: {type: string, format: date-time}
+        disable_due_at: {type: string, format: date-time}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: directory_accounts
+    role: reference
+    primary_key: [user_id]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [user_id, enabled]
+      properties:
+        user_id: {type: string}
+        enabled: {type: boolean}
+        disabled_at: {type: [string, 'null']}
+        exception_key: {type: [string, 'null']}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: approved_exceptions
+    role: exceptions
+    primary_key: [exception_key]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [exception_key, active]
+      properties:
+        exception_key: {type: string}
+        active: {type: boolean}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+reconciliation:
+  require_complete: true
+  expected_count_parameter: expected_population_count
+  reject_duplicate_primary_keys: true
+sampling:
+  method: full_population
+resources:
+  timeout_seconds: 30
+  memory_mb: 1024
+  cpu_seconds: 10
+  max_output_bytes: 2000000
+allowed_libraries: []
+known_limitations:
+  - This procedure tests directory-account status only; downstream application sessions require separate connector coverage.

@@ -1,0 +1,69 @@
+schema_version: assurance.agent_manifest.v1
+agent_id: organization-discovery
+version: 0.7.0
+display_name: Organization Discovery Agent
+status: released
+accountable_owner: AssuranceOS Hackathon Team
+mandate: Build evidence-linked maps of entities, systems, processes, owners, and policies.
+non_goals:
+- invent missing owners
+- merge entities without evidence
+- access sources outside approved grants
+trigger_conditions:
+- assigned by an approved engagement graph
+- valid signed execution envelope
+preconditions:
+- tenant active
+- engagement scope approved where applicable
+- required evidence grants active
+permitted_callers:
+- engagement-orchestrator
+- judge-mode-replay
+input_schema: input.schema.json
+output_schema: output.schema.json
+company_context_schema: company_context.schema.json
+evidence_boundaries:
+- tenant
+- engagement
+- audit_period
+- purpose
+- collection_grant
+human_gates:
+- canonical_entity_merge_approval
+memory_policy:
+  short_term: session scoped
+  long_term: non-authoritative tenant preference only
+  authoritative_facts: canonical store only
+budgets:
+  token_budget: 60000
+  cost_budget_usd: 8.0
+  latency_seconds: 180
+  max_concurrency: 2
+retry_policy:
+  max_attempts: 3
+  retryable:
+  - model_timeout
+  - transient_infrastructure
+  non_retryable:
+  - policy_denial
+  - revoked_authorization
+trace_fields:
+- tenant_id
+- engagement_id
+- task_id
+- agent_id
+- agent_version
+- model_policy
+- prompt_hash
+- tool_calls
+- evidence_ids
+- policy_decisions
+- human_gates
+release:
+  prompt_hash: 7de2b438b8d6de9d6fe2131636495145ff2ce8873ad9cf8faea9d7589eb79c6c
+  reviewers:
+  - audit-methodology
+  - security
+  - engineering
+  signature: release.signature.json
+  release_key_id: hackathon-release-2026-08

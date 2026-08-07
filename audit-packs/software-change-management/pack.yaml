@@ -1,0 +1,42 @@
+pack_id: software-change-management
+version: 1.0.0
+status: released
+signed: true
+objective: Assess whether production software changes are authorized, independently
+  reviewed, traceable, and deployed through approved processes.
+criteria:
+- criteria_id: AST-POL-SCM-01
+  source: Asteria synthetic change-management policy
+  effective_from: '2026-01-01'
+controls:
+- control_id: SCM-01
+  risk: Unauthorized or insufficiently reviewed production change
+  expected: Every in-scope production merge has an approved change ticket and at least
+    one independent approval, unless an active approved exception applies.
+procedures:
+- step: 1
+  agent: evidence-custodian
+  action: capture GitHub pull requests, Jira tickets, exceptions, and policy
+- step: 2
+  agent: operating-effectiveness
+  action: execute scm_population_test@1.0.0
+- step: 3
+  agent: skeptic
+  action: challenge exceptions, period, timezone, and compensating controls
+- step: 4
+  agent: finding-adjudicator
+  action: propose supported finding when threshold is met
+- step: 5
+  agent: quality-reviewer
+  action: verify support and methodology
+human_gates:
+- engagement_scope_approval
+- finding_approval
+- report_issuance
+- finding_closure_approval
+quality_rules:
+- population must reconcile
+- technical failure is not a control conclusion
+- material claims require accepted evidence
+- contradictory evidence must be disclosed
+release_key_id: hackathon-release-2026-08

@@ -1,0 +1,16 @@
+schema: assurance.connector_contract.v1
+connector_key: github
+status: implemented
+read_only: true
+streams:
+- pull_requests
+required_scopes:
+- 'Pull requests: read'
+implementation_module: src/assuranceos/connectors/adapters/github.py
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

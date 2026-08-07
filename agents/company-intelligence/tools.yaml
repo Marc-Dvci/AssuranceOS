@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: company-intelligence
+tools:
+- name: public_web.search
+  description: public_web search
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: public_web.fetch
+  description: public_web fetch
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: evidence.capture
+  description: evidence capture
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: claims.propose
+  description: claims propose
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: sources.quality.score
+  description: sources quality score
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false

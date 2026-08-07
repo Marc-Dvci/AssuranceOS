@@ -1,0 +1,26 @@
+[
+  {
+    "ticket_id": "CHG-2001",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-03T08:00:00Z"
+  },
+  {
+    "ticket_id": "CHG-2002",
+    "status": "Draft",
+    "approved_by": null,
+    "approved_at": null
+  },
+  {
+    "ticket_id": "CHG-2003",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-10T18:00:00Z"
+  },
+  {
+    "ticket_id": "CHG-2004",
+    "status": "Draft",
+    "approved_by": null,
+    "approved_at": null
+  }
+]

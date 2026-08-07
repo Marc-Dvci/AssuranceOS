@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/agents/process-mining/output.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "agent_role",
+    "conclusion",
+    "summary",
+    "claim_type",
+    "evidence_references",
+    "missing_evidence",
+    "contradictory_evidence",
+    "assumptions",
+    "confidence",
+    "recommended_next_action",
+    "policy_checks",
+    "requires_human_approval"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "agent_role": {
+      "type": "string"
+    },
+    "conclusion": {
+      "enum": [
+        "effective",
+        "partially_effective",
+        "ineffective",
+        "not_applicable",
+        "not_tested",
+        "insufficient_evidence",
+        "population_incomplete",
+        "source_unreliable",
+        "test_failed_technically",
+        "scope_limitation",
+        "proposed",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "claim_type": {
+      "enum": [
+        "observed_fact",
+        "computed_result",
+        "management_assertion",
+        "inference",
+        "auditor_judgment",
+        "unknown",
+        "scope_limitation"
+      ]
+    },
+    "evidence_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_id"
+        ]
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contradictory_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "recommended_next_action": {
+      "type": "string"
+    },
+    "policy_checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "requires_human_approval": {
+      "type": "boolean"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "title": "Process Mining Agent Output"
+}

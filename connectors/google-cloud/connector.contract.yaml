@@ -1,0 +1,18 @@
+schema: assurance.connector_contract.v1
+connector_key: google-cloud
+status: contract_defined
+read_only: true
+streams:
+- iam_policies
+- audit_logs
+- assets
+required_scopes:
+- cloud-platform.read-only or narrower
+implementation_module: null
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

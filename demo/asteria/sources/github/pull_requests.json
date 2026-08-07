@@ -1,0 +1,36 @@
+[
+  {
+    "pull_request_id": "PR-1001",
+    "repository": "asteria/payments-api",
+    "merged_at": "2026-07-03T09:42:00Z",
+    "approvals": [
+      "alice.reviewer"
+    ],
+    "change_ticket": "CHG-2001",
+    "exception_key": null
+  },
+  {
+    "pull_request_id": "PR-1002",
+    "repository": "asteria/identity-service",
+    "merged_at": "2026-07-08T16:20:00Z",
+    "approvals": [],
+    "change_ticket": "CHG-2002",
+    "exception_key": null
+  },
+  {
+    "pull_request_id": "PR-1003",
+    "repository": "asteria/ops-automation",
+    "merged_at": "2026-07-11T03:10:00Z",
+    "approvals": [],
+    "change_ticket": "CHG-2003",
+    "exception_key": "EXC-SVC-001"
+  },
+  {
+    "pull_request_id": "PR-1004",
+    "repository": "asteria/reporting-ui",
+    "merged_at": "2026-06-30T23:30:00-02:00",
+    "approvals": [],
+    "change_ticket": "CHG-2004",
+    "exception_key": null
+  }
+]

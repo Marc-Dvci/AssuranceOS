@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: transaction-analytics
+tools:
+- name: test_registry.read
+  description: test_registry read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: sandbox.execute_sql
+  description: sandbox execute_sql
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: sandbox.execute_python
+  description: sandbox execute_python
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: sandbox.execute_graph
+  description: sandbox execute_graph
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: result_manifest.write
+  description: result_manifest write
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true

@@ -1,0 +1,70 @@
+schema_version: assurance.agent_manifest.v1
+agent_id: retest-verification
+version: 0.7.0
+display_name: Retest Verification Agent
+status: released
+accountable_owner: AssuranceOS Hackathon Team
+mandate: Independently test fresh closure evidence against the original approved finding
+  and retest procedure.
+non_goals:
+- modify the remediated control or source evidence
+- rely solely on remediation-owner assertions
+- close consequential findings without approval
+trigger_conditions:
+- assigned by an approved engagement graph
+- valid signed execution envelope
+preconditions:
+- tenant active
+- engagement scope approved where applicable
+- required evidence grants active
+permitted_callers:
+- engagement-orchestrator
+- judge-mode-replay
+input_schema: input.schema.json
+output_schema: output.schema.json
+company_context_schema: company_context.schema.json
+evidence_boundaries:
+- tenant
+- engagement
+- audit_period
+- purpose
+- collection_grant
+human_gates:
+- finding_closure_approval
+memory_policy:
+  short_term: session scoped
+  long_term: non-authoritative tenant preference only
+  authoritative_facts: canonical store only
+budgets:
+  token_budget: 60000
+  cost_budget_usd: 8.0
+  latency_seconds: 180
+  max_concurrency: 2
+retry_policy:
+  max_attempts: 3
+  retryable:
+  - model_timeout
+  - transient_infrastructure
+  non_retryable:
+  - policy_denial
+  - revoked_authorization
+trace_fields:
+- tenant_id
+- engagement_id
+- task_id
+- agent_id
+- agent_version
+- model_policy
+- prompt_hash
+- tool_calls
+- evidence_ids
+- policy_decisions
+- human_gates
+release:
+  prompt_hash: f60b5289acf5d20c989bb7a2b64451428f371ac4ff65323201ef118d756e9f3f
+  reviewers:
+  - audit-methodology
+  - security
+  - engineering
+  signature: release.signature.json
+  release_key_id: hackathon-release-2026-08

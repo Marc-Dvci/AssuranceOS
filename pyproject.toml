@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "assuranceos"
+version = "0.8.0"
+description = "Governed AI-native internal audit hackathon vertical slice"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.32,<1",
+  "pydantic>=2.9,<3",
+  "PyYAML>=6.0,<7",
+  "jsonschema>=4.23,<5",
+  "SQLAlchemy>=2.0.36,<3",
+  "alembic>=1.14,<2",
+  "python-dateutil>=2.9,<3",
+  "httpx>=0.27,<1",
+  "PyJWT[crypto]>=2.9,<3",
+  "cryptography>=43,<47",
+]
+
+[project.optional-dependencies]
+postgres = [
+  "psycopg[binary]>=3.2,<4",
+]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+  "ruff>=0.7,<1",
+]
+gcp-runtime = [
+  "google-cloud-storage>=2.18,<4",
+  "google-cloud-secret-manager>=2.21,<3",
+  "google-cloud-pubsub>=2.27,<3",
+  "google-cloud-logging>=3.11,<4",
+]
+agent-cloud = [
+  "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+]
+cloud = [
+  "google-cloud-storage>=2.18,<4",
+  "google-cloud-secret-manager>=2.21,<3",
+  "google-cloud-pubsub>=2.27,<3",
+  "google-cloud-logging>=3.11,<4",
+  "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

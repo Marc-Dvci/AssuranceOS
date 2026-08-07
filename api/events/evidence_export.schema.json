@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/schemas/assurance.evidence_export.v1.json",
+  "type": "object",
+  "required": [
+    "schema",
+    "export_id",
+    "tenant_id",
+    "generated_at",
+    "purpose",
+    "requested_evidence_ids",
+    "evidence",
+    "lineage",
+    "objects"
+  ],
+  "properties": {
+    "schema": {"const": "assurance.evidence_export.v1"},
+    "export_id": {"type": "string"},
+    "tenant_id": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "purpose": {"type": "string"},
+    "requested_evidence_ids": {"type": "array", "items": {"type": "string"}},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "lineage": {"type": "array", "items": {"type": "object"}},
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sha256", "size_bytes"],
+        "properties": {
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "size_bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}

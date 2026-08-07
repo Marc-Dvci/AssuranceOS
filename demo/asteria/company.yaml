@@ -1,0 +1,13 @@
+organization_id: org_asteria_demo
+legal_name: Asteria Systems DemoCo
+fictional: true
+primary_domain: asteria.invalid
+headquarters_country: France
+industry: B2B SaaS
+business_model: Subscription cloud software
+operating_countries:
+- France
+- Germany
+- United Kingdom
+- United States
+notice: All names, systems, people, transactions, and findings are synthetic and exist only for the hackathon demonstration.

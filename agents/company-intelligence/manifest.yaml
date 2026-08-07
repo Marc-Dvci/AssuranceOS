@@ -1,0 +1,72 @@
+schema_version: assurance.agent_manifest.v1
+agent_id: company-intelligence
+version: 0.7.0
+display_name: Public Company Intelligence Agent
+status: released
+accountable_owner: AssuranceOS Hackathon Team
+mandate: Create attributable, source-backed organization claim proposals from approved
+  public sources.
+non_goals:
+- access non-allowlisted or authenticated sources
+- use leaked, personal, or unlawfully obtained material
+- treat search snippets as canonical evidence
+- infer wrongdoing or protected characteristics
+- promote public claims to canonical facts without confirmation
+trigger_conditions:
+- assigned by an approved engagement graph
+- valid signed execution envelope
+preconditions:
+- tenant active
+- engagement scope approved where applicable
+- required evidence grants active
+permitted_callers:
+- engagement-orchestrator
+- judge-mode-replay
+input_schema: input.schema.json
+output_schema: output.schema.json
+company_context_schema: company_context.schema.json
+evidence_boundaries:
+- tenant
+- engagement
+- audit_period
+- purpose
+- collection_grant
+human_gates:
+- organization_profile_confirmation
+memory_policy:
+  short_term: session scoped
+  long_term: non-authoritative tenant preference only
+  authoritative_facts: canonical store only
+budgets:
+  token_budget: 60000
+  cost_budget_usd: 8.0
+  latency_seconds: 180
+  max_concurrency: 2
+retry_policy:
+  max_attempts: 3
+  retryable:
+  - model_timeout
+  - transient_infrastructure
+  non_retryable:
+  - policy_denial
+  - revoked_authorization
+trace_fields:
+- tenant_id
+- engagement_id
+- task_id
+- agent_id
+- agent_version
+- model_policy
+- prompt_hash
+- tool_calls
+- evidence_ids
+- policy_decisions
+- human_gates
+release:
+  prompt_hash: faf2fa6c3fd6324a4de4b261dbdf06c67529971c84913cd949b56f63eefbbae0
+  reviewers:
+  - audit-methodology
+  - security
+  - engineering
+  signature: release.signature.json
+  release_key_id: hackathon-release-2026-08

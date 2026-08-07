@@ -1,0 +1,21 @@
+schema: assurance.connector_contract.v1
+connector_key: okta
+status: contract_defined
+read_only: true
+streams:
+- users
+- groups
+- applications
+- system_log
+required_scopes:
+- okta.users.read
+- okta.groups.read
+- okta.logs.read
+implementation_module: null
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

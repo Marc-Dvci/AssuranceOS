@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: continuous-monitoring
+tools:
+- name: monitor.schedule.read
+  description: monitor schedule read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: tests.execute
+  description: tests execute
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: source_health.read
+  description: source_health read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: case.open
+  description: case open
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: trend.compute
+  description: trend compute
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false

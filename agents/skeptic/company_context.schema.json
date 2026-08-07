@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/schemas/assurance.organization_context.v1.json",
+  "title": "AssuranceOS Organization Context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context_version",
+    "tenant_id",
+    "organization",
+    "jurisdictions",
+    "approved_connectors",
+    "known_limitations"
+  ],
+  "properties": {
+    "context_version": {
+      "const": "assurance.organization_context.v1"
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "organization": {
+      "type": "object",
+      "required": [
+        "organization_id",
+        "legal_name",
+        "industry",
+        "business_model"
+      ],
+      "properties": {
+        "organization_id": {
+          "type": "string"
+        },
+        "legal_name": {
+          "type": "string"
+        },
+        "industry": {
+          "type": "string"
+        },
+        "business_model": {
+          "type": "string"
+        },
+        "headquarters_country": {
+          "type": "string"
+        },
+        "operating_countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "jurisdictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "systems_of_record": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "approved_connectors": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "data_boundaries": {
+      "type": "object"
+    },
+    "audit_pack_versions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "human_approval_authorities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "canonical_facts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "management_assertions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "public_hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "known_limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

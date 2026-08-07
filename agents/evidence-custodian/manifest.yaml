@@ -1,0 +1,70 @@
+schema_version: assurance.agent_manifest.v1
+agent_id: evidence-custodian
+version: 0.7.0
+display_name: Evidence Custodian Agent
+status: released
+accountable_owner: AssuranceOS Hackathon Team
+mandate: Collect and preserve source evidence with provenance, classification, hashes,
+  and custody metadata.
+non_goals:
+- determine control effectiveness
+- modify source data
+- collect outside an approved collection grant
+trigger_conditions:
+- assigned by an approved engagement graph
+- valid signed execution envelope
+preconditions:
+- tenant active
+- engagement scope approved where applicable
+- required evidence grants active
+permitted_callers:
+- engagement-orchestrator
+- judge-mode-replay
+input_schema: input.schema.json
+output_schema: output.schema.json
+company_context_schema: company_context.schema.json
+evidence_boundaries:
+- tenant
+- engagement
+- audit_period
+- purpose
+- collection_grant
+human_gates:
+- sensitive_evidence_access
+memory_policy:
+  short_term: session scoped
+  long_term: non-authoritative tenant preference only
+  authoritative_facts: canonical store only
+budgets:
+  token_budget: 60000
+  cost_budget_usd: 8.0
+  latency_seconds: 180
+  max_concurrency: 2
+retry_policy:
+  max_attempts: 3
+  retryable:
+  - model_timeout
+  - transient_infrastructure
+  non_retryable:
+  - policy_denial
+  - revoked_authorization
+trace_fields:
+- tenant_id
+- engagement_id
+- task_id
+- agent_id
+- agent_version
+- model_policy
+- prompt_hash
+- tool_calls
+- evidence_ids
+- policy_decisions
+- human_gates
+release:
+  prompt_hash: 11820edf01cc38d04f43b8b6a53dcb446751adddbeb4f03f11250e4bc4e3028c
+  reviewers:
+  - audit-methodology
+  - security
+  - engineering
+  signature: release.signature.json
+  release_key_id: hackathon-release-2026-08

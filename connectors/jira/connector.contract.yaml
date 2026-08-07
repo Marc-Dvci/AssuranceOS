@@ -1,0 +1,16 @@
+schema: assurance.connector_contract.v1
+connector_key: jira
+status: implemented
+read_only: true
+streams:
+- issues
+required_scopes:
+- read:jira-work
+implementation_module: src/assuranceos/connectors/adapters/jira.py
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

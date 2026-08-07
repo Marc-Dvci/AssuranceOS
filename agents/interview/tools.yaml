@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: interview
+tools:
+- name: interview.plan.read
+  description: interview plan read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: questions.generate
+  description: questions generate
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: assertions.record
+  description: assertions record
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: evidence.contradictions.query
+  description: evidence contradictions query
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: email.draft.create
+  description: email draft create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true

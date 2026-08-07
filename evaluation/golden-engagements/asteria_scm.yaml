@@ -1,0 +1,8 @@
+engagement_id: eng_asteria_scm_2026h2
+tenant_id: tnt_asteria_demo
+audit_pack: software-change-management@1.0.0
+expected:
+  population_count: 3
+  exception_count: 1
+  finding_id: fnd_scm_001
+  prompt_injection_denied: true

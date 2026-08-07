@@ -1,0 +1,15 @@
+{
+  "schema": "assurance.control_test_release.v1",
+  "test_id": "IAM-01",
+  "version": "1.0.0",
+  "released_at": "2026-08-06T20:04:54.936458+00:00",
+  "files": {
+    "golden_cases/basic.json": "794d4f7f09b4ef616167483220e6618ff5494c40469e600aabadde3c0e8694e9",
+    "input.schema.json": "76394a9c3399cbf4547c83e724e60834f307f75542f4399058db878b1b5bbadb",
+    "manifest.yaml": "13ea37e316d5acf85ce58c6d13bba953c9ba9de3f03bc3481017b271639ad606",
+    "output.schema.json": "bf40abd6a2ddf3616590120b8396e24b35e9f99001ed2e84de5aa1e50aeb032e",
+    "parameters.schema.json": "66fb39115e4e39edb921159aa49c119593b22847b12d420a7c282c3d6fefcece",
+    "test.sql": "91e847408d43af1b023ad5d9f1822df9ab30070df3849f2ff8873aede82cc940"
+  },
+  "package_sha256": "f95f0a04184f256b30656a05b3ed7fcd624d663ea138ec23f66ce4966078f138"
+}

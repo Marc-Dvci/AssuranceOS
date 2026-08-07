@@ -1,0 +1,9 @@
+[
+  {
+    "exception_key": "EXC-SVC-001",
+    "description": "Approved service-account automation exception",
+    "active": true,
+    "expires_at": "2026-12-31",
+    "approved_by": "risk.owner"
+  }
+]

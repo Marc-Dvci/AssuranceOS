@@ -1,0 +1,66 @@
+schema_version: assurance.control_test_manifest.v1
+test_id: SCM-01
+version: 2.0.0
+domain: scm
+title: Approved changes before merge
+description: Tests the complete in-period pull-request population for required peer approval and an approved change ticket before merge.
+engine: python
+entrypoint: test.py:execute
+input_schema: input.schema.json
+output_schema: output.schema.json
+parameter_schema: parameters.schema.json
+datasets:
+  - name: pull_requests
+    role: population
+    primary_key: [pull_request_id]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [pull_request_id, repository, merged_at, approvals]
+      properties:
+        pull_request_id: {type: string}
+        repository: {type: string}
+        merged_at: {type: string, format: date-time}
+        approvals: {type: integer, minimum: 0}
+        change_ticket: {type: [string, 'null']}
+        exception_key: {type: [string, 'null']}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: change_tickets
+    role: reference
+    primary_key: [ticket_id]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [ticket_id, status]
+      properties:
+        ticket_id: {type: string}
+        status: {type: string}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: approved_exceptions
+    role: exceptions
+    primary_key: [exception_key]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [exception_key, active]
+      properties:
+        exception_key: {type: string}
+        active: {type: boolean}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+reconciliation:
+  require_complete: true
+  expected_count_parameter: expected_population_count
+  reject_duplicate_primary_keys: true
+sampling:
+  method: full_population
+resources:
+  timeout_seconds: 30
+  memory_mb: 1024
+  cpu_seconds: 10
+  max_output_bytes: 2000000
+allowed_libraries: [datetime, typing]
+known_limitations:
+  - Repository branch-protection settings are outside this procedure and require a separate design test.

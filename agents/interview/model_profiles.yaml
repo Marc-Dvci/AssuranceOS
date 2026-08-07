@@ -1,0 +1,21 @@
+schema_version: assurance.model_profiles.v1
+agent_id: interview
+profiles:
+- profile_id: vertex-standard
+  deployment_mode: google_cloud
+  model: ${ASSURANCEOS_GEMINI_MODEL:-gemini-2.5-flash}
+  temperature: 0.1
+  structured_output_required: true
+  release_status: qualification_required
+- profile_id: local-qualified
+  deployment_mode: local_privacy
+  model: google/gemma-4-26B-A4B-it-IQ4_XS
+  endpoint: http://127.0.0.1:8081/v1
+  network_egress: deny
+  structured_output_required: true
+  release_status: not_qualified
+- profile_id: mock
+  deployment_mode: local_test
+  model: deterministic-fixture
+  structured_output_required: true
+  release_status: test_only

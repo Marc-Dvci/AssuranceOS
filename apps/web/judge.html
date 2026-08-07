@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AssuranceOS Judge Mode</title>
+  <style>
+    body{font-family:ui-sans-serif,system-ui;background:#0b1020;color:#e8edf7;margin:0;padding:32px}
+    main{max-width:1100px;margin:auto}.muted{color:#9aa8c7}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+    .card{background:#151d33;border:1px solid #2a3658;border-radius:12px;padding:18px}button{background:#e8edf7;color:#0b1020;border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}
+    pre{white-space:pre-wrap;overflow:auto;background:#080c17;padding:16px;border-radius:8px;min-height:160px}code{color:#b8cdfd}.ok{color:#80e1a8}.warn{color:#ffd27a}
+  </style>
+</head>
+<body><main>
+  <h1>AssuranceOS — Judge Mode</h1>
+  <p class="muted">Asteria Systems DemoCo is fictional. Synthetic data only. Consequential findings remain human-gated.</p>
+  <div class="grid">
+    <section class="card"><h2>Agent Registry</h2><p>19 manifest-driven roles with typed schemas, policies, tools, evaluations, and trace requirements.</p><button onclick="loadAgents()">Inspect agents</button></section>
+    <section class="card"><h2>Golden Engagement</h2><p>Run the SCM-01 population test, evidence hashing, attack denial, and proposed finding workflow.</p><button onclick="runDemo()">Run golden audit</button></section>
+    <section class="card"><h2>Correlated Ledger</h2><p>Read the durable event trail produced by the same runtime used by the API.</p><button onclick="loadEvents()">Inspect events</button></section>
+  </div>
+  <h2>Runtime output</h2><pre id="out">Ready.</pre>
+  <script>
+    const out=document.getElementById('out');
+    async function show(url, options){out.textContent='Loading…'; const r=await fetch(url, options); out.textContent=JSON.stringify(await r.json(),null,2)}
+    function loadAgents(){show('/api/v1/agents')}
+    function runDemo(){show('/api/v1/demo/run',{method:'POST'} )}
+    function loadEvents(){show('/api/v1/demo/events')}
+  </script>
+</main></body></html>

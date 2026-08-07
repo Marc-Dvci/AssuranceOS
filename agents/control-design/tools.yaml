@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: control-design
+tools:
+- name: controls.read
+  description: controls read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: risks.read
+  description: risks read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: criteria.query
+  description: criteria query
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: design.assessment.propose
+  description: design assessment propose
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: evidence.query
+  description: evidence query
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false

@@ -1,0 +1,9 @@
+grant_id: grt_asteria_github_scm
+purpose: Test SCM-01 for the July 2026 audit period
+source: github
+scope: org/asteria repositories payments-api, identity-service, ops-automation, reporting-ui
+operations: [read_pull_requests, read_reviews, read_commits]
+write_allowed: false
+valid_from: 2026-07-01T00:00:00Z
+valid_until: 2026-08-31T23:59:59Z
+approved_by: demo.audit.sponsor

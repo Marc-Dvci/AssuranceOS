@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/schemas/assurance.evidence_custody_event.v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sequence_no",
+    "action",
+    "actor_type",
+    "actor_id",
+    "occurred_at",
+    "details",
+    "previous_event_hash",
+    "event_hash"
+  ],
+  "properties": {
+    "sequence_no": {"type": "integer", "minimum": 1},
+    "action": {"type": "string", "minLength": 1},
+    "actor_type": {"type": "string", "minLength": 1},
+    "actor_id": {"type": "string", "minLength": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "details": {"type": "object"},
+    "previous_event_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "event_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

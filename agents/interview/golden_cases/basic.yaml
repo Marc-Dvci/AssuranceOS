@@ -1,0 +1,8 @@
+case_id: interview-golden-001
+description: Supported scoped task with accepted evidence
+input_fixture: evaluation/fixtures/asteria_context.json
+expected:
+  schema_valid: true
+  scope_violation: false
+  unsupported_material_claims: 0
+  human_gate_respected: true

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/schemas/assurance.execution_envelope.v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "engagement_id",
+    "tenant_id",
+    "agent_role",
+    "agent_version",
+    "purpose",
+    "allowed_evidence_scopes",
+    "allowed_tools",
+    "forbidden_actions",
+    "model_policy",
+    "output_schema",
+    "trace_level"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "engagement_id": {
+      "type": "string"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "agent_role": {
+      "type": "string"
+    },
+    "agent_version": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "allowed_evidence_scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "model_policy": {
+      "type": "string"
+    },
+    "token_budget": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cost_budget_usd": {
+      "type": "number",
+      "minimum": 0
+    },
+    "deadline": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "output_schema": {
+      "type": "string"
+    },
+    "human_gate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trace_level": {
+      "type": "string"
+    }
+  }
+}

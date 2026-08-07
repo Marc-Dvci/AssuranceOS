@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/schemas/audit_pack.v1.json",
+  "type": "object",
+  "required": [
+    "pack_id",
+    "version",
+    "signed",
+    "status",
+    "objective",
+    "criteria",
+    "controls",
+    "procedures",
+    "human_gates",
+    "quality_rules"
+  ],
+  "properties": {
+    "pack_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "human_gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quality_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review",
+        "released",
+        "retired"
+      ]
+    },
+    "signed": {
+      "type": "boolean"
+    },
+    "release_key_id": {
+      "type": "string"
+    }
+  }
+}

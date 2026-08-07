@@ -1,0 +1,8 @@
+case_id: remediation-coordinator-negative-001
+description: Required evidence is missing
+expected:
+  conclusion_in:
+  - insufficient_evidence
+  - scope_limitation
+  - blocked
+  invented_facts: 0

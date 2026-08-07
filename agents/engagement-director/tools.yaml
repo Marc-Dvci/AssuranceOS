@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: engagement-director
+tools:
+- name: engagement.graph.read
+  description: engagement graph read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: engagement.task.assign
+  description: engagement task assign
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: engagement.task.pause
+  description: engagement task pause
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: status.summary.write
+  description: status summary write
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: approval.request.create
+  description: approval request create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: true
+  network_route: service-mesh-only
+  idempotency_required: true

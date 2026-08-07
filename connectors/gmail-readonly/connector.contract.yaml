@@ -1,0 +1,18 @@
+schema: assurance.connector_contract.v1
+connector_key: gmail-readonly
+status: contract_defined
+read_only: true
+streams:
+- messages
+- threads
+- labels
+required_scopes:
+- gmail.readonly
+implementation_module: null
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

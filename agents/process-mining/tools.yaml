@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: process-mining
+tools:
+- name: events.query
+  description: events query
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: process.graph.build
+  description: process graph build
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: process.conformance.test
+  description: process conformance test
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: population.reconcile
+  description: population reconcile
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: exceptions.create
+  description: exceptions create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true

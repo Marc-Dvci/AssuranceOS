@@ -1,0 +1,9 @@
+flowchart LR
+  Judge[Judge / Auditor] --> API[Cloud Run API + Judge Mode]
+  API --> Registry[Agent Package Registry]
+  API --> Ledger[(Cloud SQL / local SQLite ledger)]
+  Registry --> ADK[Google ADK / Agent Engine]
+  ADK --> Gateway[Policy Gateway]
+  Gateway --> Tests[Deterministic Cloud Run Jobs]
+  Tests --> Sources[Synthetic GitHub, Jira, Confluence]
+  Gateway --> Evidence[Evidence vault]

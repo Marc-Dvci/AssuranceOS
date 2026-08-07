@@ -1,0 +1,20 @@
+schema: assurance.connector_contract.v1
+connector_key: entra-id
+status: contract_defined
+read_only: true
+streams:
+- users
+- groups
+- service_principals
+- sign_ins
+required_scopes:
+- Directory.Read.All
+- AuditLog.Read.All
+implementation_module: null
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

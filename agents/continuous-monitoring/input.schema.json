@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://assuranceos.local/agents/continuous-monitoring/input.schema.json",
+  "title": "Continuous Monitoring Agent Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "execution_envelope",
+    "organization_context",
+    "task",
+    "evidence"
+  ],
+  "properties": {
+    "execution_envelope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://assuranceos.local/schemas/assurance.execution_envelope.v1.json",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "engagement_id",
+        "tenant_id",
+        "agent_role",
+        "agent_version",
+        "purpose",
+        "allowed_evidence_scopes",
+        "allowed_tools",
+        "forbidden_actions",
+        "model_policy",
+        "output_schema",
+        "trace_level"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string"
+        },
+        "engagement_id": {
+          "type": "string"
+        },
+        "tenant_id": {
+          "type": "string"
+        },
+        "agent_role": {
+          "type": "string"
+        },
+        "agent_version": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "allowed_evidence_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model_policy": {
+          "type": "string"
+        },
+        "token_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cost_budget_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "output_schema": {
+          "type": "string"
+        },
+        "human_gate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_level": {
+          "type": "string"
+        }
+      }
+    },
+    "organization_context": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://assuranceos.local/schemas/assurance.organization_context.v1.json",
+      "title": "AssuranceOS Organization Context",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context_version",
+        "tenant_id",
+        "organization",
+        "jurisdictions",
+        "approved_connectors",
+        "known_limitations"
+      ],
+      "properties": {
+        "context_version": {
+          "const": "assurance.organization_context.v1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "organization": {
+          "type": "object",
+          "required": [
+            "organization_id",
+            "legal_name",
+            "industry",
+            "business_model"
+          ],
+          "properties": {
+            "organization_id": {
+              "type": "string"
+            },
+            "legal_name": {
+              "type": "string"
+            },
+            "industry": {
+              "type": "string"
+            },
+            "business_model": {
+              "type": "string"
+            },
+            "headquarters_country": {
+              "type": "string"
+            },
+            "operating_countries": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "jurisdictions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "systems_of_record": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "approved_connectors": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "data_boundaries": {
+          "type": "object"
+        },
+        "audit_pack_versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "human_approval_authorities": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "canonical_facts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "management_assertions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "public_hypotheses": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "known_limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "objective"
+      ],
+      "properties": {
+        "objective": {
+          "type": "string"
+        },
+        "audit_pack_step": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "source_type",
+          "sha256"
+        ]
+      }
+    }
+  }
+}

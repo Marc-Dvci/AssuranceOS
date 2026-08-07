@@ -1,0 +1,42 @@
+schema: assurance.capability_status.v1
+release: 0.8.0
+scope_policy: The original implementation plan remains authoritative; absence from Components 1-6 does not remove a capability.
+status_definitions:
+  implemented: Executable code, migrations, tests, and an observable demonstration exist.
+  contract_defined: Schemas, invariants, and acceptance criteria are retained, but the capability is not claimed as executable.
+  external_validation_required: Code exists, but proof requires a cloud project, provider tenant, credentials, or production traffic.
+components:
+  canonical_domain_database: implemented
+  durable_engagement_orchestrator: implemented
+  recurring_audit_scheduler: implemented
+  evidence_vault_and_provenance: implemented
+  connector_sdk_and_four_adapters: implemented
+  deterministic_control_test_engine: implemented
+  signed_versioned_test_registry: implemented
+  scm_and_iam_control_tests: implemented
+hardening:
+  jwt_tenant_authorization: implemented
+  immutable_task_attempts: implemented
+  authenticated_worker_execution_api: implemented
+  signed_lease_bound_execution_envelopes: implemented
+  leased_transactional_outbox_dispatch: implemented
+  schedule_authoring_and_version_approval: implemented
+  content_inspection_and_taint: implemented
+  signed_agent_packages: implemented
+  signed_software_change_management_audit_pack: implemented
+  signed_evidence_exports: implemented
+  gcs_immutable_object_adapter: implemented
+  secret_manager_credential_adapter: implemented
+  cloud_run_cloud_sql_pubsub_scheduler_terraform: implemented
+  non_root_container_and_release_jobs: implemented
+external_validation:
+  cloud_run_deployment: external_validation_required
+  cloud_sql_concurrent_locking: external_validation_required
+  live_github_jira_confluence_google_drive_oauth: external_validation_required
+  vertex_ai_agent_engine: external_validation_required
+retained_next_scope:
+  finding_and_remediation_service: contract_defined
+  onboarding_and_company_intelligence: contract_defined
+  risk_and_audit_portfolio: contract_defined
+  reporting_and_assurance_cockpit: contract_defined
+  local_privacy_model_runtime: contract_defined

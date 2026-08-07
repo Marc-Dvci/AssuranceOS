@@ -1,0 +1,38 @@
+{
+  "context_version": "assurance.organization_context.v1",
+  "tenant_id": "tnt_asteria_demo",
+  "organization": {
+    "organization_id": "org_asteria_demo",
+    "legal_name": "Asteria Systems DemoCo",
+    "industry": "B2B SaaS",
+    "business_model": "Subscription cloud software",
+    "headquarters_country": "France",
+    "operating_countries": [
+      "France",
+      "Germany",
+      "United Kingdom",
+      "United States"
+    ]
+  },
+  "jurisdictions": [
+    "EU",
+    "UK",
+    "US"
+  ],
+  "approved_connectors": [
+    {
+      "connector": "github",
+      "scope": "asteria/*",
+      "read_only": true
+    },
+    {
+      "connector": "jira",
+      "scope": "project/CHANGE",
+      "read_only": true
+    }
+  ],
+  "known_limitations": [
+    "synthetic company",
+    "no production customer data"
+  ]
+}

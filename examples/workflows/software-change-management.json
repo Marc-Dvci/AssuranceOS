@@ -1,0 +1,58 @@
+{
+  "workflow_version": "software-change-management@1.0.0",
+  "metadata": {
+    "audit_pack": "software-change-management@1.0.0",
+    "purpose": "Local durable-orchestration demonstration"
+  },
+  "tasks": [
+    {
+      "key": "collect-evidence",
+      "task_type": "evidence_collection",
+      "assigned_agent_role": "evidence-custodian",
+      "tool_policy": "evidence-readonly-v1",
+      "retry_policy": {
+        "max_attempts": 3,
+        "initial_delay_seconds": 2,
+        "backoff_multiplier": 2,
+        "max_delay_seconds": 30,
+        "retryable_failures": [
+          "transient_infrastructure",
+          "connector_rate_limit",
+          "authentication_expired"
+        ]
+      }
+    },
+    {
+      "key": "run-scm-test",
+      "task_type": "deterministic_test",
+      "assigned_agent_role": "operating-effectiveness",
+      "dependencies": [{"task_key": "collect-evidence"}],
+      "tool_policy": "deterministic-tests-v1"
+    },
+    {
+      "key": "skeptic-review",
+      "task_type": "skeptic_review",
+      "assigned_agent_role": "skeptic",
+      "dependencies": [{"task_key": "run-scm-test"}],
+      "model_policy": "audit-high-reasoning-v1"
+    },
+    {
+      "key": "propose-finding",
+      "task_type": "finding_adjudication",
+      "assigned_agent_role": "finding-adjudicator",
+      "dependencies": [{"task_key": "skeptic-review"}],
+      "human_gate": "finding_approval",
+      "human_gate_position": "after",
+      "model_policy": "audit-high-reasoning-v1"
+    },
+    {
+      "key": "issue-report",
+      "task_type": "report_generation",
+      "assigned_agent_role": "quality-reviewer",
+      "dependencies": [{"task_key": "propose-finding"}],
+      "human_gate": "report_issuance",
+      "human_gate_position": "before",
+      "model_policy": "audit-high-reasoning-v1"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: scope-materiality
+tools:
+- name: organization.context.read
+  description: organization context read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: risk.universe.read
+  description: risk universe read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: scope.propose
+  description: scope propose
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: sampling.parameters.propose
+  description: sampling parameters propose
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: coverage.estimate
+  description: coverage estimate
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false

@@ -1,0 +1,11 @@
+{
+  "files": {
+    "README.md": "116d7014d1d71864633429092bfc26f62173033b7404ba82ee4d5ce3687d23ed",
+    "pack.yaml": "c0553486e9c4af955e247718ff5f79167187e2d659cb9e8d2d502ad90b6091b9"
+  },
+  "pack_id": "software-change-management",
+  "package_sha256": "cd86fcf69a89f38248645325a7a2ee713e48bca82ef079467ff25d6c7d99db28",
+  "released_at": "2026-08-06T18:45:00+00:00",
+  "schema": "assurance.audit_pack_release.v1",
+  "version": "1.0.0"
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "assurance.control_test_release.v1",
+  "test_id": "SCM-01",
+  "version": "2.0.0",
+  "released_at": "2026-08-06T20:04:54.940470+00:00",
+  "files": {
+    "golden_cases/basic.json": "4938d421fcb686ca295a2da18ce33430c07d22cb895548482908218adc6bf3f4",
+    "input.schema.json": "510f5a2df7ed191ff42fca5f3a337f28a5b6a734cfd4a220139f249f48c3e0ed",
+    "manifest.yaml": "63890005ed0b0486e4b3f0efdf0cb4843fadd3371789c66a8bd6a37b68306bd2",
+    "output.schema.json": "bf40abd6a2ddf3616590120b8396e24b35e9f99001ed2e84de5aa1e50aeb032e",
+    "parameters.schema.json": "d4a6f0eb68911dfa0fecf3b31e8eaa2338a55681c444d557ff2d2680e455a4d6",
+    "test.py": "12b2f153ce67dd7a9e69a748bc2d59e5659423ebdb110246a24defaed1d3c1f9"
+  },
+  "package_sha256": "d20ac3efb6a509d09bbc1d6259f5671e67c7e01fa3c3dac8b89089a2b9f9a3d6"
+}

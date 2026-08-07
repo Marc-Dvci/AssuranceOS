@@ -1,0 +1,16 @@
+schema: assurance.connector_contract.v1
+connector_key: confluence
+status: implemented
+read_only: true
+streams:
+- pages
+required_scopes:
+- read:page:confluence
+implementation_module: src/assuranceos/connectors/adapters/confluence.py
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

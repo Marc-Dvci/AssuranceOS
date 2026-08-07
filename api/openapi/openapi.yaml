@@ -1,0 +1,3124 @@
+openapi: 3.1.0
+info:
+  title: AssuranceOS API
+  version: 0.8.0
+paths:
+  /health:
+    get:
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Health Health Get
+  /ready:
+    get:
+      summary: Readiness
+      operationId: readiness_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/agents:
+    get:
+      summary: List Agents
+      operationId: list_agents_api_v1_agents_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties: true
+                  type: object
+                type: array
+                title: Response List Agents Api V1 Agents Get
+      security:
+      - HTTPBearer: []
+  /api/v1/agents/{agent_id}:
+    get:
+      summary: Get Agent
+      operationId: get_agent_api_v1_agents__agent_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Agent Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Agent Api V1 Agents  Agent Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/demo/reset:
+    post:
+      summary: Reset Demo
+      operationId: reset_demo_api_v1_demo_reset_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Reset Demo Api V1 Demo Reset Post
+      security:
+      - HTTPBearer: []
+  /api/v1/demo/run:
+    post:
+      summary: Run Demo
+      operationId: run_demo_api_v1_demo_run_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Run Demo Api V1 Demo Run Post
+      security:
+      - HTTPBearer: []
+  /api/v1/demo/events:
+    get:
+      summary: Demo Events
+      operationId: demo_events_api_v1_demo_events_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties: true
+                  type: object
+                type: array
+                title: Response Demo Events Api V1 Demo Events Get
+      security:
+      - HTTPBearer: []
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/workflow:
+    post:
+      summary: Compile Engagement Workflow
+      operationId: compile_engagement_workflow_api_v1_tenants__tenant_id__engagements__engagement_id__workflow_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowDefinition'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Compile Engagement Workflow Api V1 Tenants  Tenant
+                  Id  Engagements  Engagement Id  Workflow Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/start:
+    post:
+      summary: Start Engagement Workflow
+      operationId: start_engagement_workflow_api_v1_tenants__tenant_id__engagements__engagement_id__start_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Start Engagement Workflow Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Start Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/orchestration:
+    get:
+      summary: Get Engagement Orchestration
+      operationId: get_engagement_orchestration_api_v1_tenants__tenant_id__engagements__engagement_id__orchestration_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Engagement Orchestration Api V1 Tenants  Tenant
+                  Id  Engagements  Engagement Id  Orchestration Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/claim:
+    post:
+      summary: Claim Task
+      operationId: claim_task_api_v1_tenants__tenant_id__tasks_claim_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskClaimRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/heartbeat:
+    post:
+      summary: Heartbeat Task
+      operationId: heartbeat_task_api_v1_tenants__tenant_id__tasks__task_id__heartbeat_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskHeartbeatRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Heartbeat Task Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Heartbeat Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/complete:
+    post:
+      summary: Complete Task
+      operationId: complete_task_api_v1_tenants__tenant_id__tasks__task_id__complete_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCompletionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Complete Task Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Complete Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/fail:
+    post:
+      summary: Fail Task
+      operationId: fail_task_api_v1_tenants__tenant_id__tasks__task_id__fail_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskFailureRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Fail Task Api V1 Tenants  Tenant Id  Tasks  Task Id  Fail
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/approve:
+    post:
+      summary: Approve Task Gate
+      operationId: approve_task_gate_api_v1_tenants__tenant_id__tasks__task_id__gate_approve_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Task Gate Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Gate Approve Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/reject:
+    post:
+      summary: Reject Task Gate
+      operationId: reject_task_gate_api_v1_tenants__tenant_id__tasks__task_id__gate_reject_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Reject Task Gate Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Gate Reject Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/cancel:
+    post:
+      summary: Cancel Engagement Workflow
+      operationId: cancel_engagement_workflow_api_v1_tenants__tenant_id__engagements__engagement_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Cancel Engagement Workflow Api V1 Tenants  Tenant
+                  Id  Engagements  Engagement Id  Cancel Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/demo/orchestration/run:
+    post:
+      summary: Run Orchestration Demo
+      operationId: run_orchestration_demo_api_v1_demo_orchestration_run_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Run Orchestration Demo Api V1 Demo Orchestration Run
+                  Post
+      security:
+      - HTTPBearer: []
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/attempts:
+    get:
+      summary: List Engagement Attempts
+      operationId: list_engagement_attempts_api_v1_tenants__tenant_id__engagements__engagement_id__attempts_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Engagement Attempts Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Attempts Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/attempts:
+    get:
+      summary: List Task Attempts
+      operationId: list_task_attempts_api_v1_tenants__tenant_id__tasks__task_id__attempts_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Task Attempts Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Attempts Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/administrative-retry:
+    post:
+      summary: Administrative Retry Task
+      operationId: administrative_retry_task_api_v1_tenants__tenant_id__tasks__task_id__administrative_retry_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Administrative Retry Task Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Administrative Retry Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/tasks/{task_id}/administrative-skip:
+    post:
+      summary: Administrative Skip Task
+      operationId: administrative_skip_task_api_v1_tenants__tenant_id__tasks__task_id__administrative_skip_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Administrative Skip Task Api V1 Tenants  Tenant Id  Tasks  Task
+                  Id  Administrative Skip Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules:
+    post:
+      summary: Create Schedule Draft
+      operationId: create_schedule_draft_api_v1_tenants__tenant_id__schedules_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleDraftInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Schedule Draft Api V1 Tenants  Tenant Id  Schedules
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Schedules
+      operationId: list_schedules_api_v1_tenants__tenant_id__schedules_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: plan_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plan Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Schedules Api V1 Tenants  Tenant Id  Schedules
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}:
+    get:
+      summary: Get Schedule
+      operationId: get_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/revisions:
+    post:
+      summary: Revise Schedule
+      operationId: revise_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__revisions_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleDraftInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Revise Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Revisions Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/approve:
+    post:
+      summary: Approve Schedule
+      operationId: approve_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__approve_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Approve Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/disable:
+    post:
+      summary: Disable Schedule
+      operationId: disable_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__disable_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Disable Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Disable Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/simulate:
+    post:
+      summary: Simulate Schedule
+      operationId: simulate_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__simulate_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleSimulationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Simulate Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Simulate Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/evaluate:
+    post:
+      summary: Evaluate Schedule
+      operationId: evaluate_schedule_api_v1_tenants__tenant_id__schedules__schedule_id__evaluate_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleEvaluationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Evaluate Schedule Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Evaluate Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/schedules/{schedule_id}/occurrences:
+    get:
+      summary: List Schedule Occurrences
+      operationId: list_schedule_occurrences_api_v1_tenants__tenant_id__schedules__schedule_id__occurrences_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: schedule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Schedule Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Schedule Occurrences Api V1 Tenants  Tenant Id  Schedules  Schedule
+                  Id  Occurrences Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}:
+    get:
+      summary: Get Schedule Occurrence
+      operationId: get_schedule_occurrence_api_v1_tenants__tenant_id__occurrences__occurrence_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: occurrence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Occurrence Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Schedule Occurrence Api V1 Tenants  Tenant Id  Occurrences  Occurrence
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/approve:
+    post:
+      summary: Approve Schedule Occurrence
+      operationId: approve_schedule_occurrence_api_v1_tenants__tenant_id__occurrences__occurrence_id__approve_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: occurrence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Occurrence Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccurrenceDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Schedule Occurrence Api V1 Tenants  Tenant
+                  Id  Occurrences  Occurrence Id  Approve Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/cancel:
+    post:
+      summary: Cancel Schedule Occurrence
+      operationId: cancel_schedule_occurrence_api_v1_tenants__tenant_id__occurrences__occurrence_id__cancel_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: occurrence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Occurrence Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccurrenceDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Cancel Schedule Occurrence Api V1 Tenants  Tenant
+                  Id  Occurrences  Occurrence Id  Cancel Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence:
+    post:
+      summary: Ingest Evidence
+      operationId: ingest_evidence_api_v1_tenants__tenant_id__evidence_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: source_type
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 64
+          title: Source Type
+      - name: source_locator
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          title: Source Locator
+      - name: actor_id
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          title: Actor Id
+      - name: actor_type
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 32
+          default: service
+          title: Actor Type
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Engagement Id
+      - name: task_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Task Id
+      - name: acquisition_key
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Acquisition Key
+      - name: original_filename
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Original Filename
+      - name: classification
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 64
+          default: internal
+          title: Classification
+      - name: accepted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Accepted
+      - name: tainted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Tainted
+      - name: retention_until
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Retention Until
+      - name: legal_hold
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Legal Hold
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Ingest Evidence Api V1 Tenants  Tenant Id  Evidence
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Evidence
+      operationId: list_evidence_api_v1_tenants__tenant_id__evidence_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+      - name: include_deleted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Include Deleted
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 500
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Evidence Api V1 Tenants  Tenant Id  Evidence
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/derived:
+    post:
+      summary: Create Derived Evidence
+      operationId: create_derived_evidence_api_v1_tenants__tenant_id__evidence_derived_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: source_evidence_id
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+          title: Source Evidence Id
+      - name: operation
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 64
+          title: Operation
+      - name: tool_version
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+          title: Tool Version
+      - name: actor_id
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          title: Actor Id
+      - name: actor_type
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 32
+          default: service
+          title: Actor Type
+      - name: acquisition_key
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Acquisition Key
+      - name: original_filename
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Original Filename
+      - name: classification
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Classification
+      - name: accepted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Accepted
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Derived Evidence Api V1 Tenants  Tenant Id  Evidence
+                  Derived Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}:
+    get:
+      summary: Get Evidence
+      operationId: get_evidence_api_v1_tenants__tenant_id__evidence__evidence_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      - name: include_deleted
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Include Deleted
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Evidence Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/content:
+    get:
+      summary: Download Evidence Content
+      operationId: download_evidence_content_api_v1_tenants__tenant_id__evidence__evidence_id__content_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      - name: actor_id
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          title: Actor Id
+      - name: purpose
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          title: Purpose
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/verify:
+    post:
+      summary: Verify Evidence Integrity
+      operationId: verify_evidence_integrity_api_v1_tenants__tenant_id__evidence__evidence_id__verify_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Verify Evidence Integrity Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Verify Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/custody:
+    get:
+      summary: Get Evidence Custody
+      operationId: get_evidence_custody_api_v1_tenants__tenant_id__evidence__evidence_id__custody_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Evidence Custody Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Custody Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/lineage:
+    get:
+      summary: Get Evidence Lineage
+      operationId: get_evidence_lineage_api_v1_tenants__tenant_id__evidence__evidence_id__lineage_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Evidence Lineage Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Lineage Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/retention:
+    put:
+      summary: Update Evidence Retention
+      operationId: update_evidence_retention_api_v1_tenants__tenant_id__evidence__evidence_id__retention_put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceRetentionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Evidence Retention Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Retention Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/purge:
+    post:
+      summary: Purge Evidence
+      operationId: purge_evidence_api_v1_tenants__tenant_id__evidence__evidence_id__purge_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidencePurgeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Purge Evidence Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Purge Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence-exports:
+    post:
+      summary: Export Evidence
+      operationId: export_evidence_api_v1_tenants__tenant_id__evidence_exports_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceExportRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/connectors:
+    post:
+      summary: Register Connector
+      operationId: register_connector_api_v1_tenants__tenant_id__connectors_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectorInstanceInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Register Connector Api V1 Tenants  Tenant Id  Connectors
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Connectors
+      operationId: list_connectors_api_v1_tenants__tenant_id__connectors_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Connectors Api V1 Tenants  Tenant Id  Connectors
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/connectors/{connector_instance_id}/grants:
+    post:
+      summary: Create Collection Grant
+      operationId: create_collection_grant_api_v1_tenants__tenant_id__connectors__connector_instance_id__grants_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: connector_instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Connector Instance Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionGrantInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Collection Grant Api V1 Tenants  Tenant Id  Connectors  Connector
+                  Instance Id  Grants Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/collection-grants:
+    get:
+      summary: List Collection Grants
+      operationId: list_collection_grants_api_v1_tenants__tenant_id__collection_grants_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: connector_instance_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Connector Instance Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Collection Grants Api V1 Tenants  Tenant Id  Collection
+                  Grants Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/collection-grants/{grant_id}/revoke:
+    post:
+      summary: Revoke Collection Grant
+      operationId: revoke_collection_grant_api_v1_tenants__tenant_id__collection_grants__grant_id__revoke_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: grant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Grant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantRevocationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Revoke Collection Grant Api V1 Tenants  Tenant Id  Collection
+                  Grants  Grant Id  Revoke Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/connector-runs/{run_id}:
+    get:
+      summary: Get Connector Run
+      operationId: get_connector_run_api_v1_tenants__tenant_id__connector_runs__run_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Connector Run Api V1 Tenants  Tenant Id  Connector
+                  Runs  Run Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/control-tests:
+    get:
+      summary: List Control Tests
+      operationId: list_control_tests_api_v1_control_tests_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: domain
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Domain
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Control Tests Api V1 Control Tests Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/control-tests/{test_id}/versions/{version}:
+    get:
+      summary: Get Control Test
+      operationId: get_control_test_api_v1_control_tests__test_id__versions__version__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Test Id
+      - name: version
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Version
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Control Test Api V1 Control Tests  Test Id  Versions  Version  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/control-test-runs:
+    post:
+      summary: Execute Control Test
+      operationId: execute_control_test_api_v1_tenants__tenant_id__control_test_runs_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlTestExecutionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Execute Control Test Api V1 Tenants  Tenant Id  Control
+                  Test Runs Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/control-test-runs/{run_id}:
+    get:
+      summary: Get Control Test Run
+      operationId: get_control_test_run_api_v1_tenants__tenant_id__control_test_runs__run_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Control Test Run Api V1 Tenants  Tenant Id  Control
+                  Test Runs  Run Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/control-test-runs/{run_id}/verify-reproducibility:
+    post:
+      summary: Verify Control Test Run
+      operationId: verify_control_test_run_api_v1_tenants__tenant_id__control_test_runs__run_id__verify_reproducibility_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: run_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Run Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlTestReproductionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Verify Control Test Run Api V1 Tenants  Tenant Id  Control
+                  Test Runs  Run Id  Verify Reproducibility Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /judge:
+    get:
+      summary: Judge Mode
+      operationId: judge_mode_judge_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+components:
+  schemas:
+    AuditPeriodRule:
+      properties:
+        kind:
+          type: string
+          enum:
+          - calendar_months
+          - rolling_days
+          title: Kind
+          default: calendar_months
+        months:
+          type: integer
+          maximum: 60.0
+          minimum: 1.0
+          title: Months
+          default: 1
+        days:
+          type: integer
+          maximum: 3660.0
+          minimum: 1.0
+          title: Days
+          default: 30
+        end_offset_days:
+          type: integer
+          maximum: 3660.0
+          minimum: 0.0
+          title: End Offset Days
+          default: 1
+      additionalProperties: false
+      type: object
+      title: AuditPeriodRule
+    BlackoutPolicy:
+      properties:
+        windows:
+          items:
+            $ref: '#/components/schemas/BlackoutWindow'
+          type: array
+          title: Windows
+      additionalProperties: false
+      type: object
+      title: BlackoutPolicy
+    BlackoutWindow:
+      properties:
+        start:
+          type: string
+          format: date
+          title: Start
+        end:
+          type: string
+          format: date
+          title: End
+        behavior:
+          type: string
+          enum:
+          - delay
+          - skip
+          title: Behavior
+          default: delay
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Reason
+          default: configured blackout window
+      additionalProperties: false
+      type: object
+      required:
+      - start
+      - end
+      title: BlackoutWindow
+    BusinessCalendarConfig:
+      properties:
+        weekend_days:
+          items:
+            type: integer
+          type: array
+          uniqueItems: true
+          title: Weekend Days
+        holidays:
+          items:
+            type: string
+            format: date
+          type: array
+          uniqueItems: true
+          title: Holidays
+      additionalProperties: false
+      type: object
+      title: BusinessCalendarConfig
+    CancellationRequest:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: CancellationRequest
+    CollectionGrantInput:
+      properties:
+        grant_key:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Grant Key
+        purpose:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Purpose
+        allowed_streams:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Allowed Streams
+        resource_selectors:
+          additionalProperties: true
+          type: object
+          title: Resource Selectors
+        approved_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Approved By
+        expires_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expires At
+      additionalProperties: false
+      type: object
+      required:
+      - grant_key
+      - purpose
+      - allowed_streams
+      - approved_by
+      title: CollectionGrantInput
+    ConnectorInstanceInput:
+      properties:
+        connector_key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Connector Key
+        connector_type:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Connector Type
+        display_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Display Name
+        base_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Base Url
+        credential_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Credential Ref
+        config:
+          additionalProperties: true
+          type: object
+          title: Config
+      additionalProperties: false
+      type: object
+      required:
+      - connector_key
+      - connector_type
+      - display_name
+      title: ConnectorInstanceInput
+    ControlTestDataset:
+      properties:
+        name:
+          type: string
+          title: Name
+        records:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Records
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+        authoritative:
+          type: boolean
+          title: Authoritative
+          default: true
+        expected_count:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Expected Count
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+      type: object
+      required:
+      - name
+      - records
+      title: ControlTestDataset
+    ControlTestExecutionRequest:
+      properties:
+        test_id:
+          type: string
+          title: Test Id
+        version:
+          type: string
+          title: Version
+        purpose:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Purpose
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        idempotency_key:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Idempotency Key
+        engagement_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+        task_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Task Id
+        parameters:
+          additionalProperties: true
+          type: object
+          title: Parameters
+        datasets:
+          items:
+            $ref: '#/components/schemas/ControlTestDataset'
+          type: array
+          title: Datasets
+      type: object
+      required:
+      - test_id
+      - version
+      - purpose
+      - period_start
+      - period_end
+      - idempotency_key
+      - datasets
+      title: ControlTestExecutionRequest
+    ControlTestReproductionRequest:
+      properties:
+        purpose:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Purpose
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        parameters:
+          additionalProperties: true
+          type: object
+          title: Parameters
+        datasets:
+          items:
+            $ref: '#/components/schemas/ControlTestDataset'
+          type: array
+          title: Datasets
+      type: object
+      required:
+      - purpose
+      - period_start
+      - period_end
+      - datasets
+      title: ControlTestReproductionRequest
+    DependencyDefinition:
+      properties:
+        task_key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Task Key
+        allowed_statuses:
+          items:
+            $ref: '#/components/schemas/TaskStatus'
+          type: array
+          uniqueItems: true
+          title: Allowed Statuses
+      additionalProperties: false
+      type: object
+      required:
+      - task_key
+      title: DependencyDefinition
+    EvidenceExportRequest:
+      properties:
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 500
+          minItems: 1
+          title: Evidence Ids
+        actor_id:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Actor Id
+        purpose:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Purpose
+        include_ancestors:
+          type: boolean
+          title: Include Ancestors
+          default: true
+      type: object
+      required:
+      - evidence_ids
+      - actor_id
+      - purpose
+      title: EvidenceExportRequest
+    EvidencePurgeRequest:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+        as_of:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: As Of
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: EvidencePurgeRequest
+    EvidenceRetentionRequest:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Actor Id
+        retention_until:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Retention Until
+        legal_hold:
+          type: boolean
+          title: Legal Hold
+          default: false
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: EvidenceRetentionRequest
+    FailureClass:
+      type: string
+      enum:
+      - transient_infrastructure
+      - connector_rate_limit
+      - authentication_expired
+      - source_schema_change
+      - model_timeout
+      - model_policy_violation
+      - malformed_structured_output
+      - deterministic_test_failure
+      - insufficient_evidence
+      - conflicting_evidence
+      - human_response_overdue
+      - revoked_authorization
+      - security_incident
+      - configuration_error
+      - internal_error
+      - lease_expired
+      - human_rejected
+      title: FailureClass
+    GateDecision:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+      additionalProperties: false
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: GateDecision
+    GrantRevocationRequest:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: GrantRevocationRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LaunchMode:
+      type: string
+      enum:
+      - approval_required
+      - preflight_then_approval
+      - automatic
+      title: LaunchMode
+    MissedOccurrencePolicy:
+      type: string
+      enum:
+      - launch_all
+      - launch_latest
+      - skip
+      title: MissedOccurrencePolicy
+    OccurrenceDecision:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+        preflight_context:
+          $ref: '#/components/schemas/PreflightContext'
+      additionalProperties: false
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: OccurrenceDecision
+    OverlapPolicy:
+      type: string
+      enum:
+      - prevent
+      - allow
+      title: OverlapPolicy
+    PreflightContext:
+      properties:
+        connector_health:
+          additionalProperties:
+            type: string
+          type: object
+          title: Connector Health
+        available_budget_usd:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Available Budget Usd
+        available_competencies:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+          title: Available Competencies
+        independence_conflicts:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+          title: Independence Conflicts
+        attributes:
+          additionalProperties: true
+          type: object
+          title: Attributes
+      additionalProperties: false
+      type: object
+      title: PreflightContext
+    RetryPolicy:
+      properties:
+        max_attempts:
+          type: integer
+          maximum: 100.0
+          minimum: 1.0
+          title: Max Attempts
+          default: 3
+        initial_delay_seconds:
+          type: number
+          minimum: 0.0
+          title: Initial Delay Seconds
+          default: 5.0
+        backoff_multiplier:
+          type: number
+          minimum: 1.0
+          title: Backoff Multiplier
+          default: 2.0
+        max_delay_seconds:
+          type: number
+          minimum: 0.0
+          title: Max Delay Seconds
+          default: 300.0
+        retryable_failures:
+          items:
+            $ref: '#/components/schemas/FailureClass'
+          type: array
+          uniqueItems: true
+          title: Retryable Failures
+      additionalProperties: false
+      type: object
+      title: RetryPolicy
+    ScheduleDecision:
+      properties:
+        actor_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Actor Id
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Reason
+      additionalProperties: false
+      type: object
+      required:
+      - actor_id
+      - reason
+      title: ScheduleDecision
+    ScheduleDraftInput:
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Name
+        plan_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Plan Id
+        template_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Template Id
+        recurrence_rule:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Recurrence Rule
+        timezone:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Timezone
+          default: UTC
+        effective_from:
+          type: string
+          format: date-time
+          title: Effective From
+        effective_until:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective Until
+        audit_period_rule:
+          $ref: '#/components/schemas/AuditPeriodRule'
+        business_calendar:
+          $ref: '#/components/schemas/BusinessCalendarConfig'
+        blackout_policy:
+          $ref: '#/components/schemas/BlackoutPolicy'
+        preflight_policy:
+          additionalProperties: true
+          type: object
+          title: Preflight Policy
+        launch_mode:
+          $ref: '#/components/schemas/LaunchMode'
+          default: approval_required
+        missed_occurrence_policy:
+          $ref: '#/components/schemas/MissedOccurrencePolicy'
+          default: launch_latest
+        catch_up_limit:
+          type: integer
+          maximum: 1000.0
+          minimum: 1.0
+          title: Catch Up Limit
+          default: 12
+        overlap_policy:
+          $ref: '#/components/schemas/OverlapPolicy'
+          default: prevent
+        max_concurrent_engagements:
+          type: integer
+          maximum: 1000.0
+          minimum: 1.0
+          title: Max Concurrent Engagements
+          default: 1
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - plan_id
+      - template_id
+      - recurrence_rule
+      - effective_from
+      title: ScheduleDraftInput
+    ScheduleEvaluationRequest:
+      properties:
+        context:
+          $ref: '#/components/schemas/PreflightContext'
+        worker_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Worker Id
+          default: api-scheduler
+        lease_seconds:
+          type: integer
+          maximum: 3600.0
+          minimum: 1.0
+          title: Lease Seconds
+          default: 60
+      type: object
+      title: ScheduleEvaluationRequest
+    ScheduleSimulationRequest:
+      properties:
+        window_start:
+          type: string
+          format: date-time
+          title: Window Start
+        window_end:
+          type: string
+          format: date-time
+          title: Window End
+        limit:
+          type: integer
+          maximum: 1000.0
+          minimum: 1.0
+          title: Limit
+          default: 500
+      type: object
+      required:
+      - window_start
+      - window_end
+      title: ScheduleSimulationRequest
+    TaskClaimRequest:
+      properties:
+        worker_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Worker Id
+        lease_seconds:
+          type: integer
+          maximum: 3600.0
+          minimum: 1.0
+          title: Lease Seconds
+          default: 60
+        engagement_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Engagement Id
+        task_types:
+          items:
+            type: string
+          type: array
+          maxItems: 100
+          title: Task Types
+        agent_roles:
+          items:
+            type: string
+          type: array
+          maxItems: 100
+          title: Agent Roles
+      type: object
+      required:
+      - worker_id
+      title: TaskClaimRequest
+    TaskCompletionRequest:
+      properties:
+        worker_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Worker Id
+        result:
+          $ref: '#/components/schemas/TaskExecutionResult'
+      type: object
+      required:
+      - worker_id
+      - result
+      title: TaskCompletionRequest
+    TaskDefinition:
+      properties:
+        key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9._-]*$
+          title: Key
+        task_type:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Task Type
+        definition_version:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Definition Version
+          default: '1'
+        dependencies:
+          items:
+            $ref: '#/components/schemas/DependencyDefinition'
+          type: array
+          title: Dependencies
+        assigned_agent_role:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Assigned Agent Role
+        input_refs:
+          items:
+            type: string
+          type: array
+          title: Input Refs
+        execution_policy:
+          additionalProperties: true
+          type: object
+          title: Execution Policy
+        model_policy:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Model Policy
+        tool_policy:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Tool Policy
+        retry_policy:
+          $ref: '#/components/schemas/RetryPolicy'
+        priority:
+          type: integer
+          maximum: 10000.0
+          minimum: 0.0
+          title: Priority
+          default: 100
+        deadline_seconds:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Deadline Seconds
+        human_gate:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Human Gate
+        human_gate_position:
+          type: string
+          enum:
+          - before
+          - after
+          title: Human Gate Position
+          default: before
+      additionalProperties: false
+      type: object
+      required:
+      - key
+      - task_type
+      title: TaskDefinition
+    TaskExecutionResult:
+      properties:
+        output_refs:
+          items:
+            type: string
+          type: array
+          title: Output Refs
+        result:
+          additionalProperties: true
+          type: object
+          title: Result
+      additionalProperties: false
+      type: object
+      title: TaskExecutionResult
+    TaskFailureRequest:
+      properties:
+        worker_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Worker Id
+        failure_class:
+          $ref: '#/components/schemas/FailureClass'
+        message:
+          type: string
+          maxLength: 8000
+          minLength: 1
+          title: Message
+        force_retryable:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Force Retryable
+      type: object
+      required:
+      - worker_id
+      - failure_class
+      - message
+      title: TaskFailureRequest
+    TaskHeartbeatRequest:
+      properties:
+        worker_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Worker Id
+        lease_seconds:
+          type: integer
+          maximum: 3600.0
+          minimum: 1.0
+          title: Lease Seconds
+          default: 60
+      type: object
+      required:
+      - worker_id
+      title: TaskHeartbeatRequest
+    TaskStatus:
+      type: string
+      enum:
+      - pending
+      - ready
+      - running
+      - retry_wait
+      - waiting_approval
+      - succeeded
+      - failed
+      - blocked
+      - cancelled
+      - skipped
+      title: TaskStatus
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WorkflowDefinition:
+      properties:
+        workflow_version:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Workflow Version
+        tasks:
+          items:
+            $ref: '#/components/schemas/TaskDefinition'
+          type: array
+          minItems: 1
+          title: Tasks
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+      additionalProperties: false
+      type: object
+      required:
+      - workflow_version
+      - tasks
+      title: WorkflowDefinition
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

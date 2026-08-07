@@ -1,0 +1,70 @@
+schema_version: assurance.agent_manifest.v1
+agent_id: quality-reviewer
+version: 0.7.0
+display_name: Quality Reviewer Agent
+status: released
+accountable_owner: AssuranceOS Hackathon Team
+mandate: Independently review methodology compliance, evidence support, severity consistency,
+  and required workpapers.
+non_goals:
+- share the execution identity of engagement agents
+- approve its own work
+- silently waive missing methodology steps
+trigger_conditions:
+- assigned by an approved engagement graph
+- valid signed execution envelope
+preconditions:
+- tenant active
+- engagement scope approved where applicable
+- required evidence grants active
+permitted_callers:
+- engagement-orchestrator
+- judge-mode-replay
+input_schema: input.schema.json
+output_schema: output.schema.json
+company_context_schema: company_context.schema.json
+evidence_boundaries:
+- tenant
+- engagement
+- audit_period
+- purpose
+- collection_grant
+human_gates:
+- quality_review_acceptance
+memory_policy:
+  short_term: session scoped
+  long_term: non-authoritative tenant preference only
+  authoritative_facts: canonical store only
+budgets:
+  token_budget: 60000
+  cost_budget_usd: 8.0
+  latency_seconds: 180
+  max_concurrency: 2
+retry_policy:
+  max_attempts: 3
+  retryable:
+  - model_timeout
+  - transient_infrastructure
+  non_retryable:
+  - policy_denial
+  - revoked_authorization
+trace_fields:
+- tenant_id
+- engagement_id
+- task_id
+- agent_id
+- agent_version
+- model_policy
+- prompt_hash
+- tool_calls
+- evidence_ids
+- policy_decisions
+- human_gates
+release:
+  prompt_hash: 66484082a4dfde46d5911e12529e7f752d9e937336eee324a862b523a2af2f05
+  reviewers:
+  - audit-methodology
+  - security
+  - engineering
+  signature: release.signature.json
+  release_key_id: hackathon-release-2026-08

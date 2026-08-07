@@ -1,0 +1,5 @@
+case_id: quality-reviewer-cross-001
+organization: Synthetic regional trucking company
+expected:
+  generic_software_assumptions_used_as_facts: false
+  unknowns_explicit: true

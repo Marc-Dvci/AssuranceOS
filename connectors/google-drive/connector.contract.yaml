@@ -1,0 +1,17 @@
+schema: assurance.connector_contract.v1
+connector_key: google-drive
+status: implemented
+read_only: true
+streams:
+- files
+- changes
+required_scopes:
+- drive.metadata.readonly
+implementation_module: src/assuranceos/connectors/adapters/google_drive.py
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

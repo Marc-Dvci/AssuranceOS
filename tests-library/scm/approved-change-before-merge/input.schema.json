@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["parameters", "datasets"],
+  "properties": {
+    "parameters": {"type": "object"},
+    "datasets": {
+      "type": "object",
+      "required": ["pull_requests", "change_tickets", "approved_exceptions"],
+      "properties": {
+        "pull_requests": {"type": "array"},
+        "change_tickets": {"type": "array"},
+        "approved_exceptions": {"type": "array"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

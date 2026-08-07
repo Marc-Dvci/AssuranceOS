@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: onboarding-director
+tools:
+- name: onboarding.state.read
+  description: onboarding state read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: onboarding.state.transition
+  description: onboarding state transition
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: true
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: profile.claims.list
+  description: profile claims list
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: approval.request.create
+  description: approval request create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: true
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: connector.recommendations.list
+  description: connector recommendations list
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false

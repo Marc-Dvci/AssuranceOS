@@ -1,0 +1,7 @@
+{
+  "algorithm": "Ed25519",
+  "key_id": "hackathon-release-2026-08",
+  "public_key_sha256": "dd1977f85c9a588641552b1f5db1564a60c6496ce58033d825386d986a8214df",
+  "schema": "assurance.audit_pack_release_signature.v1",
+  "signature_base64": "sGbQoAQ5+LuuRfnz/U+B+1JGdefwv1YLRwK4QtHnhmtlpsGrJkYFKv2elCxVeayOXOzSo5fa1UOzEFm/qZPrAw=="
+}

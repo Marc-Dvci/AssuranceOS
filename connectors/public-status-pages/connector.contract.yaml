@@ -1,0 +1,17 @@
+schema: assurance.connector_contract.v1
+connector_key: public-status-pages
+status: contract_defined
+read_only: true
+streams:
+- incidents
+- components
+required_scopes:
+- public status API read
+implementation_module: null
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

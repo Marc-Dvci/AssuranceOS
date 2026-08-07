@@ -1,0 +1,10 @@
+levels:
+  - id: public
+  - id: internal
+  - id: confidential
+  - id: restricted
+rules:
+  credentials: restricted
+  whistleblower: restricted
+  employee_personal_data: confidential
+  synthetic_demo_data: internal

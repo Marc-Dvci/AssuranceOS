@@ -1,0 +1,15 @@
+schema: assurance.connector_contract.v1
+connector_key: sdk
+status: implemented
+read_only: true
+streams:
+- connector_protocol
+required_scopes: []
+implementation_module: src/assuranceos/connectors
+invariants:
+- purpose-bound collection grant
+- tenant and resource selector enforcement
+- credential references only
+- immutable evidence provenance
+- checkpointed idempotent collection
+- schema and permission drift surfaced

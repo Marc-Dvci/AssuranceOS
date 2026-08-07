@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: assuranceos
+      POSTGRES_USER: assuranceos
+      POSTGRES_PASSWORD: assuranceos-local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assuranceos -d assuranceos"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - assuranceos-postgres:/var/lib/postgresql/data
+
+  migrate:
+    build: .
+    command: ["sh", "-c", "python scripts/migrate.py && python scripts/sync_control_test_registry.py"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &runtime-env
+      ASSURANCEOS_ENV: local
+      ASSURANCEOS_DATABASE_URL: postgresql+psycopg://assuranceos:assuranceos-local@postgres:5432/assuranceos
+      ASSURANCEOS_AGENT_ROOT: /app/agents
+      ASSURANCEOS_DEMO_ROOT: /app/demo/asteria
+      ASSURANCEOS_CONTROL_TEST_ROOT: /app/tests-library
+      ASSURANCEOS_CONTROL_TEST_PUBLIC_KEY: /app/security/release-keys/control-test-release-public.pem
+      ASSURANCEOS_MODEL_MODE: mock
+      ASSURANCEOS_AUTH_MODE: disabled
+      ASSURANCEOS_AUTO_CREATE_SCHEMA: "false"
+      ASSURANCEOS_EVIDENCE_ROOT: /app/var/evidence
+      ASSURANCEOS_EVIDENCE_EXPORT_ROOT: /app/var/evidence-exports
+      ASSURANCEOS_MAX_EVIDENCE_UPLOAD_BYTES: "52428800"
+      ASSURANCEOS_TRUSTED_HOSTS: localhost,127.0.0.1,api,testserver
+
+  api:
+    build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment: *runtime-env
+    volumes:
+      - assuranceos-evidence:/app/var/evidence
+      - assuranceos-evidence-exports:/app/var/evidence-exports
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  assuranceos-postgres:
+  assuranceos-evidence:
+  assuranceos-evidence-exports:

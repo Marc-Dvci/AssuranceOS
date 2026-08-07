@@ -1,0 +1,54 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: assuranceos_test
+          POSTGRES_USER: assuranceos
+          POSTGRES_PASSWORD: assuranceos_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U assuranceos -d assuranceos_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -e '.[dev,postgres]'
+      - run: ruff check src scripts tests migrations
+      - run: python scripts/validate_repo.py
+      - run: python -m compileall -q src scripts tests agents
+      - run: pytest -q --cov=assuranceos --cov-fail-under=85
+      - name: SQLite migration and control-test registry
+        env:
+          ASSURANCEOS_DATABASE_URL: sqlite:////tmp/assuranceos-ci.db
+        run: |
+          python scripts/migrate.py
+          python scripts/sync_control_test_registry.py
+          python scripts/run_control_test_demo.py
+      - name: PostgreSQL migration and control-test registry
+        env:
+          ASSURANCEOS_ENV: test
+          ASSURANCEOS_AUTH_MODE: disabled
+          ASSURANCEOS_DATABASE_URL: postgresql+psycopg://assuranceos:assuranceos_test@127.0.0.1:5432/assuranceos_test
+        run: |
+          python scripts/migrate.py
+          python scripts/sync_control_test_registry.py
+      - run: python scripts/generate_openapi.py --check
+      - run: python scripts/build_artifact_manifest.py --check
+      - run: docker build --tag assuranceos-ci .
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+      - run: terraform -chdir=infrastructure/terraform fmt -check -recursive
+      - run: terraform -chdir=infrastructure/terraform init -backend=false
+      - run: terraform -chdir=infrastructure/terraform validate

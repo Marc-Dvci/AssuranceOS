@@ -1,0 +1,31 @@
+schema_version: assurance.agent_policy.v1
+agent_id: control-design
+default_effect: deny
+allowed_evidence_scopes:
+- execution_envelope_only
+forbidden_actions:
+- source.write
+- credentials.read
+- user.impersonate
+- scope.expand
+- canonical_state.mutate_without_service
+- agent.non_goal.1
+- agent.non_goal.2
+- agent.non_goal.3
+prohibited_inferences:
+- protected_characteristics
+- honesty_from_style
+- wrongdoing_without_evidence
+- legal_conclusion_without_authoritative_criteria
+source_taint:
+  prompt_injection: quarantine_and_continue_without_instruction
+  malware: block
+  untrusted_derived_content: cite_original_or_abstain
+human_gates:
+- design_conclusion_review
+fail_closed_on:
+- missing_execution_envelope
+- scope_mismatch
+- tool_not_declared
+- critical_evidence_unavailable
+- output_schema_failure

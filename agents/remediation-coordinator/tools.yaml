@@ -1,0 +1,43 @@
+schema_version: assurance.agent_tools.v1
+agent_id: remediation-coordinator
+tools:
+- name: remediation.read
+  description: remediation read
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: remediation.propose
+  description: remediation propose
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: external_action.create
+  description: external_action create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: true
+  network_route: service-mesh-only
+  idempotency_required: true
+- name: milestones.track
+  description: milestones track
+  operations:
+  - invoke
+  side_effect: none
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: false
+- name: retest.handoff.create
+  description: retest handoff create
+  operations:
+  - invoke
+  side_effect: write
+  requires_human_confirmation: false
+  network_route: service-mesh-only
+  idempotency_required: true
