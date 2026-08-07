@@ -34,6 +34,16 @@ def main() -> None:
         default=None,
         help="OpenAI-compatible base URL for --model-mode local",
     )
+    parser.add_argument(
+        "--thinking",
+        default="off",
+        choices=["off", "on", "server-default"],
+        help=(
+            "reasoning-model deliberation for --model-mode local. Structured audit "
+            "output needs it off: gemma-4-12b spends the whole output budget "
+            "deliberating and never commits an answer with it on."
+        ),
+    )
     parser.add_argument("--render-chain", action="store_true", help="print the reasoning chain")
     args = parser.parse_args()
 
@@ -50,6 +60,7 @@ def main() -> None:
             args.model_mode,
             model=args.model or (settings.gemini_model if "gem" in args.model_mode else None),
             base_url=args.base_url,
+            enable_thinking={"off": False, "on": True, "server-default": None}[args.thinking],
         )
 
     database = Database(settings.database_url)
