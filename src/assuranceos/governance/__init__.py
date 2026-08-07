@@ -10,6 +10,10 @@ Four subsystems, composed rather than layered ad hoc:
   personal-data or secret leaks.
 * :mod:`telemetry` — OpenTelemetry-compliant traces, audit log records, and
   reconstructable reasoning chains.
+
+:mod:`worker` mounts the composed runtime on the durable orchestration task path.
+Registering its handler is what makes the enforcement point unavoidable: an agent
+task has no other route to execution.
 """
 
 from .armor import ArmorFinding, ArmorResult, ModelArmor
@@ -37,6 +41,11 @@ from .telemetry import (
     new_trace_id,
     summarize_chains,
 )
+from .worker import (
+    GovernedAgentTaskHandler,
+    envelope_from_lease,
+    evidence_from_records,
+)
 
 __all__ = [
     "AgentGateway",
@@ -50,6 +59,7 @@ __all__ = [
     "BoundedTool",
     "GatewayDecision",
     "GatewayDenied",
+    "GovernedAgentTaskHandler",
     "InMemoryRevocationList",
     "ModelArmor",
     "ReasoningChain",
@@ -60,6 +70,8 @@ __all__ = [
     "audit_log_record",
     "configure_telemetry",
     "derive_granted_authority",
+    "envelope_from_lease",
+    "evidence_from_records",
     "genai_attributes",
     "generate_agent_identity_keypair",
     "new_span_id",
