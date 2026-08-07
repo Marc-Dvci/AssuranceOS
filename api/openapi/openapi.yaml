@@ -2148,6 +2148,353 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/findings:
+    post:
+      summary: Propose Finding
+      description: 'Propose a finding from accepted control-test exceptions.
+
+
+        The skeptic runs before the finding is persisted as proposable, so the reply
+
+        reports whether it survived and what was found against it either way.'
+      operationId: propose_finding_api_v1_tenants__tenant_id__engagements__engagement_id__findings_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposeFindingRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Propose Finding Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Findings Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings:
+    get:
+      summary: List Findings
+      operationId: list_findings_api_v1_tenants__tenant_id__findings_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response List Findings Api V1 Tenants  Tenant Id  Findings
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}:
+    get:
+      summary: Get Finding
+      description: The finding and every decision, action, and retest attached to
+        it.
+      operationId: get_finding_api_v1_tenants__tenant_id__findings__finding_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Finding Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/decisions:
+    post:
+      summary: Adjudicate Finding
+      description: 'Record a human decision on a proposed finding.
+
+
+        The actor is resolved from the authenticated principal, and the service
+
+        refuses a decision attributable to an automated actor, so this endpoint
+
+        cannot be used to launder an agent''s conclusion into an approval.'
+      operationId: adjudicate_finding_api_v1_tenants__tenant_id__findings__finding_id__decisions_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjudicateFindingRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Adjudicate Finding Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Decisions Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/remediation:
+    post:
+      summary: Open Remediation
+      description: 'Convert an approved finding into a remediation obligation.
+
+
+        Safe to replay: ``created`` is false when an action was already open, and
+        the
+
+        original action is returned rather than a duplicate.'
+      operationId: open_remediation_api_v1_tenants__tenant_id__findings__finding_id__remediation_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenRemediationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Open Remediation Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Remediation Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/closure:
+    post:
+      summary: Submit Closure
+      description: 'Record management''s assertion that an action is complete.
+
+
+        An assertion is not a closure. Only an independent retest can close a finding.'
+      operationId: submit_closure_api_v1_tenants__tenant_id__remediation_actions__action_id__closure_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Action Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitClosureRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Submit Closure Api V1 Tenants  Tenant Id  Remediation
+                  Actions  Action Id  Closure Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/retests:
+    post:
+      summary: Record Retest
+      description: 'Verify a declared remediation with an independent retest.
+
+
+        Refused when the retester is the finding''s author, the remediation owner,
+        or
+
+        whoever declared it complete.'
+      operationId: record_retest_api_v1_tenants__tenant_id__remediation_actions__action_id__retests_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Action Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordRetestRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Record Retest Api V1 Tenants  Tenant Id  Remediation
+                  Actions  Action Id  Retests Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/findings/recurrence/{code}:
+    get:
+      summary: Finding Recurrence
+      description: The same control failing across more than one engagement.
+      operationId: finding_recurrence_api_v1_tenants__tenant_id__findings_recurrence__code__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Code
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Finding Recurrence Api V1 Tenants  Tenant Id  Findings
+                  Recurrence  Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /judge:
     get:
       summary: Judge Mode
@@ -2161,6 +2508,31 @@ paths:
                 type: string
 components:
   schemas:
+    AdjudicateFindingRequest:
+      properties:
+        decision:
+          $ref: '#/components/schemas/HumanDecision'
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Reason
+        idempotency_key:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Idempotency Key
+        actor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actor Id
+      type: object
+      required:
+      - decision
+      - reason
+      - idempotency_key
+      title: AdjudicateFindingRequest
     AuditPeriodRule:
       properties:
         kind:
@@ -2627,6 +2999,15 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    HumanDecision:
+      type: string
+      enum:
+      - approve
+      - reject
+      - return_for_rework
+      - defer
+      - accept_risk
+      title: HumanDecision
     LaunchMode:
       type: string
       enum:
@@ -2661,6 +3042,50 @@ components:
       - actor_id
       - reason
       title: OccurrenceDecision
+    OpenRemediationRequest:
+      properties:
+        owner_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Owner Ref
+        due_date:
+          type: string
+          format: date
+          title: Due Date
+        action_plan:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Action Plan
+        idempotency_key:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Idempotency Key
+        closure_evidence_required:
+          type: boolean
+          title: Closure Evidence Required
+          default: true
+        escalation_policy:
+          additionalProperties: true
+          type: object
+          title: Escalation Policy
+        external_system:
+          type: string
+          enum:
+          - none
+          - jira
+          - servicenow
+          title: External System
+          default: none
+      type: object
+      required:
+      - owner_ref
+      - due_date
+      - action_plan
+      - idempotency_key
+      title: OpenRemediationRequest
     OverlapPolicy:
       type: string
       enum:
@@ -2699,6 +3124,201 @@ components:
       additionalProperties: false
       type: object
       title: PreflightContext
+    ProposeFindingRequest:
+      properties:
+        finding:
+          $ref: '#/components/schemas/ProposedFinding'
+        exception_rows:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Exception Rows
+        approved_exceptions:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Approved Exceptions
+        compensating_controls:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Compensating Controls
+        period_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period Start
+        period_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period End
+        authored_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authored By
+      type: object
+      required:
+      - finding
+      title: ProposeFindingRequest
+      description: 'A proposed finding plus the canonical context the skeptic consults.
+
+
+        The context is supplied by the caller rather than assumed, because which
+
+        exception register and which audit period apply is an engagement fact. An
+
+        absent register produces no contradiction of that kind rather than a silent
+
+        pass.'
+    ProposedFinding:
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_-]{2,63}$
+          title: Code
+        title:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Title
+        severity:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+          title: Severity
+        confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
+        criteria:
+          type: string
+          minLength: 3
+          title: Criteria
+        observed_condition:
+          type: string
+          minLength: 3
+          title: Observed Condition
+        risk_statement:
+          type: string
+          minLength: 3
+          title: Risk Statement
+        cause:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cause
+        consequence:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Consequence
+        business_objective:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Business Objective
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+        exception_keys:
+          items:
+            type: string
+          type: array
+          title: Exception Keys
+        affected_population:
+          additionalProperties: true
+          type: object
+          title: Affected Population
+        limitations:
+          items:
+            type: string
+          type: array
+          title: Limitations
+        source_run_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Run Id
+      additionalProperties: false
+      type: object
+      required:
+      - code
+      - title
+      - severity
+      - confidence
+      - criteria
+      - observed_condition
+      - risk_statement
+      title: ProposedFinding
+      description: 'A finding an agent proposes from an accepted control-test exception.
+
+
+        ``confidence`` is the agent''s, and it is never sufficient on its own: the
+
+        human gate is a separate record, not a threshold on this number.'
+    RecordRetestRequest:
+      properties:
+        procedure_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Procedure Ref
+        idempotency_key:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Idempotency Key
+        outcome:
+          $ref: '#/components/schemas/RetestOutcome'
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+        detail:
+          type: string
+          maxLength: 4000
+          title: Detail
+          default: ''
+        fresh_evidence_collected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Fresh Evidence Collected At
+        performed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Performed By
+      type: object
+      required:
+      - procedure_ref
+      - idempotency_key
+      - outcome
+      title: RecordRetestRequest
+    RetestOutcome:
+      type: string
+      enum:
+      - closed_verified
+      - partially_remediated
+      - ineffective
+      - insufficient_evidence
+      - reopen
+      title: RetestOutcome
     RetryPolicy:
       properties:
         max_attempts:
@@ -2866,6 +3486,32 @@ components:
       - window_start
       - window_end
       title: ScheduleSimulationRequest
+    SubmitClosureRequest:
+      properties:
+        response_text:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Response Text
+        closure_evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Closure Evidence Ids
+        action_plan:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Action Plan
+        submitted_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Submitted By
+      type: object
+      required:
+      - response_text
+      title: SubmitClosureRequest
     TaskClaimRequest:
       properties:
         worker_id:

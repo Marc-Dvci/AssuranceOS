@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 import os
 import tempfile
 
@@ -12,6 +13,26 @@ from starlette.background import BackgroundTask
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uuid import uuid4
 
+from .adjudication import (
+    AdjudicationRequest,
+    AdjudicationService,
+    ClosureSubmission,
+    HumanDecision,
+    ProposedFinding,
+    RemediationRequest,
+    RetestOutcome,
+    RetestRequest,
+    SkepticReviewer,
+)
+from .adjudication.exceptions import (
+    ClosureEvidenceError,
+    FindingNotFoundError,
+    HumanGateError,
+    IdempotencyConflictError,
+    IndependenceError,
+    InvalidTransitionError,
+    RemediationNotFoundError,
+)
 from .config import settings
 from .control_testing import (
     ControlTestDataset,
@@ -274,6 +295,60 @@ class ControlTestReproductionRequest(BaseModel):
     datasets: list[ControlTestDataset]
 
 
+class ProposeFindingRequest(BaseModel):
+    """A proposed finding plus the canonical context the skeptic consults.
+
+    The context is supplied by the caller rather than assumed, because which
+    exception register and which audit period apply is an engagement fact. An
+    absent register produces no contradiction of that kind rather than a silent
+    pass.
+    """
+
+    finding: ProposedFinding
+    exception_rows: list[dict] = Field(default_factory=list)
+    approved_exceptions: list[dict] = Field(default_factory=list)
+    compensating_controls: list[dict] = Field(default_factory=list)
+    period_start: date | None = None
+    period_end: date | None = None
+    authored_by: str | None = None
+
+
+class AdjudicateFindingRequest(BaseModel):
+    decision: HumanDecision
+    reason: str = Field(min_length=3, max_length=4000)
+    idempotency_key: str = Field(min_length=3, max_length=255)
+    # Overriding the actor requires the principal to be permitted to act for them;
+    # `_actor` resolves that, and the service still refuses automated actors.
+    actor_id: str | None = None
+
+
+class OpenRemediationRequest(BaseModel):
+    owner_ref: str = Field(min_length=1, max_length=255)
+    due_date: date
+    action_plan: str = Field(min_length=3, max_length=4000)
+    idempotency_key: str = Field(min_length=3, max_length=255)
+    closure_evidence_required: bool = True
+    escalation_policy: dict = Field(default_factory=dict)
+    external_system: Literal["none", "jira", "servicenow"] = "none"
+
+
+class SubmitClosureRequest(BaseModel):
+    response_text: str = Field(min_length=3, max_length=4000)
+    closure_evidence_ids: list[str] = Field(default_factory=list)
+    action_plan: str | None = None
+    submitted_by: str | None = None
+
+
+class RecordRetestRequest(BaseModel):
+    procedure_ref: str = Field(min_length=1, max_length=255)
+    idempotency_key: str = Field(min_length=3, max_length=255)
+    outcome: RetestOutcome
+    evidence_ids: list[str] = Field(default_factory=list)
+    detail: str = Field(default="", max_length=4000)
+    fresh_evidence_collected_at: datetime | None = None
+    performed_by: str | None = None
+
+
 async def _bounded_request_body(request: Request) -> bytes:
     payload = bytearray()
     async for chunk in request.stream():
@@ -327,6 +402,18 @@ def _raise_http(exc: Exception) -> None:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     if isinstance(exc, (TestReleaseNotFoundError, TestRunNotFoundError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, (FindingNotFoundError, RemediationNotFoundError)):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    # A governance refusal is a 403, not a 422. The request was well formed and
+    # the caller was authenticated; the system declined to let this actor cause
+    # this effect. Reporting it as a validation error would invite a client to
+    # "fix" the payload and retry.
+    if isinstance(exc, (HumanGateError, IndependenceError)):
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if isinstance(exc, (InvalidTransitionError, IdempotencyConflictError)):
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if isinstance(exc, ClosureEvidenceError):
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     if isinstance(exc, (TestInputValidationError, ReproducibilityMismatchError)):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     if isinstance(exc, ControlTestError):
@@ -1308,6 +1395,225 @@ def verify_control_test_run(
         return _control_test_service().verify_reproducibility(
             tenant_id, run_id, domain_request
         ).model_dump(mode="json")
+    except Exception as exc:
+        _raise_http(exc)
+
+
+# --- finding adjudication, remediation, and independent retest ----------------
+#
+# The lifecycle is exposed as transitions rather than as a mutable status field.
+# No endpoint sets a finding's status directly, because the point of the component
+# is that reaching `closed_verified` requires having passed the gates rather than
+# having claimed to.
+
+
+def _adjudication_service() -> AdjudicationService:
+    return AdjudicationService(database)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/findings",
+    dependencies=[Depends(require_permission(Permission.FINDING_WRITE))],
+)
+def propose_finding(
+    tenant_id: str,
+    engagement_id: str,
+    body: ProposeFindingRequest,
+    request: Request,
+) -> dict:
+    """Propose a finding from accepted control-test exceptions.
+
+    The skeptic runs before the finding is persisted as proposable, so the reply
+    reports whether it survived and what was found against it either way.
+    """
+    try:
+        skeptic = SkepticReviewer(
+            approved_exceptions=body.approved_exceptions,
+            period_start=body.period_start,
+            period_end=body.period_end,
+            compensating_controls=body.compensating_controls,
+        )
+        finding_id, verdict = _adjudication_service().propose(
+            tenant_id=tenant_id,
+            engagement_id=engagement_id,
+            finding=body.finding,
+            authored_by=_actor(request, body.authored_by),
+            skeptic=skeptic,
+            exception_rows=body.exception_rows,
+        )
+        return {
+            "finding_id": finding_id,
+            "supported": verdict.supported,
+            "rationale": verdict.rationale,
+            "contradictions": [item.model_dump(mode="json") for item in verdict.contradictions],
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/findings",
+    dependencies=[Depends(require_permission(Permission.FINDING_READ))],
+)
+def list_findings(tenant_id: str, engagement_id: str | None = Query(default=None)) -> dict:
+    try:
+        return {
+            "findings": _adjudication_service().list_findings(
+                tenant_id=tenant_id, engagement_id=engagement_id
+            )
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}",
+    dependencies=[Depends(require_permission(Permission.FINDING_READ))],
+)
+def get_finding(tenant_id: str, finding_id: str) -> dict:
+    """The finding and every decision, action, and retest attached to it."""
+    try:
+        return _adjudication_service().view(
+            tenant_id=tenant_id, finding_id=finding_id
+        ).model_dump(mode="json")
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/decisions",
+    dependencies=[Depends(require_permission(Permission.FINDING_ADJUDICATE))],
+)
+def adjudicate_finding(
+    tenant_id: str,
+    finding_id: str,
+    body: AdjudicateFindingRequest,
+    request: Request,
+) -> dict:
+    """Record a human decision on a proposed finding.
+
+    The actor is resolved from the authenticated principal, and the service
+    refuses a decision attributable to an automated actor, so this endpoint
+    cannot be used to launder an agent's conclusion into an approval.
+    """
+    try:
+        status = _adjudication_service().adjudicate(
+            tenant_id=tenant_id,
+            request=AdjudicationRequest(
+                finding_id=finding_id,
+                decision=body.decision,
+                actor_id=_actor(request, body.actor_id),
+                reason=body.reason,
+                idempotency_key=body.idempotency_key,
+            ),
+        )
+        return {"finding_id": finding_id, "status": status.value}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/remediation",
+    dependencies=[Depends(require_permission(Permission.REMEDIATION_WRITE))],
+)
+def open_remediation(tenant_id: str, finding_id: str, body: OpenRemediationRequest) -> dict:
+    """Convert an approved finding into a remediation obligation.
+
+    Safe to replay: ``created`` is false when an action was already open, and the
+    original action is returned rather than a duplicate.
+    """
+    try:
+        action_id, created = _adjudication_service().open_remediation(
+            tenant_id=tenant_id,
+            request=RemediationRequest(
+                finding_id=finding_id,
+                owner_ref=body.owner_ref,
+                due_date=body.due_date,
+                action_plan=body.action_plan,
+                idempotency_key=body.idempotency_key,
+                closure_evidence_required=body.closure_evidence_required,
+                escalation_policy=body.escalation_policy,
+                external_system=body.external_system,
+            ),
+        )
+        return {"action_id": action_id, "created": created}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/closure",
+    dependencies=[Depends(require_permission(Permission.REMEDIATION_WRITE))],
+)
+def submit_closure(
+    tenant_id: str,
+    action_id: str,
+    body: SubmitClosureRequest,
+    request: Request,
+) -> dict:
+    """Record management's assertion that an action is complete.
+
+    An assertion is not a closure. Only an independent retest can close a finding.
+    """
+    try:
+        response_id = _adjudication_service().submit_closure(
+            tenant_id=tenant_id,
+            submission=ClosureSubmission(
+                action_id=action_id,
+                response_text=body.response_text,
+                submitted_by=_actor(request, body.submitted_by),
+                closure_evidence_ids=body.closure_evidence_ids,
+                action_plan=body.action_plan,
+            ),
+        )
+        return {"action_id": action_id, "response_id": response_id}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/remediation-actions/{action_id}/retests",
+    dependencies=[Depends(require_permission(Permission.REMEDIATION_WRITE))],
+)
+def record_retest(
+    tenant_id: str,
+    action_id: str,
+    body: RecordRetestRequest,
+    request: Request,
+) -> dict:
+    """Verify a declared remediation with an independent retest.
+
+    Refused when the retester is the finding's author, the remediation owner, or
+    whoever declared it complete.
+    """
+    try:
+        retest_id, status = _adjudication_service().retest(
+            tenant_id=tenant_id,
+            request=RetestRequest(
+                action_id=action_id,
+                procedure_ref=body.procedure_ref,
+                performed_by=_actor(request, body.performed_by),
+                idempotency_key=body.idempotency_key,
+                outcome=body.outcome,
+                evidence_ids=body.evidence_ids,
+                detail=body.detail,
+                fresh_evidence_collected_at=body.fresh_evidence_collected_at,
+            ),
+        )
+        return {"retest_id": retest_id, "status": status.value}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/findings/recurrence/{code}",
+    dependencies=[Depends(require_permission(Permission.FINDING_READ))],
+)
+def finding_recurrence(tenant_id: str, code: str) -> dict:
+    """The same control failing across more than one engagement."""
+    try:
+        match = _adjudication_service().recurrence(tenant_id=tenant_id, code=code)
+        return {"code": code, "recurrence": match.model_dump(mode="json") if match else None}
     except Exception as exc:
         _raise_http(exc)
 

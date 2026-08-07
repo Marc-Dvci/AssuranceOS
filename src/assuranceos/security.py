@@ -29,6 +29,14 @@ class Permission(StrEnum):
     TASK_EXECUTE = "tasks:execute"
     CONTROL_TEST_READ = "control-tests:read"
     CONTROL_TEST_EXECUTE = "control-tests:execute"
+    FINDING_READ = "findings:read"
+    FINDING_WRITE = "findings:write"
+    # Deciding a finding is separated from proposing one and granted only to
+    # approver and admin. The service already refuses an approval attributed to
+    # an automated actor; keeping the same separation in the permission model
+    # means the worker role that runs agents cannot reach the endpoint at all.
+    FINDING_ADJUDICATE = "findings:adjudicate"
+    REMEDIATION_WRITE = "remediation:write"
 
 
 ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
@@ -40,6 +48,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.EVIDENCE_READ,
             Permission.CONNECTOR_READ,
             Permission.CONTROL_TEST_READ,
+            Permission.FINDING_READ,
         }
     ),
     "auditor": frozenset(
@@ -54,6 +63,9 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONNECTOR_WRITE,
             Permission.CONTROL_TEST_READ,
             Permission.CONTROL_TEST_EXECUTE,
+            Permission.FINDING_READ,
+            Permission.FINDING_WRITE,
+            Permission.REMEDIATION_WRITE,
         }
     ),
     "approver": frozenset(
@@ -68,6 +80,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONNECTOR_READ,
             Permission.CONNECTOR_APPROVE,
             Permission.CONTROL_TEST_READ,
+            Permission.FINDING_READ,
+            Permission.FINDING_ADJUDICATE,
         }
     ),
     "operator": frozenset(
@@ -82,6 +96,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.OUTBOX_OPERATE,
             Permission.CONTROL_TEST_READ,
             Permission.CONTROL_TEST_EXECUTE,
+            Permission.FINDING_READ,
         }
     ),
     "admin": frozenset(Permission),
@@ -98,6 +113,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.TASK_EXECUTE,
             Permission.CONTROL_TEST_READ,
             Permission.CONTROL_TEST_EXECUTE,
+            Permission.FINDING_READ,
+            Permission.FINDING_WRITE,
         }
     ),
 }

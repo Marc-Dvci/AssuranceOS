@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 715,
+  "file_count": 716,
   "files": [
     {
       "path": ".dockerignore",
@@ -1931,8 +1931,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 89401,
-      "sha256": "bdef186e52e0686da05458561cc376ab7838ceb33a760b544e63f5c83940859e"
+      "size_bytes": 108127,
+      "sha256": "446f32f546a856ae62f89d89520d410f3b932d93c0743181d6802ce9f8ef973d"
     },
     {
       "path": "api/protobuf/README.md",
@@ -2816,8 +2816,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 46570,
-      "sha256": "065a0c10f530aea8f58f9ffa93fea64b31185e57d0efc5b0f68d97c123f3ddd3"
+      "size_bytes": 57713,
+      "sha256": "68cdca5053c9ce399a0a9117662c33921cd0a26a514aab3deea7c597222174e8"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3256,8 +3256,8 @@
     },
     {
       "path": "src/assuranceos/security.py",
-      "size_bytes": 10922,
-      "sha256": "abe454a1208b24d6af8ea6bb4f8fde428fa61df6b8ea3dca8bf506da236b527c"
+      "size_bytes": 12052,
+      "sha256": "eab501801509e4ecc3f3023a23b3bb2f4388a6b615f274fd8854fb3a527a008b"
     },
     {
       "path": "src/assuranceos/vault/__init__.py",
@@ -3423,6 +3423,11 @@
       "path": "tests/test_adjudication.py",
       "size_bytes": 26551,
       "sha256": "b7291755285b912266e5acb34f72329bf23fcbeeb1d61edc708d4332381ac711"
+    },
+    {
+      "path": "tests/test_adjudication_api.py",
+      "size_bytes": 9028,
+      "sha256": "ba5ed0568ff7d53e782ba16fecb02cc4e68124a44fd1aa1c91dd62afb1987e3f"
     },
     {
       "path": "tests/test_adk_gateway_tools.py",
