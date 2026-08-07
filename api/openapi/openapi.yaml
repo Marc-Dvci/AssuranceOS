@@ -2148,6 +2148,321 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/audit-packs:
+    get:
+      summary: List Audit Packs
+      description: Every pack the platform admitted, with its digest and its requirements.
+      operationId: list_audit_packs_api_v1_audit_packs_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response List Audit Packs Api V1 Audit Packs Get
+      security:
+      - HTTPBearer: []
+  /api/v1/audit-packs/{pack_id}/versions/{version}/registration:
+    post:
+      summary: Register Audit Pack
+      description: Admit a verified pack. Idempotent on the artefact's digest.
+      operationId: register_audit_pack_api_v1_audit_packs__pack_id__versions__version__registration_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pack_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pack Id
+      - name: version
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Version
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Register Audit Pack Api V1 Audit Packs  Pack Id  Versions  Version  Registration
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/audit-packs/{pack_id}/versions/{version}/approval:
+    post:
+      summary: Approve Audit Pack
+      description: 'Release a registered pack for use.
+
+
+        Registration says the artefact is genuine; approval says the organisation
+        has
+
+        reviewed the methodology. Separated in the permission model as well as in
+        the
+
+        service, because they are different people''s jobs.'
+      operationId: approve_audit_pack_api_v1_audit_packs__pack_id__versions__version__approval_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pack_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pack Id
+      - name: version
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovePackRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Audit Pack Api V1 Audit Packs  Pack Id  Versions  Version  Approval
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/compile:
+    post:
+      summary: Compile Engagement From Pack
+      description: Compile an approved Audit Pack into this engagement's task graph.
+      operationId: compile_engagement_from_pack_api_v1_tenants__tenant_id__engagements__engagement_id__compile_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompileEngagementRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Compile Engagement From Pack Api V1 Tenants  Tenant
+                  Id  Engagements  Engagement Id  Compile Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/provenance:
+    get:
+      summary: Engagement Provenance
+      description: What this engagement was compiled from, and against which criteria.
+      operationId: engagement_provenance_api_v1_tenants__tenant_id__engagements__engagement_id__provenance_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Engagement Provenance Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Provenance Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/standards:
+    post:
+      summary: Register Standard
+      description: Record a version of a standard and the criteria it contains.
+      operationId: register_standard_api_v1_standards_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterStandardRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Register Standard Api V1 Standards Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/standards/crosswalks:
+    post:
+      summary: Add Crosswalk
+      description: Assert a relationship between criteria in two standards.
+      operationId: add_crosswalk_api_v1_standards_crosswalks_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrosswalkRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Add Crosswalk Api V1 Standards Crosswalks Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/standards/{code}/versions/{version}/criteria/{criterion}/impact:
+    get:
+      summary: Criterion Change Impact
+      description: Everything a revision of this criterion would touch.
+      operationId: criterion_change_impact_api_v1_standards__code__versions__version__criteria__criterion__impact_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Code
+      - name: version
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Version
+      - name: criterion
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Criterion
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Criterion Change Impact Api V1 Standards  Code  Versions  Version  Criteria  Criterion  Impact
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/standard-entitlements:
+    post:
+      summary: Grant Standard Entitlement
+      description: Record a tenant's licence to have a standard's text reproduced.
+      operationId: grant_standard_entitlement_api_v1_tenants__tenant_id__standard_entitlements_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantEntitlementRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Grant Standard Entitlement Api V1 Tenants  Tenant
+                  Id  Standard Entitlements Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/findings:
     post:
       summary: Propose Finding
@@ -2833,6 +3148,22 @@ components:
       - reason
       - idempotency_key
       title: AdjudicateFindingRequest
+    ApprovePackRequest:
+      properties:
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+      type: object
+      required:
+      - reason
+      title: ApprovePackRequest
     AssessMaterialityRequest:
       properties:
         inputs:
@@ -2963,6 +3294,21 @@ components:
       - actor_id
       - reason
       title: CancellationRequest
+    ClaimStrength:
+      type: string
+      enum:
+      - mandatory
+      - recommended
+      - informative
+      title: ClaimStrength
+      description: 'How firmly a criterion binds.
+
+
+        A pack that cannot distinguish a regulatory requirement from an internal
+
+        preference will report both as findings of the same kind, which is how an
+
+        audit function loses the argument about which findings matter.'
     CollectionGrantInput:
       properties:
         grant_key:
@@ -3004,6 +3350,62 @@ components:
       - allowed_streams
       - approved_by
       title: CollectionGrantInput
+    CompileEngagementRequest:
+      properties:
+        pack_id:
+          type: string
+          maxLength: 128
+          minLength: 2
+          title: Pack Id
+        version:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Version
+        entity_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Entity Name
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        in_scope_systems:
+          items:
+            type: string
+          type: array
+          title: In Scope Systems
+        profile_version:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Profile Version
+        compiled_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Compiled By
+      type: object
+      required:
+      - pack_id
+      - version
+      - entity_name
+      - period_start
+      - period_end
+      title: CompileEngagementRequest
+      description: 'Compile an approved pack into an engagement.
+
+
+        The organisation context is supplied rather than read from wherever it
+
+        happens to live, so the compilation record can state what the graph was a
+
+        function of.'
     ConnectorInstanceInput:
       properties:
         connector_key:
@@ -3163,6 +3565,113 @@ components:
       - period_end
       - datasets
       title: ControlTestReproductionRequest
+    CriterionInput:
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          minLength: 2
+          title: Code
+        text:
+          type: string
+          minLength: 10
+          title: Text
+        citation:
+          type: string
+          maxLength: 512
+          minLength: 2
+          title: Citation
+        strength:
+          $ref: '#/components/schemas/ClaimStrength'
+          default: mandatory
+        requirement_ref:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Requirement Ref
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+      additionalProperties: false
+      type: object
+      required:
+      - code
+      - text
+      - citation
+      title: CriterionInput
+      description: 'One requirement inside a standard, with the citation that locates
+        it.
+
+
+        The citation is required. A finding that says "contrary to policy" without
+
+        saying where in the policy is not a finding anyone can act on, and the place
+        to
+
+        enforce that is where the criterion is defined rather than where it is quoted.'
+    CrosswalkRelation:
+      type: string
+      enum:
+      - equivalent
+      - subset
+      - superset
+      - related
+      - conflicts
+      title: CrosswalkRelation
+      description: How one criterion relates to another in a different standard.
+    CrosswalkRequest:
+      properties:
+        source_standard:
+          type: string
+          title: Source Standard
+        source_version:
+          type: string
+          title: Source Version
+        source_criterion:
+          type: string
+          title: Source Criterion
+        target_standard:
+          type: string
+          title: Target Standard
+        target_version:
+          type: string
+          title: Target Version
+        target_criterion:
+          type: string
+          title: Target Criterion
+        relation:
+          $ref: '#/components/schemas/CrosswalkRelation'
+        rationale:
+          type: string
+          maxLength: 2000
+          minLength: 10
+          title: Rationale
+        asserted_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asserted By
+      type: object
+      required:
+      - source_standard
+      - source_version
+      - source_criterion
+      - target_standard
+      - target_version
+      - target_criterion
+      - relation
+      - rationale
+      title: CrosswalkRequest
     DependencyDefinition:
       properties:
         task_key:
@@ -3362,6 +3871,34 @@ components:
       - actor_id
       - reason
       title: GateDecision
+    GrantEntitlementRequest:
+      properties:
+        standard_code:
+          type: string
+          maxLength: 64
+          minLength: 2
+          title: Standard Code
+        licence_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Licence Ref
+        expires_on:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Expires On
+        granted_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Granted By
+      type: object
+      required:
+      - standard_code
+      - licence_ref
+      title: GrantEntitlementRequest
     GrantRevocationRequest:
       properties:
         actor_id:
@@ -3864,6 +4401,19 @@ components:
       - idempotency_key
       - outcome
       title: RecordRetestRequest
+    RegisterStandardRequest:
+      properties:
+        standard:
+          $ref: '#/components/schemas/StandardInput'
+        criteria:
+          items:
+            $ref: '#/components/schemas/CriterionInput'
+          type: array
+          title: Criteria
+      type: object
+      required:
+      - standard
+      title: RegisterStandardRequest
     ResolveDisputeRequest:
       properties:
         resolution:
@@ -4074,6 +4624,79 @@ components:
       - window_start
       - window_end
       title: ScheduleSimulationRequest
+    StandardInput:
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          minLength: 2
+          title: Code
+        name:
+          type: string
+          maxLength: 255
+          minLength: 2
+          title: Name
+        issuer:
+          type: string
+          maxLength: 255
+          minLength: 2
+          title: Issuer
+        version:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Version
+        jurisdiction:
+          type: string
+          maxLength: 64
+          title: Jurisdiction
+          default: global
+        licence:
+          type: string
+          maxLength: 128
+          title: Licence
+          default: internal
+        entitlement_required:
+          type: boolean
+          title: Entitlement Required
+          default: false
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        source_url:
+          anyOf:
+          - type: string
+            maxLength: 1024
+          - type: 'null'
+          title: Source Url
+      additionalProperties: false
+      type: object
+      required:
+      - code
+      - name
+      - issuer
+      - version
+      title: StandardInput
+      description: 'A versioned body of criteria, with its licensing position.
+
+
+        ``entitlement_required`` is the field that matters operationally. Several
+
+        standards bodies licence their text, and an audit platform that reproduces
+
+        licensed criteria for a tenant with no entitlement has a legal problem, not
+        a
+
+        product feature. It is declared here so the compiler can refuse.'
     SubmitClosureRequest:
       properties:
         response_text:

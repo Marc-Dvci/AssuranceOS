@@ -97,10 +97,18 @@ def test_all_agent_packages_are_release_signed_and_tampering_is_detected(tmp_pat
 
 def test_audit_pack_is_release_signed_and_tampering_is_detected(tmp_path: Path):
     source = Path("audit-packs/software-change-management")
-    public_key = Path("security/release-keys/agent-release-public.pem").read_bytes()
+    # Audit Packs are signed by their own key, not by the agent-release key.
+    public_key = Path("security/release-keys/audit-pack-release-public.pem").read_bytes()
     release = verify_audit_pack_release(source, public_key)
     assert release["pack_id"] == "software-change-management"
-    assert release["version"] == "1.0.0"
+    assert release["version"] == "2.0.0"
+
+    # Two artefact classes, two keys is only a real separation if the wrong key
+    # actually fails. Asserting it here means the split cannot quietly collapse
+    # back to one key without a test noticing.
+    agent_key = Path("security/release-keys/agent-release-public.pem").read_bytes()
+    with pytest.raises(ValueError, match="public-key fingerprint does not match"):
+        verify_audit_pack_release(source, agent_key)
 
     tampered = tmp_path / "software-change-management"
     shutil.copytree(source, tampered)

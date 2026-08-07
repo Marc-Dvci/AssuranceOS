@@ -1,42 +1,192 @@
 pack_id: software-change-management
-version: 1.0.0
+version: 2.0.0
 status: released
 signed: true
-objective: Assess whether production software changes are authorized, independently
+release_key_id: assuranceos-audit-pack-v1
+objective: >-
+  Assess whether production software changes are authorized, independently
   reviewed, traceable, and deployed through approved processes.
-criteria:
-- criteria_id: AST-POL-SCM-01
-  source: Asteria synthetic change-management policy
+
+standard:
+  code: AST-SCM-POL
+  name: Asteria change-management policy
+  issuer: Asteria Systems DemoCo
+  version: "4.0"
+  jurisdiction: internal
+  licence: internal
+  entitlement_required: false
   effective_from: '2026-01-01'
+
+compatibility:
+  min_platform_version: 0.8.0
+  requires_control_tests:
+    - test_id: SCM-01
+      version: 2.0.0
+  requires_agent_roles:
+    - evidence-custodian
+    - operating-effectiveness
+    - skeptic
+    - scope-materiality
+    - finding-adjudicator
+    - quality-reviewer
+    - remediation-coordinator
+    - retest-verification
+    - engagement-director
+
+criteria:
+  - criteria_id: AST-POL-SCM-01
+    text: >-
+      Every change deployed to a production system must be linked to a change
+      ticket approved before the change is merged.
+    citation: Asteria change policy v4, section 3.2
+    strength: mandatory
+    effective_from: '2026-01-01'
+  - criteria_id: AST-POL-SCM-02
+    text: >-
+      Every production change must carry at least one approval from a reviewer
+      other than its author.
+    citation: Asteria change policy v4, section 3.4
+    strength: mandatory
+    effective_from: '2026-01-01'
+  - criteria_id: AST-POL-SCM-03
+    text: >-
+      Deviations from the change process require an exception approved by the
+      control owner and recorded in the exception register before the deviation.
+    citation: Asteria change policy v4, section 6.1
+    strength: mandatory
+    effective_from: '2026-01-01'
+
 controls:
-- control_id: SCM-01
-  risk: Unauthorized or insufficiently reviewed production change
-  expected: Every in-scope production merge has an approved change ticket and at least
-    one independent approval, unless an active approved exception applies.
+  - control_id: SCM-01
+    risk: >-
+      An unauthorized or insufficiently reviewed change reaches production and
+      degrades service availability or data integrity.
+    expected: >-
+      Every in-scope production merge has an approved change ticket and at least
+      one independent approval, unless an active approved exception applies.
+    criteria_refs:
+      - AST-POL-SCM-01
+      - AST-POL-SCM-02
+      - AST-POL-SCM-03
+
 procedures:
-- step: 1
-  agent: evidence-custodian
-  action: capture GitHub pull requests, Jira tickets, exceptions, and policy
-- step: 2
-  agent: operating-effectiveness
-  action: execute scm_population_test@1.0.0
-- step: 3
-  agent: skeptic
-  action: challenge exceptions, period, timezone, and compensating controls
-- step: 4
-  agent: finding-adjudicator
-  action: propose supported finding when threshold is met
-- step: 5
-  agent: quality-reviewer
-  action: verify support and methodology
+  - key: approve-engagement-scope
+    step: 1
+    agent: scope-materiality
+    action: >-
+      Establish the in-scope repositories, the audit period, and the materiality
+      policy, and put them to the engagement owner for approval.
+    task_type: scoping
+    human_gate: engagement_scope_approval
+    control_ref: SCM-01
+  - key: capture-change-evidence
+    step: 2
+    agent: evidence-custodian
+    action: >-
+      Capture pull requests, change tickets, the exception register, and the
+      change policy under a collection grant, and register each as evidence.
+    task_type: connector_collection
+    depends_on: [approve-engagement-scope]
+    control_ref: SCM-01
+  - key: execute-population-test
+    step: 3
+    agent: operating-effectiveness
+    action: >-
+      Execute the released deterministic test over the complete in-period
+      population and reconcile the population count.
+    task_type: control_test
+    test_ref:
+      test_id: SCM-01
+      version: 2.0.0
+    depends_on: [capture-change-evidence]
+    control_ref: SCM-01
+  - key: challenge-exceptions
+    step: 4
+    agent: skeptic
+    action: >-
+      Search for reasons each exception is not a finding: approved exceptions,
+      period and timezone boundaries, superseded evidence, compensating controls.
+    task_type: agent
+    depends_on: [execute-population-test]
+    control_ref: SCM-01
+  - key: assess-materiality
+    step: 5
+    agent: scope-materiality
+    action: >-
+      Score materiality from the reconciled population, the surviving exception
+      count, and any qualitative factors that cite evidence.
+    task_type: agent
+    depends_on: [challenge-exceptions]
+    control_ref: SCM-01
+  - key: propose-finding
+    step: 6
+    agent: finding-adjudicator
+    action: >-
+      Propose a finding for the exceptions that survived the contradiction
+      search, citing criteria, condition, cause, consequence, and limitations.
+    task_type: agent
+    depends_on: [assess-materiality]
+    control_ref: SCM-01
+  - key: review-quality
+    step: 7
+    agent: quality-reviewer
+    action: >-
+      Verify support, population reconciliation, criteria citation, disclosure of
+      contradictory evidence, and that the severity meets its materiality floor.
+    task_type: agent
+    depends_on: [propose-finding]
+    control_ref: SCM-01
+  # Gates sit before the step they authorise, so `finding_approval` is attached
+  # to the first step that treats the finding as accepted rather than to the
+  # review that precedes it.
+  - key: open-remediation
+    step: 8
+    agent: remediation-coordinator
+    action: >-
+      Convert the approved finding into a remediation obligation with an owner,
+      a due date, an agreed action plan, and an escalation policy.
+    task_type: agent
+    depends_on: [review-quality]
+    human_gate: finding_approval
+    control_ref: SCM-01
+  - key: verify-remediation
+    step: 9
+    agent: retest-verification
+    action: >-
+      Retest the remediated control on fresh evidence, performed by an identity
+      independent of the finding's author and of the remediation owner.
+    task_type: agent
+    depends_on: [open-remediation]
+    control_ref: SCM-01
+  - key: confirm-closure
+    step: 10
+    agent: engagement-director
+    action: >-
+      Confirm that the retest evidence supports closure, and put the closure to
+      the engagement owner.
+    task_type: agent
+    depends_on: [verify-remediation]
+    human_gate: finding_closure_approval
+    control_ref: SCM-01
+  - key: issue-report
+    step: 11
+    agent: engagement-director
+    action: >-
+      Assemble the engagement report from accepted evidence, and put it to the
+      engagement owner for issuance.
+    task_type: reporting
+    depends_on: [confirm-closure]
+    human_gate: report_issuance
+
 human_gates:
-- engagement_scope_approval
-- finding_approval
-- report_issuance
-- finding_closure_approval
+  - engagement_scope_approval
+  - finding_approval
+  - finding_closure_approval
+  - report_issuance
+
 quality_rules:
-- population must reconcile
-- technical failure is not a control conclusion
-- material claims require accepted evidence
-- contradictory evidence must be disclosed
-release_key_id: hackathon-release-2026-08
+  - population must reconcile
+  - technical failure is not a control conclusion
+  - material claims require accepted evidence
+  - contradictory evidence must be disclosed
+  - severity below its computed materiality floor requires a recorded override

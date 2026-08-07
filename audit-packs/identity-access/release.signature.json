@@ -3,5 +3,5 @@
   "key_id": "assuranceos-audit-pack-v1",
   "public_key_sha256": "b00476e7b614b003108622cbe14f6fa62265fb3968bddc299be8126c2153d17e",
   "schema": "assurance.audit_pack_release_signature.v1",
-  "signature_base64": "QIHZwMYl35duRwBBbNM3av/inkSWMzqwcihxiaWRPLO01wLbsi8F/0MlrsSaXt0WZzqmONvwyawg/Z2A+TWtCA=="
+  "signature_base64": "X+FHrsNPmEuGRUrV3cebzVltEQj+tigbi7iW7hKMc//jCuqWkrN3VeVP9k04Qu308YftBmd3fkvBGOPAzPSxBQ=="
 }

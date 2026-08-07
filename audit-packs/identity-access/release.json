@@ -1,0 +1,11 @@
+{
+  "files": {
+    "README.md": "ca7f930f87d5028a7de874c583d5966f70869ab3aa157a3b19bf0634ee5ba2ac",
+    "pack.yaml": "7827afef16e68ea8bd669761322c439a26c743cbeb887bab14f012d74ac84123"
+  },
+  "pack_id": "identity-access",
+  "package_sha256": "967f7cec90ad27d66cbd034b0fdd833f3a94e7f3e7b585ec1ac78841f00176f7",
+  "released_at": "2026-08-07T18:00:00+00:00",
+  "schema": "assurance.audit_pack_release.v1",
+  "version": "1.0.0"
+}

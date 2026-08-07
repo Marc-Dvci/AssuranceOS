@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 723,
+  "file_count": 746,
   "files": [
     {
       "path": ".dockerignore",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".env.example",
-      "size_bytes": 2840,
-      "sha256": "f1ef27cbfd5c8baa124c8cf92a22704aa735c1716674e416db2aae681ac27af9"
+      "size_bytes": 3288,
+      "sha256": "e708d0d45ef312f235543b2bbc2fdea4e273fee877628cd14cfe43c2bf9318bc"
     },
     {
       "path": ".github/workflows/ci.yml",
@@ -76,8 +76,8 @@
     },
     {
       "path": "Makefile",
-      "size_bytes": 1566,
-      "sha256": "b7b72a7aaee204e354df0bd55ef7ccddd6ba2f78efe79cfac80fc7f0790c974c"
+      "size_bytes": 1630,
+      "sha256": "82444bf3bbc7e2fb95d0e8927a296f8f47186d5976a08d4d48f39147561cd7b1"
     },
     {
       "path": "NOTICE.md",
@@ -1931,8 +1931,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 126069,
-      "sha256": "7c3e10c96d188e97fd9a4bd220988afb26f3f64daee34134fa9cf30851f41f57"
+      "size_bytes": 144499,
+      "sha256": "f148d345a55d772f164ac5a20b2810c2eac32169040fe232a0d7bd919170ec52"
     },
     {
       "path": "api/protobuf/README.md",
@@ -1956,13 +1956,43 @@
     },
     {
       "path": "audit-packs/identity-access/README.md",
-      "size_bytes": 459,
-      "sha256": "2153b8b846a7774723a93407742c042c7445400050e0020e99ca5009a2f20842"
+      "size_bytes": 1410,
+      "sha256": "ca7f930f87d5028a7de874c583d5966f70869ab3aa157a3b19bf0634ee5ba2ac"
+    },
+    {
+      "path": "audit-packs/identity-access/pack.yaml",
+      "size_bytes": 5944,
+      "sha256": "7827afef16e68ea8bd669761322c439a26c743cbeb887bab14f012d74ac84123"
+    },
+    {
+      "path": "audit-packs/identity-access/release.json",
+      "size_bytes": 436,
+      "sha256": "1968738acb12f484d4a78e32d0d789d66fa7eb39f113c18d19940fc4df6d1325"
+    },
+    {
+      "path": "audit-packs/identity-access/release.signature.json",
+      "size_bytes": 339,
+      "sha256": "e0202a434b4a329fe0c3071d00d48df42b30c919e5db3d220d6942e663b1c640"
     },
     {
       "path": "audit-packs/privileged-access/README.md",
-      "size_bytes": 472,
-      "sha256": "bdf2ec4af317fe4b4f4d49a98ff22220d93108594a79db033f94019796d4f6d7"
+      "size_bytes": 1966,
+      "sha256": "8a13476937017c20442b3d8d791966710cef64742232c9b899707f1f7ec1f8f5"
+    },
+    {
+      "path": "audit-packs/privileged-access/pack.yaml",
+      "size_bytes": 6322,
+      "sha256": "89d58b5551e65cec74adb3166ff0e90b10e0186ba53fdbe59125942b12ada28d"
+    },
+    {
+      "path": "audit-packs/privileged-access/release.json",
+      "size_bytes": 438,
+      "sha256": "84eb75622a164066ec624502274545bcce7fe5f6f5ba08b52719ead1829deb28"
+    },
+    {
+      "path": "audit-packs/privileged-access/release.signature.json",
+      "size_bytes": 339,
+      "sha256": "19e75ca55282b3345a205e5c35bac45d1b250f66f51b25d2b5d51f0ec00f8a26"
     },
     {
       "path": "audit-packs/procure-to-pay/README.md",
@@ -1971,28 +2001,28 @@
     },
     {
       "path": "audit-packs/schemas/audit_pack.schema.json",
-      "size_bytes": 1244,
-      "sha256": "0added55bc84fc7130228d8e7cc6bbb01c21823b7b0c12cf8a8d86bbb2aac267"
+      "size_bytes": 6836,
+      "sha256": "c88b14be5cb86289d2eb4de3ea7c0e5d147ef2c5b860483592c51c87501ea1b5"
     },
     {
       "path": "audit-packs/software-change-management/README.md",
-      "size_bytes": 876,
-      "sha256": "116d7014d1d71864633429092bfc26f62173033b7404ba82ee4d5ce3687d23ed"
+      "size_bytes": 1892,
+      "sha256": "dff83adf40664167e538eddaf512ccd6bbe50887321fee049edcbe943ced626e"
     },
     {
       "path": "audit-packs/software-change-management/pack.yaml",
-      "size_bytes": 1428,
-      "sha256": "c0553486e9c4af955e247718ff5f79167187e2d659cb9e8d2d502ad90b6091b9"
+      "size_bytes": 6344,
+      "sha256": "70de9bc41c96d264bc2f6fea5b2f944c54e4b9720d5e739c5993cc96e30dbdb6"
     },
     {
       "path": "audit-packs/software-change-management/release.json",
-      "size_bytes": 436,
-      "sha256": "7fb2a3fad763f46a5b4a1915207c9e811bd870ba7d703bf190148a4813fcf36b"
+      "size_bytes": 447,
+      "sha256": "e6bf121b412a1a762e9970d38aa73f84d0ff5b11a5313ce89dcb5edf08c874bd"
     },
     {
       "path": "audit-packs/software-change-management/release.signature.json",
-      "size_bytes": 332,
-      "sha256": "4d2a2e347a44a32e5819847506bdde26ff7c514a38f77954482fe859441f8f77"
+      "size_bytes": 339,
+      "sha256": "12af5c5b67ae37421121059871e012c5cc4cdcf87ef1b4a576fc16bf90cb90ae"
     },
     {
       "path": "connectors/confluence/README.md",
@@ -2250,6 +2280,11 @@
       "sha256": "998ca795419470efa6f7e6c430e3f6cb0351d733dbb02c6df8b271a39051433d"
     },
     {
+      "path": "docs/architecture/standards-and-audit-pack-compilation.md",
+      "size_bytes": 9853,
+      "sha256": "b496ac61272791221cb21b8bd02c273c5dc759ac84ea8c89e91b9b83bd34fe27"
+    },
+    {
       "path": "docs/architecture/starter-scope.md",
       "size_bytes": 3749,
       "sha256": "b355d1cd5876ed230ad94600d8a7f7abc373161cc512428c5594f5767f26a0b5"
@@ -2450,6 +2485,11 @@
       "sha256": "7c6cb3d977b1f0ab5752d8507834fe54e8a6e42917fc099a7d7eefc41fe7f9f7"
     },
     {
+      "path": "migrations/versions/0011_standards_and_audit_packs.py",
+      "size_bytes": 11998,
+      "sha256": "05359f25d19b6cb2063a65203a1d09666f4aaab49c0c3c7a3b77f9c2d3959edf"
+    },
+    {
       "path": "migrations/versions/fa73e07500b5_canonical_domain_schema.py",
       "size_bytes": 55306,
       "sha256": "0f06333ed68119387cf7d5f8c5862c7f403d187e1138e75863e7f904f86e3524"
@@ -2513,6 +2553,11 @@
       "path": "scripts/deploy_adk_agent.py",
       "size_bytes": 1472,
       "sha256": "9d9d66f15040de1c8874eb04c4bec54947c51b96d9636aa2a83f0fd1fd105d85"
+    },
+    {
+      "path": "scripts/generate_audit_pack_signing_key.py",
+      "size_bytes": 1855,
+      "sha256": "86f95f8e7092fd5ba0424c87bc463e3e5cb515fa2bad5b7cfcca2c6c5b9ecc7a"
     },
     {
       "path": "scripts/generate_control_test_signing_key.py",
@@ -2600,6 +2645,11 @@
       "sha256": "27251802b9ffcff1b05fb26ec2545026000b1a07ded9af5b354978aeda7c2178"
     },
     {
+      "path": "scripts/run_pack_compiler_demo.py",
+      "size_bytes": 1364,
+      "sha256": "882ca8066a9f2fd3222fff26b37f33de5674dc03a8bc41d29cea026db60e2c7d"
+    },
+    {
       "path": "scripts/run_scheduler_demo.py",
       "size_bytes": 756,
       "sha256": "ae192865abde3f43d207ea11063e1ee6b15d0e0769dc3c5373969cfef6430b8c"
@@ -2621,8 +2671,8 @@
     },
     {
       "path": "scripts/validate_repo.py",
-      "size_bytes": 5520,
-      "sha256": "f0c3ca7df09978a06a7c84c538fe23aa5a4bf3a5df92b7cc461fa1afbd4e4dd8"
+      "size_bytes": 8115,
+      "sha256": "f9613b3bc30022962ed7c6d8c219901e56d898fc534f864f7b27e1e0ac1cc6cc"
     },
     {
       "path": "scripts/verify_evidence_export.py",
@@ -2653,6 +2703,11 @@
       "path": "security/release-keys/agent-release-public.pem",
       "size_bytes": 113,
       "sha256": "2a9469b120a37bf62ea969ebdeed0efe536125f92126ba2f723edc60d3264130"
+    },
+    {
+      "path": "security/release-keys/audit-pack-release-public.pem",
+      "size_bytes": 113,
+      "sha256": "0f836fb187516a8127cb188d4d48edd3222ea41926d0c06f26d68e68c590742c"
     },
     {
       "path": "security/release-keys/control-test-release-public.pem",
@@ -2846,8 +2901,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 66942,
-      "sha256": "3b549cfc6c85104f5e04e7f2cc89023da3f53cc7ffabd32962e56a4b5056449b"
+      "size_bytes": 78201,
+      "sha256": "9c037bf6bf6082f2f57a6c2f9b66cef6ca2c08ea8fc4c52aa49eeba97eedfea3"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -2856,8 +2911,8 @@
     },
     {
       "path": "src/assuranceos/config.py",
-      "size_bytes": 9056,
-      "sha256": "b5302d1329596b6d3f67c6373ad22761502e129489beb5b4bca29a7c3841684e"
+      "size_bytes": 9733,
+      "sha256": "1fbcfb4066702d4136d046307fcf3510ea4bc71ffc7673815f13195c9ff7a5a9"
     },
     {
       "path": "src/assuranceos/connectors/__init__.py",
@@ -3016,8 +3071,8 @@
     },
     {
       "path": "src/assuranceos/db/models/__init__.py",
-      "size_bytes": 2420,
-      "sha256": "c091db50dac23de158f4870e4a83650cbbdbe3b77f1da519ca2b13339a355c81"
+      "size_bytes": 2753,
+      "sha256": "7db391b2a58a4c355c5b5f7f65be2bae588a3fd120e047a837b24b4c23f416bd"
     },
     {
       "path": "src/assuranceos/db/models/agent_governance.py",
@@ -3068,6 +3123,11 @@
       "path": "src/assuranceos/db/models/planning.py",
       "size_bytes": 8422,
       "sha256": "6f0864fa24a3ed5e84eeb60049d92229c04c8840059b7a42e8a7dab9c95cfe74"
+    },
+    {
+      "path": "src/assuranceos/db/models/standards.py",
+      "size_bytes": 9739,
+      "sha256": "1489ef4571153022a37915651ec59376fc90f1e461f9c0187e28a5c7439b5df6"
     },
     {
       "path": "src/assuranceos/db/models/tenancy.py",
@@ -3286,8 +3346,48 @@
     },
     {
       "path": "src/assuranceos/security.py",
-      "size_bytes": 13287,
-      "sha256": "bd8f01976f6a2c1411943967506ca60cff8fc1ae97363b1afb285c3cbca98ecb"
+      "size_bytes": 13913,
+      "sha256": "379e8efef9667dd95c02a92da712e9e3db563941b4a984501bc078b059f58439"
+    },
+    {
+      "path": "src/assuranceos/standards/__init__.py",
+      "size_bytes": 2172,
+      "sha256": "d35697e43c7b21d7969bcb7f761625c9d12991af8a522ca46a23042eff20efb2"
+    },
+    {
+      "path": "src/assuranceos/standards/compiler.py",
+      "size_bytes": 14075,
+      "sha256": "1d9294bdf16469f37b16b5ff465f6d02cf227d3ad7a63894cb3d3f5eb1765d40"
+    },
+    {
+      "path": "src/assuranceos/standards/definitions.py",
+      "size_bytes": 14851,
+      "sha256": "fe08c61a6c37a04da0c2520c705e2b78b83ebbd33c002699db57518b16bb6280"
+    },
+    {
+      "path": "src/assuranceos/standards/demo.py",
+      "size_bytes": 11552,
+      "sha256": "e9a726e42aa956a4166a8d6c35b24c43e27b71243ae89367154b51a10aa95a67"
+    },
+    {
+      "path": "src/assuranceos/standards/exceptions.py",
+      "size_bytes": 2463,
+      "sha256": "6baee1ba27a9e18c257d3f5317de476b2d80d6c5eb8b441219378ab3185e6cf7"
+    },
+    {
+      "path": "src/assuranceos/standards/packs.py",
+      "size_bytes": 6478,
+      "sha256": "95122af5a5d867438b88a111bb6bc791a7597b86116194ada513353a8cfa2b1c"
+    },
+    {
+      "path": "src/assuranceos/standards/repository.py",
+      "size_bytes": 6788,
+      "sha256": "731add32c62954051cfe2fc4ccc3a82bdc95961fd7c1a3877903abe03d5065c9"
+    },
+    {
+      "path": "src/assuranceos/standards/service.py",
+      "size_bytes": 26284,
+      "sha256": "137c8cfce443db1532d0fb868949a49fec24c8325238a5bd30412137d5e498c5"
     },
     {
       "path": "src/assuranceos/vault/__init__.py",
@@ -3570,6 +3670,11 @@
       "sha256": "645f8e48b9d7d45bbc9067899f2bc7bcf5df86c82bb92910cf94a2241d63bbad"
     },
     {
+      "path": "tests/test_pack_compiler_demo.py",
+      "size_bytes": 3556,
+      "sha256": "bfca5c35fc5bd25e67a8704b4d81f1d7bc7549ac29a0d267edb8e48f841cd99a"
+    },
+    {
       "path": "tests/test_policy.py",
       "size_bytes": 4416,
       "sha256": "55133bb938ca54f21d736f52e4b4073f1be48bc022dfe8e2e59128f7e0c013d2"
@@ -3586,8 +3691,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 13065,
-      "sha256": "3b91ec040dd1438b74906caf0c6a0eb7fd2e3885350c9e7fcb4c76993c4f29c5"
+      "size_bytes": 13575,
+      "sha256": "4a05903fda8402db75f1c7bcc4e15b1370eb1831be58ae8203849e13156de585"
     },
     {
       "path": "tests/test_scheduler_api.py",
@@ -3603,6 +3708,16 @@
       "path": "tests/test_scheduling.py",
       "size_bytes": 14856,
       "sha256": "2a8a6b4cfaf47952261f6b7cbaa0dfbe9b1a5ae1099943ae359fdc597f0055ce"
+    },
+    {
+      "path": "tests/test_standards.py",
+      "size_bytes": 25624,
+      "sha256": "0471b25364589e97d157ed6221859b5d918838c12dc1d15ddd10ae277838eb63"
+    },
+    {
+      "path": "tests/test_standards_api.py",
+      "size_bytes": 6242,
+      "sha256": "e6953c798d36fbfc88f2832b600cde50254dcc061e877668c6df030bdfaee02a"
     },
     {
       "path": "tests/test_vault.py",

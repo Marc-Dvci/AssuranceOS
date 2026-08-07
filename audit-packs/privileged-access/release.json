@@ -1,0 +1,11 @@
+{
+  "files": {
+    "README.md": "8a13476937017c20442b3d8d791966710cef64742232c9b899707f1f7ec1f8f5",
+    "pack.yaml": "89d58b5551e65cec74adb3166ff0e90b10e0186ba53fdbe59125942b12ada28d"
+  },
+  "pack_id": "privileged-access",
+  "package_sha256": "1b951edde3a354f1e4623bcba81a5b94d2a35ccb0de45914d9081cd3f8b51a6c",
+  "released_at": "2026-08-07T18:00:00+00:00",
+  "schema": "assurance.audit_pack_release.v1",
+  "version": "1.0.0"
+}

@@ -109,6 +109,28 @@ from .scheduling.exceptions import (
     ScheduleNotFoundError,
 )
 from .security import JwtVerifier, Permission, Principal, effective_actor, require_permission
+from .standards import (
+    AuditPackCompiler,
+    AuditPackRegistry,
+    CrosswalkInput,
+    CrosswalkRelation,
+    OrganizationContext,
+    StandardsService,
+    released_agent_versions,
+    released_test_versions,
+)
+from .standards.definitions import CriterionInput, StandardInput
+from .standards.exceptions import (
+    CriteriaEffectivityError,
+    CriterionNotFoundError,
+    DuplicateStandardError,
+    PackCompatibilityError,
+    PackCompilationError,
+    PackEntitlementError,
+    PackNotFoundError,
+    PackNotReleasedError,
+    StandardNotFoundError,
+)
 from .vault import BaselineContentInspector, Ed25519ManifestSigner, EvidenceVault, GoogleCloudStorageObjectStore
 from .vault.exceptions import (
     AcquisitionConflictError,
@@ -204,6 +226,24 @@ def _control_test_service() -> ControlTestService:
         control_test_registry,
         require_canonical_evidence=settings.is_production,
     )
+
+
+# The Audit Pack registry is loaded at import, like the control-test registry, so
+# a deployment carrying an unsigned or incoherent pack fails to start rather than
+# failing on the first engagement someone tries to compile.
+audit_pack_registry = AuditPackRegistry(
+    settings.audit_pack_root,
+    trusted_public_key=settings.audit_pack_public_key.read_bytes(),
+).load()
+
+_pack_compiler = AuditPackCompiler(
+    released_tests=released_test_versions(control_test_registry),
+    released_agents=released_agent_versions(settings.agent_root),
+)
+
+
+def _standards_service() -> StandardsService:
+    return StandardsService(database, registry=audit_pack_registry, compiler=_pack_compiler)
 
 
 @app.middleware("http")
@@ -455,6 +495,17 @@ def _raise_http(exc: Exception) -> None:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     if isinstance(exc, (FindingNotFoundError, RemediationNotFoundError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, (PackNotFoundError, StandardNotFoundError, CriterionNotFoundError)):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    # An unentitled standard is a 403: the request was well formed and the caller
+    # was authenticated; the platform declined to reproduce licensed text for a
+    # tenant with no licence. Reporting it as a 422 would invite a retry.
+    if isinstance(exc, PackEntitlementError):
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if isinstance(exc, (PackNotReleasedError, PackCompilationError, DuplicateStandardError)):
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if isinstance(exc, (PackCompatibilityError, CriteriaEffectivityError)):
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     # A governance refusal is a 403, not a 422. The request was well formed and
     # the caller was authenticated; the system declined to let this actor cause
     # this effect. Reporting it as a validation error would invite a client to
@@ -1451,6 +1502,261 @@ def verify_control_test_run(
         return _control_test_service().verify_reproducibility(
             tenant_id, run_id, domain_request
         ).model_dump(mode="json")
+    except Exception as exc:
+        _raise_http(exc)
+
+
+# --- standards, criteria, and Audit Pack compilation --------------------------
+#
+# Compilation is the only way an engagement gets a task graph from a pack. There
+# is no endpoint that accepts a hand-authored workflow *and* claims a pack
+# reference, because that combination is how a methodology and the work that ran
+# under it drift apart.
+
+
+class RegisterStandardRequest(BaseModel):
+    standard: StandardInput
+    criteria: list[CriterionInput] = Field(default_factory=list)
+
+
+class GrantEntitlementRequest(BaseModel):
+    standard_code: str = Field(min_length=2, max_length=64)
+    licence_ref: str = Field(min_length=1, max_length=255)
+    expires_on: date | None = None
+    granted_by: str | None = None
+
+
+class CrosswalkRequest(BaseModel):
+    source_standard: str
+    source_version: str
+    source_criterion: str
+    target_standard: str
+    target_version: str
+    target_criterion: str
+    relation: CrosswalkRelation
+    rationale: str = Field(min_length=10, max_length=2000)
+    asserted_by: str | None = None
+
+
+class ApprovePackRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=4000)
+    approved_by: str | None = None
+
+
+class CompileEngagementRequest(BaseModel):
+    """Compile an approved pack into an engagement.
+
+    The organisation context is supplied rather than read from wherever it
+    happens to live, so the compilation record can state what the graph was a
+    function of.
+    """
+
+    pack_id: str = Field(min_length=2, max_length=128)
+    version: str = Field(min_length=1, max_length=32)
+    entity_name: str = Field(min_length=1, max_length=255)
+    period_start: date
+    period_end: date
+    in_scope_systems: list[str] = Field(default_factory=list)
+    profile_version: int | None = None
+    compiled_by: str | None = None
+
+
+@app.get(
+    "/api/v1/audit-packs",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_READ))],
+)
+def list_audit_packs() -> dict:
+    """Every pack the platform admitted, with its digest and its requirements."""
+    return {
+        "packs": [
+            {
+                "pack_id": pack.manifest.pack_id,
+                "version": pack.manifest.version,
+                "package_sha256": pack.package_sha256,
+                "objective": pack.manifest.objective,
+                "standard": (
+                    f"{pack.manifest.standard.code}@{pack.manifest.standard.version}"
+                ),
+                "entitlement_required": pack.manifest.standard.entitlement_required,
+                "procedures": len(pack.manifest.procedures),
+                "human_gates": list(pack.manifest.human_gates),
+                "requires_control_tests": [
+                    str(item) for item in pack.manifest.compatibility.requires_control_tests
+                ],
+            }
+            for pack in audit_pack_registry.list()
+        ]
+    }
+
+
+@app.post(
+    "/api/v1/audit-packs/{pack_id}/versions/{version}/registration",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_WRITE))],
+)
+def register_audit_pack(pack_id: str, version: str, request: Request) -> dict:
+    """Admit a verified pack. Idempotent on the artefact's digest."""
+    try:
+        pack = audit_pack_registry.get(pack_id, version)
+        registration_id = _standards_service().register_pack(
+            pack=pack, registered_by=_actor(request)
+        )
+        return {
+            "registration_id": registration_id,
+            "pack": pack.reference,
+            "package_sha256": pack.package_sha256,
+            "status": "registered",
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/audit-packs/{pack_id}/versions/{version}/approval",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_APPROVE))],
+)
+def approve_audit_pack(
+    pack_id: str, version: str, body: ApprovePackRequest, request: Request
+) -> dict:
+    """Release a registered pack for use.
+
+    Registration says the artefact is genuine; approval says the organisation has
+    reviewed the methodology. Separated in the permission model as well as in the
+    service, because they are different people's jobs.
+    """
+    try:
+        registration_id = _standards_service().approve_pack(
+            pack_id=pack_id,
+            version=version,
+            approved_by=_actor(request, body.approved_by),
+            reason=body.reason,
+        )
+        return {"registration_id": registration_id, "pack": f"{pack_id}@{version}", "status": "approved"}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/compile",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_WRITE))],
+)
+def compile_engagement_from_pack(
+    tenant_id: str,
+    engagement_id: str,
+    body: CompileEngagementRequest,
+    request: Request,
+) -> dict:
+    """Compile an approved Audit Pack into this engagement's task graph."""
+    try:
+        service = _standards_service()
+        context = OrganizationContext(
+            tenant_id=tenant_id,
+            entity_name=body.entity_name,
+            period_start=body.period_start,
+            period_end=body.period_end,
+            in_scope_systems=body.in_scope_systems,
+            # Read from canonical state rather than accepted from the caller. An
+            # entitlement a request can assert is not an entitlement.
+            entitlements=service.effective_entitlements(tenant_id=tenant_id),
+            profile_version=body.profile_version,
+        )
+        return service.compile_engagement(
+            pack_id=body.pack_id,
+            version=body.version,
+            context=context,
+            engagement_id=engagement_id,
+            compiled_by=_actor(request, body.compiled_by),
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/provenance",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))],
+)
+def engagement_provenance(tenant_id: str, engagement_id: str) -> dict:
+    """What this engagement was compiled from, and against which criteria."""
+    try:
+        return _standards_service().provenance(
+            tenant_id=tenant_id, engagement_id=engagement_id
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/standards",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_WRITE))],
+)
+def register_standard(body: RegisterStandardRequest) -> dict:
+    """Record a version of a standard and the criteria it contains."""
+    try:
+        standard_id = _standards_service().register_standard(
+            standard=body.standard, criteria=body.criteria
+        )
+        return {
+            "standard_id": standard_id,
+            "standard": f"{body.standard.code}@{body.standard.version}",
+            "criteria": len(body.criteria),
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/standards/crosswalks",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_WRITE))],
+)
+def add_crosswalk(body: CrosswalkRequest, request: Request) -> dict:
+    """Assert a relationship between criteria in two standards."""
+    try:
+        crosswalk_id = _standards_service().add_crosswalk(
+            source=(body.source_standard, body.source_version, body.source_criterion),
+            target=(body.target_standard, body.target_version, body.target_criterion),
+            crosswalk=CrosswalkInput(
+                source_criterion=body.source_criterion,
+                target_criterion=body.target_criterion,
+                relation=body.relation,
+                rationale=body.rationale,
+                asserted_by=_actor(request, body.asserted_by),
+            ),
+        )
+        return {"crosswalk_id": crosswalk_id, "relation": body.relation.value}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/standards/{code}/versions/{version}/criteria/{criterion}/impact",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_READ))],
+)
+def criterion_change_impact(code: str, version: str, criterion: str) -> dict:
+    """Everything a revision of this criterion would touch."""
+    try:
+        return _standards_service().change_impact(
+            standard_code=code, standard_version=version, criterion_code=criterion
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/standard-entitlements",
+    dependencies=[Depends(require_permission(Permission.STANDARDS_APPROVE))],
+)
+def grant_standard_entitlement(
+    tenant_id: str, body: GrantEntitlementRequest, request: Request
+) -> dict:
+    """Record a tenant's licence to have a standard's text reproduced."""
+    try:
+        entitlement_id = _standards_service().grant_entitlement(
+            tenant_id=tenant_id,
+            standard_code=body.standard_code,
+            licence_ref=body.licence_ref,
+            granted_by=_actor(request, body.granted_by),
+            expires_on=body.expires_on,
+        )
+        return {"entitlement_id": entitlement_id, "standard_code": body.standard_code}
     except Exception as exc:
         _raise_http(exc)
 

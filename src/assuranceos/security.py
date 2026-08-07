@@ -47,6 +47,12 @@ class Permission(StrEnum):
     # back without being granted the ability to write or decide findings.
     FINDING_DISPUTE = "findings:dispute"
     REMEDIATION_WRITE = "remediation:write"
+    STANDARDS_READ = "standards:read"
+    STANDARDS_WRITE = "standards:write"
+    # Approving an Audit Pack is approving a methodology the organisation will
+    # stand behind. Held apart from writing standards for the same reason
+    # adjudicating a finding is held apart from writing one.
+    STANDARDS_APPROVE = "standards:approve"
 
 
 ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
@@ -59,6 +65,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONNECTOR_READ,
             Permission.CONTROL_TEST_READ,
             Permission.FINDING_READ,
+            Permission.STANDARDS_READ,
         }
     ),
     "auditor": frozenset(
@@ -77,6 +84,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.FINDING_WRITE,
             Permission.FINDING_REVIEW,
             Permission.REMEDIATION_WRITE,
+            Permission.STANDARDS_READ,
+            Permission.STANDARDS_WRITE,
         }
     ),
     # Management: may contest a finding and respond to it, and may do nothing else
@@ -105,6 +114,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_READ,
             Permission.FINDING_READ,
             Permission.FINDING_ADJUDICATE,
+            Permission.STANDARDS_READ,
+            Permission.STANDARDS_APPROVE,
         }
     ),
     "operator": frozenset(
@@ -120,6 +131,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_READ,
             Permission.CONTROL_TEST_EXECUTE,
             Permission.FINDING_READ,
+            Permission.STANDARDS_READ,
         }
     ),
     "admin": frozenset(Permission),
@@ -138,6 +150,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_EXECUTE,
             Permission.FINDING_READ,
             Permission.FINDING_WRITE,
+            Permission.STANDARDS_READ,
         }
     ),
 }

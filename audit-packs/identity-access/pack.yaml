@@ -1,0 +1,182 @@
+pack_id: identity-access
+version: 1.0.0
+status: released
+signed: true
+release_key_id: assuranceos-audit-pack-v1
+objective: >-
+  Assess whether workforce identities are provisioned, reviewed, and removed in
+  line with the access-control policy, and whether terminated identities lose
+  access within the approved deadline.
+
+standard:
+  code: AST-IAM-POL
+  name: Asteria access-control policy
+  issuer: Asteria Systems DemoCo
+  version: "2.1"
+  jurisdiction: internal
+  licence: internal
+  entitlement_required: false
+  effective_from: '2025-07-01'
+
+compatibility:
+  min_platform_version: 0.8.0
+  requires_control_tests:
+    - test_id: IAM-01
+      version: 1.0.0
+  requires_agent_roles:
+    - evidence-custodian
+    - operating-effectiveness
+    - skeptic
+    - scope-materiality
+    - finding-adjudicator
+    - quality-reviewer
+    - remediation-coordinator
+    - retest-verification
+    - engagement-director
+
+criteria:
+  - criteria_id: AST-POL-IAM-01
+    text: >-
+      Access for a terminated worker must be disabled in every in-scope directory
+      no later than the deadline recorded on the termination.
+    citation: Asteria access-control policy v2.1, section 4.3
+    strength: mandatory
+    effective_from: '2025-07-01'
+  - criteria_id: AST-POL-IAM-02
+    text: >-
+      A deviation from the deprovisioning deadline requires an exception that was
+      active at the time of the deviation.
+    citation: Asteria access-control policy v2.1, section 7.2
+    strength: mandatory
+    effective_from: '2025-07-01'
+
+controls:
+  - control_id: IAM-01
+    risk: >-
+      A terminated worker retains access to production systems and can act on
+      customer data after leaving the organisation.
+    expected: >-
+      Every terminated identity in the period was disabled by its deadline, or is
+      covered by an exception that was active at the time.
+    criteria_refs:
+      - AST-POL-IAM-01
+      - AST-POL-IAM-02
+
+procedures:
+  - key: approve-engagement-scope
+    step: 1
+    agent: scope-materiality
+    action: >-
+      Establish the in-scope directories, the termination population window, and
+      the materiality policy, and put them to the engagement owner for approval.
+    task_type: scoping
+    human_gate: engagement_scope_approval
+    control_ref: IAM-01
+  - key: capture-identity-evidence
+    step: 2
+    agent: evidence-custodian
+    action: >-
+      Capture the termination register, directory account states, and the
+      exception register under a collection grant, and register each as evidence.
+    task_type: connector_collection
+    depends_on: [approve-engagement-scope]
+    control_ref: IAM-01
+  - key: execute-deprovisioning-test
+    step: 3
+    agent: operating-effectiveness
+    action: >-
+      Execute the released deterministic test over the complete termination
+      population and reconcile the population count.
+    task_type: control_test
+    test_ref:
+      test_id: IAM-01
+      version: 1.0.0
+    depends_on: [capture-identity-evidence]
+    control_ref: IAM-01
+  - key: challenge-exceptions
+    step: 4
+    agent: skeptic
+    action: >-
+      Search for reasons each late deprovisioning is not a finding: an active
+      exception, a termination outside the period, or an account already disabled
+      by a prior process.
+    task_type: agent
+    depends_on: [execute-deprovisioning-test]
+    control_ref: IAM-01
+  - key: assess-materiality
+    step: 5
+    agent: scope-materiality
+    action: >-
+      Score materiality from the reconciled population, the surviving exception
+      count, and the sensitivity of the systems the identities retained.
+    task_type: agent
+    depends_on: [challenge-exceptions]
+    control_ref: IAM-01
+  - key: propose-finding
+    step: 6
+    agent: finding-adjudicator
+    action: >-
+      Propose a finding for the identities that remained enabled past their
+      deadline without an active exception.
+    task_type: agent
+    depends_on: [assess-materiality]
+    control_ref: IAM-01
+  - key: review-quality
+    step: 7
+    agent: quality-reviewer
+    action: >-
+      Verify support, population reconciliation, criteria citation, and
+      disclosure of every exception that suppressed a candidate finding.
+    task_type: agent
+    depends_on: [propose-finding]
+    control_ref: IAM-01
+  - key: open-remediation
+    step: 8
+    agent: remediation-coordinator
+    action: >-
+      Convert the approved finding into a remediation obligation with an owner,
+      a due date, and an agreed action plan.
+    task_type: agent
+    depends_on: [review-quality]
+    human_gate: finding_approval
+    control_ref: IAM-01
+  - key: verify-remediation
+    step: 9
+    agent: retest-verification
+    action: >-
+      Retest deprovisioning on a fresh termination population, performed by an
+      identity independent of the finding's author and of the remediation owner.
+    task_type: agent
+    depends_on: [open-remediation]
+    control_ref: IAM-01
+  - key: issue-report
+    step: 10
+    agent: engagement-director
+    action: >-
+      Assemble the engagement report from accepted evidence, and put it to the
+      engagement owner for issuance.
+    task_type: reporting
+    depends_on: [verify-remediation]
+    human_gate: report_issuance
+
+human_gates:
+  - engagement_scope_approval
+  - finding_approval
+  - report_issuance
+
+quality_rules:
+  - population must reconcile
+  - technical failure is not a control conclusion
+  - material claims require accepted evidence
+  - contradictory evidence must be disclosed
+  - directory state is evidence of account status only, not of session termination
+
+crosswalks:
+  - source_criterion: AST-POL-IAM-01
+    target_criterion: CC6.2
+    relation: subset
+    rationale: >-
+      The policy deadline is a specific instance of the broader requirement to
+      remove access when it is no longer required; the standard does not fix a
+      deadline, so the policy is the narrower obligation.
+    asserted_by: standards-team@asteria.example

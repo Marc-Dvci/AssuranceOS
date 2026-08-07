@@ -1,11 +1,11 @@
 {
   "files": {
-    "README.md": "116d7014d1d71864633429092bfc26f62173033b7404ba82ee4d5ce3687d23ed",
-    "pack.yaml": "c0553486e9c4af955e247718ff5f79167187e2d659cb9e8d2d502ad90b6091b9"
+    "README.md": "dff83adf40664167e538eddaf512ccd6bbe50887321fee049edcbe943ced626e",
+    "pack.yaml": "70de9bc41c96d264bc2f6fea5b2f944c54e4b9720d5e739c5993cc96e30dbdb6"
   },
   "pack_id": "software-change-management",
-  "package_sha256": "cd86fcf69a89f38248645325a7a2ee713e48bca82ef079467ff25d6c7d99db28",
-  "released_at": "2026-08-06T18:45:00+00:00",
+  "package_sha256": "459cf0889a1d34a262b7735795ecc8a6b475f0d2ff01303fbcf848e15fdc7111",
+  "released_at": "2026-08-07T18:00:00+00:00",
   "schema": "assurance.audit_pack_release.v1",
-  "version": "1.0.0"
+  "version": "2.0.0"
 }

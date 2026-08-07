@@ -42,6 +42,11 @@ class Settings:
     demo_root: Path
     control_test_root: Path
     control_test_public_key: Path
+    audit_pack_root: Path
+    # Audit Packs and agent packages are signed by different keys on purpose. They
+    # are different artefact classes with different authors and review paths, and a
+    # single key means compromising either review compromises the other.
+    audit_pack_public_key: Path
     model_mode: str
     gemini_model: str
     evidence_root: Path
@@ -94,6 +99,8 @@ class Settings:
             demo_root=Path(os.getenv("ASSURANCEOS_DEMO_ROOT", "./demo/asteria")),
             control_test_root=Path(os.getenv("ASSURANCEOS_CONTROL_TEST_ROOT", "./tests-library")),
             control_test_public_key=Path(os.getenv("ASSURANCEOS_CONTROL_TEST_PUBLIC_KEY", "./security/release-keys/control-test-release-public.pem")),
+            audit_pack_root=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_ROOT", "./audit-packs")),
+            audit_pack_public_key=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_PUBLIC_KEY", "./security/release-keys/audit-pack-release-public.pem")),
             model_mode=os.getenv("ASSURANCEOS_MODEL_MODE", "mock"),
             gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.5-flash"),
             evidence_root=Path(os.getenv("ASSURANCEOS_EVIDENCE_ROOT", "./var/evidence")),
@@ -169,6 +176,8 @@ class Settings:
             raise ValueError("configured export-signing public key does not exist")
         if not self.control_test_public_key.is_file():
             raise ValueError("configured control-test release public key does not exist")
+        if not self.audit_pack_public_key.is_file():
+            raise ValueError("configured Audit Pack release public key does not exist")
         if self.execution_signing_private_key and not self.execution_signing_private_key.is_file():
             raise ValueError("configured execution-envelope signing key does not exist")
         if self.is_production:

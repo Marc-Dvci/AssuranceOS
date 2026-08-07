@@ -1,0 +1,177 @@
+pack_id: privileged-access
+version: 1.0.0
+status: released
+signed: true
+release_key_id: assuranceos-audit-pack-v1
+objective: >-
+  Assess the design of privileged-access management: whether standing privilege
+  is justified, whether elevation is approved and time-bounded, and whether
+  privileged activity is recorded outside the control of the privileged user.
+
+# A licensed standard. Reproducing its criteria text for a tenant that holds no
+# licence is a legal exposure the platform would be the author of, so the pack
+# declares the entitlement and the compiler refuses without it. This pack is the
+# one that exercises that refusal.
+standard:
+  code: SYN-PAM-BENCH
+  name: Synthetic privileged-access benchmark
+  issuer: Synthetic Benchmark Consortium
+  version: "3.0"
+  jurisdiction: global
+  licence: subscriber-only
+  entitlement_required: true
+  effective_from: '2025-01-01'
+
+# Design effectiveness is assessed by inspection and interview rather than by a
+# population test, so this pack pins no deterministic test. A pack that named one
+# it did not need would make its evaluation evidence apply to a procedure nobody
+# ran.
+compatibility:
+  min_platform_version: 0.8.0
+  requires_agent_roles:
+    - scope-materiality
+    - control-design
+    - interview
+    - policy-documentation
+    - skeptic
+    - finding-adjudicator
+    - quality-reviewer
+    - engagement-director
+
+criteria:
+  - criteria_id: SYN-PAM-01
+    text: >-
+      Standing privileged access must be limited to accounts with a documented
+      justification reviewed within the last twelve months.
+    citation: Synthetic privileged-access benchmark v3.0, control 1.4
+    strength: mandatory
+    effective_from: '2025-01-01'
+  - criteria_id: SYN-PAM-02
+    text: >-
+      Elevation to privileged rights must be approved by a party other than the
+      requester and must expire without further action.
+    citation: Synthetic privileged-access benchmark v3.0, control 2.1
+    strength: mandatory
+    effective_from: '2025-01-01'
+  - criteria_id: SYN-PAM-03
+    text: >-
+      Privileged session activity must be recorded to a store the privileged user
+      cannot alter or delete.
+    citation: Synthetic privileged-access benchmark v3.0, control 3.6
+    strength: recommended
+    effective_from: '2025-01-01'
+
+controls:
+  - control_id: PAM-01
+    risk: >-
+      Standing privilege accumulates without justification, so a single
+      compromised credential yields unbounded access to production.
+    expected: >-
+      Every standing privileged account carries a current documented
+      justification, and elevation is approved by a second party and expires.
+    criteria_refs:
+      - SYN-PAM-01
+      - SYN-PAM-02
+  - control_id: PAM-02
+    risk: >-
+      Privileged activity is recorded where the privileged user can remove it, so
+      the record cannot support a conclusion about what was done.
+    expected: >-
+      Session recording is written to append-only storage outside the privileged
+      user's administrative scope.
+    criteria_refs:
+      - SYN-PAM-03
+
+procedures:
+  - key: approve-engagement-scope
+    step: 1
+    agent: scope-materiality
+    action: >-
+      Establish the in-scope privileged domains and the systems whose elevation
+      paths will be walked, and put them to the engagement owner for approval.
+    task_type: scoping
+    human_gate: engagement_scope_approval
+    control_ref: PAM-01
+  - key: collect-policy-and-design
+    step: 2
+    agent: policy-documentation
+    action: >-
+      Collect the privileged-access standard, the elevation runbooks, and the
+      current standing-privilege register, and register each as evidence.
+    task_type: connector_collection
+    depends_on: [approve-engagement-scope]
+    control_ref: PAM-01
+  - key: walk-elevation-path
+    step: 3
+    agent: interview
+    action: >-
+      Walk one elevation end to end with the platform owner and record what the
+      system actually enforces as distinct from what the runbook describes.
+    task_type: agent
+    depends_on: [collect-policy-and-design]
+    control_ref: PAM-01
+  - key: assess-control-design
+    step: 4
+    agent: control-design
+    action: >-
+      Evaluate whether the designed control would prevent or detect the risk if
+      it operated as described, and identify where it depends on the good conduct
+      of the person it constrains.
+    task_type: agent
+    depends_on: [walk-elevation-path]
+    control_ref: PAM-01
+  - key: assess-recording-design
+    step: 5
+    agent: control-design
+    action: >-
+      Evaluate whether privileged session recording is outside the administrative
+      scope of the users it records.
+    task_type: agent
+    depends_on: [collect-policy-and-design]
+    control_ref: PAM-02
+  - key: challenge-design-conclusion
+    step: 6
+    agent: skeptic
+    action: >-
+      Challenge the design conclusion: look for compensating controls, for
+      documented risk acceptance, and for scope the walkthrough did not cover.
+    task_type: agent
+    depends_on: [assess-control-design, assess-recording-design]
+  - key: propose-finding
+    step: 7
+    agent: finding-adjudicator
+    action: >-
+      Propose design findings for the gaps that survived the challenge, stating
+      explicitly that no operating-effectiveness conclusion is drawn.
+    task_type: agent
+    depends_on: [challenge-design-conclusion]
+    control_ref: PAM-01
+  - key: review-quality
+    step: 8
+    agent: quality-reviewer
+    action: >-
+      Verify that every design conclusion cites inspected evidence and that the
+      absence of a population test is disclosed as a limitation.
+    task_type: agent
+    depends_on: [propose-finding]
+    control_ref: PAM-01
+  - key: issue-report
+    step: 9
+    agent: engagement-director
+    action: >-
+      Assemble the design-effectiveness report and put it to the engagement owner
+      for issuance.
+    task_type: reporting
+    depends_on: [review-quality]
+    human_gate: report_issuance
+
+human_gates:
+  - engagement_scope_approval
+  - report_issuance
+
+quality_rules:
+  - design effectiveness does not support an operating-effectiveness conclusion
+  - a walkthrough of one path is not a population
+  - material claims require accepted evidence
+  - contradictory evidence must be disclosed
+  - the absence of a population test must be disclosed as a limitation

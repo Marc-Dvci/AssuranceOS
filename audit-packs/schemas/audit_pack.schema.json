@@ -1,13 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://assuranceos.local/schemas/audit_pack.v1.json",
+  "$id": "https://assuranceos.local/schemas/audit_pack.v2.json",
+  "title": "AssuranceOS Audit Pack",
+  "description": "A signed, versioned methodology that compiles deterministically into an engagement task graph. The schema constrains shape; internal coherence - the procedure graph resolving, every declared human gate being enforced by a procedure, every cited criterion existing - is enforced by the typed manifest in assuranceos.standards.definitions.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "pack_id",
     "version",
     "signed",
     "status",
     "objective",
+    "standard",
     "criteria",
     "controls",
     "procedures",
@@ -16,58 +20,181 @@
   ],
   "properties": {
     "pack_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 2
     },
     "version": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "objective": {
-      "type": "string"
-    },
-    "criteria": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "controls": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "procedures": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "human_gates": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "quality_rules": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "type": "string",
+      "minLength": 20
     },
     "status": {
       "type": "string",
-      "enum": [
-        "draft",
-        "review",
-        "released",
-        "retired"
-      ]
+      "enum": ["draft", "review", "released", "retired"]
     },
     "signed": {
       "type": "boolean"
     },
     "release_key_id": {
       "type": "string"
+    },
+    "standard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "name", "issuer", "version"],
+      "properties": {
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "issuer": { "type": "string" },
+        "version": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "licence": { "type": "string" },
+        "entitlement_required": { "type": "boolean" },
+        "effective_from": { "type": "string", "format": "date" },
+        "effective_to": { "type": ["string", "null"], "format": "date" },
+        "source_url": { "type": ["string", "null"] }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What must already exist on the platform for this pack to compile. Declared by the pack so an unmet requirement fails at compile time naming the artefact, rather than three tasks later as a lookup error.",
+      "properties": {
+        "min_platform_version": { "type": "string" },
+        "requires_control_tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["test_id", "version"],
+            "properties": {
+              "test_id": { "type": "string" },
+              "version": { "type": "string" }
+            }
+          }
+        },
+        "requires_agent_roles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "requires_connectors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criteria_id", "text", "citation"],
+        "properties": {
+          "criteria_id": { "type": "string" },
+          "text": { "type": "string", "minLength": 10 },
+          "citation": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Where in the standard this requirement is. Required: a finding that says 'contrary to policy' without saying where is not actionable."
+          },
+          "strength": {
+            "type": "string",
+            "enum": ["mandatory", "recommended", "informative"]
+          },
+          "effective_from": { "type": ["string", "null"], "format": "date" },
+          "effective_to": { "type": ["string", "null"], "format": "date" }
+        }
+      }
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["control_id", "risk", "expected", "criteria_refs"],
+        "properties": {
+          "control_id": { "type": "string" },
+          "risk": { "type": "string", "minLength": 10 },
+          "expected": { "type": "string", "minLength": 10 },
+          "criteria_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "procedures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "step", "agent", "action"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]*$",
+            "description": "The identity the compiled task carries. Stable across pack versions: renaming a key produces a different task rather than a changed one."
+          },
+          "step": { "type": "integer", "minimum": 1 },
+          "agent": { "type": "string" },
+          "action": { "type": "string", "minLength": 5 },
+          "task_type": { "type": "string" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "control_ref": { "type": ["string", "null"] },
+          "test_ref": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "required": ["test_id", "version"],
+            "properties": {
+              "test_id": { "type": "string" },
+              "version": { "type": "string" }
+            }
+          },
+          "human_gate": { "type": ["string", "null"] },
+          "model_policy": { "type": ["string", "null"] },
+          "tool_policy": { "type": ["string", "null"] },
+          "deadline_seconds": { "type": ["integer", "null"], "minimum": 1 }
+        }
+      }
+    },
+    "human_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Gates this pack demands. Every one must be attached to a procedure: a declared gate nobody enforces satisfies a reviewer reading the pack and stops nothing."
+    },
+    "quality_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "crosswalks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_criterion", "target_criterion", "relation", "rationale", "asserted_by"],
+        "properties": {
+          "source_criterion": { "type": "string" },
+          "target_criterion": { "type": "string" },
+          "relation": {
+            "type": "string",
+            "enum": ["equivalent", "subset", "superset", "related", "conflicts"]
+          },
+          "rationale": { "type": "string", "minLength": 10 },
+          "asserted_by": { "type": "string" }
+        }
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from jsonschema import Draft202012Validator
 from assuranceos.agent_release import verify_agent_release
 from assuranceos.audit_pack_release import verify_audit_pack_release
 from assuranceos.control_testing import ControlTestRegistry
+from assuranceos.standards import AuditPackRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_PROMPT_SECTIONS = ["ROLE", "AUTHORITY", "NON_GOALS", "CANONICAL_CONTEXT", "OBJECTIVE", "REQUIRED_PROCEDURE", "TOOL_RULES", "EVIDENCE_RULES", "ABSTAIN_OR_ESCALATE_WHEN", "OUTPUT", "SELF_CHECK"]
@@ -22,6 +24,35 @@ REQUIRED_FILES = ["manifest.yaml", "system_prompt.md", "input.schema.json", "out
 def fail(message: str) -> None:
     print(f"ERROR: {message}", file=sys.stderr)
     raise SystemExit(1)
+
+
+def _tracked_pem_files() -> list[Path]:
+    """Every ``.pem`` git tracks, or every one outside ``var/`` if git is absent.
+
+    The fallback is deliberately the *stricter* reading of "outside the ignored
+    working directories": a release archive extracted without a git directory
+    should still be checked, and the only thing it can safely assume is the
+    documented location for local keys.
+    """
+    try:
+        listing = subprocess.run(
+            ["git", "ls-files", "-z", "*.pem"],
+            cwd=ROOT,
+            capture_output=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return [
+            path
+            for path in ROOT.rglob("*.pem")
+            if "var" not in path.relative_to(ROOT).parts
+            and ".venv" not in path.relative_to(ROOT).parts
+        ]
+    return [
+        ROOT / name.decode("utf-8")
+        for name in listing.stdout.split(b"\0")
+        if name and (ROOT / name.decode("utf-8")).is_file()
+    ]
 
 
 def main() -> None:
@@ -36,7 +67,11 @@ def main() -> None:
     execution_key = serialization.load_pem_public_key(execution_key_path.read_bytes())
     if not isinstance(execution_key, Ed25519PublicKey):
         fail("execution-envelope trust key must be Ed25519")
-    for pem_path in ROOT.rglob("*.pem"):
+    # The invariant is "no private key is *committed*", so the set walked is the
+    # set git tracks. Walking the whole tree instead also flags a signing key an
+    # operator legitimately keeps in the gitignored `var/`, which trains people to
+    # ignore the check — the failure mode worth avoiding here.
+    for pem_path in _tracked_pem_files():
         if b"PRIVATE KEY" in pem_path.read_bytes():
             fail(f"private key material must not be committed: {pem_path.relative_to(ROOT)}")
 
@@ -71,21 +106,47 @@ def main() -> None:
         except ValueError as exc:
             fail(str(exc))
 
+    # Audit Packs carry their own release key. Two artefact classes, two keys, so
+    # compromising the agent-package review path does not let anyone publish a
+    # methodology.
+    pack_key_path = ROOT / "security/release-keys/audit-pack-release-public.pem"
+    if not pack_key_path.is_file():
+        fail("missing Audit Pack release public key")
+    pack_key = pack_key_path.read_bytes()
+
     pack_schema = json.loads((ROOT / "audit-packs/schemas/audit_pack.schema.json").read_text())
-    pack = yaml.safe_load((ROOT / "audit-packs/software-change-management/pack.yaml").read_text())
-    errors = sorted(Draft202012Validator(pack_schema).iter_errors(pack), key=lambda e: e.path)
-    if errors:
-        fail(f"audit pack invalid: {errors[0].message}")
-    if pack.get("status") != "released" or pack.get("signed") is not True:
-        fail("software-change-management Audit Pack is not released and signed")
-    try:
-        release = verify_audit_pack_release(
-            ROOT / "audit-packs/software-change-management", release_key
+    pack_dirs = sorted(
+        path for path in (ROOT / "audit-packs").iterdir() if (path / "pack.yaml").is_file()
+    )
+    if not pack_dirs:
+        fail("no Audit Pack carries a pack.yaml")
+    packs = []
+    for pack_dir in pack_dirs:
+        pack = yaml.safe_load((pack_dir / "pack.yaml").read_text(encoding="utf-8"))
+        errors = sorted(
+            Draft202012Validator(pack_schema).iter_errors(pack), key=lambda e: list(e.path)
         )
-    except ValueError as exc:
-        fail(str(exc))
-    if release.get("pack_id") != pack.get("pack_id") or release.get("version") != pack.get("version"):
-        fail("Audit Pack release identity does not match pack.yaml")
+        if errors:
+            fail(f"{pack_dir.name}: audit pack invalid: {errors[0].message}")
+        if pack.get("status") != "released" or pack.get("signed") is not True:
+            fail(f"{pack_dir.name}: Audit Pack is not released and signed")
+        try:
+            release = verify_audit_pack_release(pack_dir, pack_key)
+        except ValueError as exc:
+            fail(str(exc))
+        if release.get("pack_id") != pack.get("pack_id") or release.get(
+            "version"
+        ) != pack.get("version"):
+            fail(f"{pack_dir.name}: Audit Pack release identity does not match pack.yaml")
+        packs.append(f"{pack['pack_id']}@{pack['version']}")
+
+    # Loading through the registry proves the packs satisfy the typed manifest as
+    # well as the schema: that the procedure graph resolves, that every declared
+    # human gate is enforced by a procedure, that cited criteria exist.
+    try:
+        AuditPackRegistry(ROOT / "audit-packs", trusted_public_key=pack_key).load()
+    except Exception as exc:
+        fail(f"Audit Pack registry rejected a released pack: {exc}")
 
     control_test_key_path = ROOT / "security/release-keys/control-test-release-public.pem"
     if not control_test_key_path.is_file():
@@ -105,7 +166,8 @@ def main() -> None:
 
     print(
         f"Validated {len(agent_dirs)} signed agent packages, common schemas, "
-        f"the signed Audit Pack, {len(control_tests)} signed control-test releases, "
+        f"{len(packs)} signed Audit Packs ({', '.join(packs)}), "
+        f"{len(control_tests)} signed control-test releases, "
         "and execution-envelope trust material."
     )
 
