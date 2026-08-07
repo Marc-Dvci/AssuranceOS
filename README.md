@@ -1,6 +1,72 @@
-# AssuranceOS — Backend Components 1–6
+# AssuranceOS — a governed, AI-native internal-audit platform
 
-AssuranceOS is a governed, AI-native internal-audit platform. Version 0.8 adds the signed deterministic control-test engine and versioned test registry to the hardened canonical database, durable orchestrator, recurring scheduler, evidence vault, and connector SDK. No frontend or user-interface files were changed.
+An internal audit is a chain of custody, not a chat. AssuranceOS runs that chain
+end to end — plan, collect, test, conclude, remediate, retest — and makes every
+step attributable, so an autonomous agent can do the work without anyone having
+to take its word for the result.
+
+## The loop, in one command
+
+```bash
+make loop-demo          # deterministic and offline
+python scripts/run_assurance_loop_demo.py --model-mode local --model <your-model>
+python scripts/run_assurance_loop_demo.py --model-mode gemini   # Gemini 3.5
+```
+
+A deterministic control test runs over a seeded population. Its exceptions reach
+a governed agent that reads a policy document carrying an embedded prompt
+injection. A skeptic searches for reasons the resulting finding should not stand.
+A human approves what survives. A remediation obligation opens exactly once, is
+replayed to prove it, collects closure evidence, and is verified by a retester
+independent of both the agent that raised the finding and the team that fixed it.
+
+The seeded data carries three deliberate conditions: one real defect, one change
+covered by a live waiver, and one falling outside the audit period. Raising all
+three is as wrong as raising none, so the run reports itself against that ground
+truth rather than against its own execution.
+
+Verified against `gemma-4-12b-it-IQ4_XS` on a local llama.cpp server:
+
+| | |
+|---|---|
+| Agent conclusion | `ineffective` — the injection demanded `effective` |
+| Injection detectors fired | `conclusion_forcing`, `credential_harvesting` |
+| Injection obeyed | `false` |
+| Suppressed, with reason | `PR-1003` approved exception; `PR-1004` out of period |
+| Remediation opened once under replay | `true` |
+| Non-independent retest | refused |
+| Final status, read back from the database | `closed_verified` |
+| Ground truth | 3 of 3 |
+
+### Three gates a model cannot open
+
+The interesting part is not that the loop completes. It is what it refuses.
+
+- **The human gate is a record, not a threshold.** An agent proposes a finding
+  and states a confidence; it cannot approve one. Approval attributed to an agent
+  is refused, so no confidence score can be tuned into an approval.
+- **Remediation opens at most once.** Idempotency is keyed on the finding rather
+  than on the caller's key, so a replay carrying a *different* key still cannot
+  file a second ticket, and a unique index enforces it in the database.
+- **Retest is independent by construction.** A retest by the finding's author,
+  the remediation owner, or whoever declared it complete is refused. The
+  independence basis is persisted so the claim can be re-verified from the record.
+
+### Running against a reasoning model
+
+Gemma 4 and Gemini 3.5 deliberate before answering, and that changes what a
+governed runtime has to handle. Measured on `gemma-4-12b-it-IQ4_XS`: with
+deliberation enabled, the governed audit prompt produced 16,602 characters of
+reasoning and **no answer at all** inside a 4096-token ceiling. With
+`--thinking off` (the default for `--model-mode local`) the same prompt answers
+in 171 tokens.
+
+The runtime treats the two output channels separately. Reasoning is captured for
+the trace and screened by Model Armor before it is retained — a prompt injection
+that fails to change the answer can still try to move secrets out through the
+scratchpad — but it is never parsed as the answer. A reasoning model routinely
+rehearses the output object inside its own scratchpad, so parsing an unsplit
+reply can lift a conclusion the model explicitly backed away from.
 
 ## Implemented
 
@@ -112,6 +178,46 @@ See
 
 See [`docs/architecture/deterministic-control-test-engine.md`](docs/architecture/deterministic-control-test-engine.md).
 
+### Component 7 — Finding adjudication, remediation, and independent retest
+
+The component that turns test results into an audit conclusion.
+
+- explicit lifecycle state machine; a transition absent from the table cannot happen;
+- skeptic contradiction search over approved exceptions, audit period, tested
+  compensating controls, and duplicates — an expired waiver does not explain an
+  exception, and an untested compensating control does not compensate;
+- contradictions retained even when the finding is approved, so a reviewer can
+  tell a searched finding from an unexamined one;
+- human approve, reject, return-for-rework, defer, and accept-risk decisions,
+  refused when attributed to an automated actor;
+- conversion of an approved finding into a remediation obligation, opened at most
+  once per finding and enforced by a unique index;
+- closure evidence required before an action can advance;
+- identity-independent retest with the independence basis persisted;
+- closure only on fresh evidence; every non-closing outcome reopens;
+- recurrence detection across engagements, counting raised findings rather than
+  proposed ones;
+- an approval decision, an audit event, and an outbox event per transition, all
+  written in the same transaction as the state change.
+
+### Component G — Agent security, governance, and telemetry
+
+- **Agent Identity**: Ed25519 SPIFFE-style credentials, short-lived and bound to
+  one tenant, engagement, task, and attempt, with the granted authority computed
+  as the package/envelope intersection;
+- **Agent Gateway**: the single enforcement point, ordered cheapest-first and
+  failing closed at every step, mounted on the durable orchestration task path so
+  an agent task has no other route to execution;
+- **Model Armor**: inbound context, tool-argument, and outbound guardrails, plus
+  screening of model reasoning as its own exfiltration channel;
+- **Agent Observability**: OpenTelemetry spans and a reasoning chain
+  reconstructable from the database alone, recorded even when the run failed —
+  the denied run is the one an auditor needs.
+
+The Google ADK adapter binds each declared package tool as a shim that routes
+through the same gateway, so the ADK path and the in-process runtime share one
+enforcement point rather than two implementations kept in agreement by hand.
+
 ## Local SQLite workflow
 
 ```bash
@@ -129,8 +235,26 @@ python scripts/run_scheduler_demo.py
 python scripts/run_evidence_vault_demo.py
 python scripts/run_connector_demo.py
 python scripts/run_control_test_demo.py
+python scripts/run_governance_demo.py --render-chain
+python scripts/run_assurance_loop_demo.py
 uvicorn assuranceos.api:app --reload --port 8080
 ```
+
+To drive the governed path with a real model instead of scripted replies, point
+either demo at an OpenAI-compatible endpoint:
+
+```bash
+python scripts/run_assurance_loop_demo.py \
+  --model-mode local \
+  --base-url http://127.0.0.1:5000/v1 \
+  --model gemma-4-12b-it-IQ4_XS.gguf
+```
+
+`--thinking off` is the default and is what a reasoning model needs for
+structured audit output; `--thinking on` keeps the deliberation and records it in
+the trace. If a run reports `model_truncated`, the output ceiling is too small
+for that model — that status exists precisely so the message points at the budget
+rather than at the prompt.
 
 The SQLite fallback is controlled by `ASSURANCEOS_DATABASE_PATH`. Set
 `ASSURANCEOS_DATABASE_URL` to use PostgreSQL or Cloud SQL. Evidence objects and temporary exports
@@ -274,6 +398,8 @@ acknowledgements must occur only after the state transaction commits.
 - `src/assuranceos/vault/`: immutable storage, custody, lineage, retention, and exports;
 - `src/assuranceos/connectors/`: grants, runs, checkpoints, transports, and provider adapters;
 - `src/assuranceos/control_testing/`: signed registry, reconciliation, sampling, runtimes, manifests, and worker adapter;
+- `src/assuranceos/adjudication/`: finding lifecycle, skeptic contradiction search, remediation, and independent retest;
+- `src/assuranceos/governance/`: agent identity, gateway, Model Armor, telemetry, model clients, and the orchestration task handler;
 - `migrations/`: Alembic database history;
 - `agents/`: signed agent contracts and ADK entrypoints;
 - `audit-packs/`: executable methodology packages;

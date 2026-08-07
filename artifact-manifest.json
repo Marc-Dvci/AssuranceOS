@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 711,
+  "file_count": 715,
   "files": [
     {
       "path": ".dockerignore",
@@ -76,8 +76,8 @@
     },
     {
       "path": "Makefile",
-      "size_bytes": 1428,
-      "sha256": "04f189ba77f47aa6c0f434946ebb49d54fb2c9197074e4976505eee850223fdb"
+      "size_bytes": 1566,
+      "sha256": "b7b72a7aaee204e354df0bd55ef7ccddd6ba2f78efe79cfac80fc7f0790c974c"
     },
     {
       "path": "NOTICE.md",
@@ -91,8 +91,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 13523,
-      "sha256": "1de4cbb4e4f4ee0268324375911aca20a7b990043a9950e753827a472d3f6543"
+      "size_bytes": 20082,
+      "sha256": "5e9dffebd2f36a4c4bf7cb04c1808b24dfa0b7bdab76c6abe4aab6e7f468e626"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -2200,6 +2200,11 @@
       "sha256": "5d09401e767d66e50d9d57074a96a3b150ad954763378850cec607c0871a9a2f"
     },
     {
+      "path": "docs/architecture/agent-governance-and-assurance-loop.md",
+      "size_bytes": 7919,
+      "sha256": "759f138fc401ed13d17572359abefc69aabbaf7b89b54e782ba10b5db4d203de"
+    },
+    {
       "path": "docs/architecture/canonical-data-model.md",
       "size_bytes": 3714,
       "sha256": "f7afa5b3764b2b5b9440bac2eeb3157cbfc7303d59ffe65cbe823f00bc1f0951"
@@ -2211,8 +2216,8 @@
     },
     {
       "path": "docs/architecture/context.mmd",
-      "size_bytes": 394,
-      "sha256": "9f014219a676c11ce55f349bae0f7cad8e514debf19dd3fd00eb6ca04ea4dc7b"
+      "size_bytes": 1780,
+      "sha256": "076d291fb7d12b2fb4825ec4a8cc213b26729d37a2cc66e2bf4314191d664738"
     },
     {
       "path": "docs/architecture/deterministic-control-test-engine.md",
@@ -2535,6 +2540,11 @@
       "sha256": "336c8af45637762ff0f9fe76b30697ec3ff86d79dedfb71b10c6a5d2842b4cc8"
     },
     {
+      "path": "scripts/run_assurance_loop_demo.py",
+      "size_bytes": 2519,
+      "sha256": "d25b2e909b30bf06135f39d88a2c55fa161cffba5a9159261e991c844b245a0e"
+    },
+    {
       "path": "scripts/run_connector_collection.py",
       "size_bytes": 3092,
       "sha256": "a853d2ea5445dc5719fea4e61edac27b4c580f21382d9c48c41f61e35ae1a406"
@@ -2768,6 +2778,11 @@
       "path": "src/assuranceos/adjudication/definitions.py",
       "size_bytes": 8896,
       "sha256": "b5284972b72691c0d691080244ce44e166fecfcf8374c7ef5a8c15109b0f1af2"
+    },
+    {
+      "path": "src/assuranceos/adjudication/demo.py",
+      "size_bytes": 17281,
+      "sha256": "dfd780a1e9ee876d4d0fbf516fd0e67548023e66b1520bdc162fd3714be35c2d"
     },
     {
       "path": "src/assuranceos/adjudication/exceptions.py",
@@ -3418,6 +3433,11 @@
       "path": "tests/test_agent_governance.py",
       "size_bytes": 27855,
       "sha256": "8edc9ce7d09dcbd03b05eb1d33617e293ac3f7b9f9cf8d41ca0de02bb4ae93ad"
+    },
+    {
+      "path": "tests/test_assurance_loop_demo.py",
+      "size_bytes": 3720,
+      "sha256": "97f79da42734f385e1017a1af78370b77bfed2d666771054c6629de8564bda84"
     },
     {
       "path": "tests/test_connector_api.py",

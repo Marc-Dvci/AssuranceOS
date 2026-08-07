@@ -1,9 +1,52 @@
 flowchart LR
-  Judge[Judge / Auditor] --> API[Cloud Run API + Judge Mode]
-  API --> Registry[Agent Package Registry]
-  API --> Ledger[(Cloud SQL / local SQLite ledger)]
-  Registry --> ADK[Google ADK / Agent Engine]
-  ADK --> Gateway[Policy Gateway]
-  Gateway --> Tests[Deterministic Cloud Run Jobs]
-  Tests --> Sources[Synthetic GitHub, Jira, Confluence]
-  Gateway --> Evidence[Evidence vault]
+  subgraph Control["Control plane"]
+    API["Cloud Run API + Judge Mode"]
+    Orchestrator["Durable engagement orchestrator"]
+    Registry["Signed agent package registry"]
+  end
+
+  subgraph Enforcement["Agent Gateway — the single enforcement point"]
+    Identity["Agent Identity<br/>Ed25519, task-bound, short-lived"]
+    Policy["Released package policy<br/>default deny"]
+    Armor["Model Armor<br/>context, arguments, output, reasoning"]
+    Budget["Token, cost, and call budgets"]
+  end
+
+  subgraph Agents["Governed agents"]
+    Runtime["In-process governed runtime"]
+    ADK["Google ADK / Agent Engine"]
+    Model["Gemini 3.5 / local Gemma"]
+  end
+
+  subgraph Work["Bounded work"]
+    Tests["Deterministic control tests<br/>sandboxed Cloud Run Jobs"]
+    Evidence["Content-addressed evidence vault"]
+    Connectors["GitHub, Jira, Confluence, Drive"]
+  end
+
+  subgraph Loop["Assurance loop"]
+    Skeptic["Skeptic contradiction search"]
+    Human{{"Human gate<br/>an agent cannot approve"}}
+    Remediation["Remediation, opened once"]
+    Retest["Independent retest"]
+  end
+
+  Judge[Judge / Auditor] --> API
+  API --> Orchestrator
+  Orchestrator -->|"execution envelope<br/>derived from the lease"| Enforcement
+  Registry --> Enforcement
+  Enforcement --> Runtime
+  Enforcement --> ADK
+  Runtime --> Model
+  ADK --> Model
+  Model -.->|"proposes only"| Enforcement
+  Enforcement --> Tests
+  Enforcement --> Evidence
+  Enforcement --> Connectors
+  Connectors --> Evidence
+  Tests -->|exceptions| Skeptic
+  Skeptic --> Human
+  Human -->|approved| Remediation
+  Remediation -->|closure evidence| Retest
+  Retest -->|"closed_verified or reopened"| Ledger
+  Enforcement --> Ledger[("Cloud SQL / SQLite<br/>canonical state, audit events,<br/>reasoning chains, outbox")]
