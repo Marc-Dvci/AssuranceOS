@@ -13,6 +13,8 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
 
+import subprocess
+
 from conftest import alembic_head as current_head
 
 from assuranceos.agent_release import verify_agent_release
@@ -284,3 +286,38 @@ def test_worker_claim_api_issues_authenticated_signed_execution_envelope():
         api.app.state.jwt_verifier = previous_verifier
         api.orchestrator = previous_orchestrator
         api.execution_authority = previous_authority
+
+
+def test_artifact_manifest_describes_exactly_the_tracked_source_tree():
+    """The manifest must not depend on what happens to sit in the working directory.
+
+    It is built by walking the tree, so any untracked local file silently enters it:
+    a virtualenv once added 3503 entries, and a populated .env added credential
+    material and broke the --check gate everywhere except the machine that wrote it.
+    Pinning the manifest to the tracked file set makes that whole class of failure
+    surface here rather than in CI.
+    """
+    root = Path(__file__).resolve().parents[1]
+    try:
+        completed = subprocess.run(
+            ["git", "ls-files"], cwd=root, capture_output=True, text=True, check=True
+        )
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip("git is unavailable or this is not a checkout")
+
+    tracked = {line for line in completed.stdout.split("\n") if line}
+    tracked.discard("artifact-manifest.json")
+
+    manifest = json.loads((root / "artifact-manifest.json").read_text(encoding="utf-8"))
+    entries = manifest["files"] if isinstance(manifest, dict) else manifest
+    if isinstance(entries, dict):
+        recorded = set(entries)
+    else:
+        recorded = {e["path"] if isinstance(e, dict) else e for e in entries}
+
+    assert not (recorded - tracked), (
+        "manifest records untracked files: " + ", ".join(sorted(recorded - tracked)[:10])
+    )
+    assert not (tracked - recorded), (
+        "manifest omits tracked files: " + ", ".join(sorted(tracked - recorded)[:10])
+    )

@@ -32,6 +32,17 @@ EXCLUDED_NAMES = {".coverage", ".DS_Store"}
 EXCLUDED_SUFFIXES = {".db", ".sqlite3", ".pyc", ".pyo"}
 
 
+def _is_local_environment_file(name: str) -> bool:
+    """A populated .env is developer-local and may hold secrets.
+
+    It is gitignored, so it exists on a developer machine and not in CI. Hashing it
+    into a release manifest both breaks the --check gate across environments and
+    puts credential material into a published artifact. .env.example is committed
+    and stays in the manifest.
+    """
+    return name == ".env" or (name.startswith(".env.") and name != ".env.example")
+
+
 def _is_build_artifact(relative: Path) -> bool:
     return any(
         part.endswith((".egg-info", ".egg-link")) or part.startswith(".coverage.")
@@ -43,6 +54,8 @@ def included_files() -> list[Path]:
     files: list[Path] = []
     for path in ROOT.rglob("*"):
         if not path.is_file() or path == MANIFEST_PATH or path.name in EXCLUDED_NAMES:
+            continue
+        if _is_local_environment_file(path.name):
             continue
         relative = path.relative_to(ROOT)
         if any(part in EXCLUDED_PARTS for part in relative.parts):

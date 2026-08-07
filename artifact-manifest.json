@@ -2,17 +2,12 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 701,
+  "file_count": 700,
   "files": [
     {
       "path": ".dockerignore",
       "size_bytes": 68,
       "sha256": "ef87ede898e4d42d9e23c347a9fb86799259e701e1f8f2dec6db43054c970f1b"
-    },
-    {
-      "path": ".env",
-      "size_bytes": 1832,
-      "sha256": "4aaa34f0bc5a569a211f4e9da380eb383f7649402e135d336f48858f5f6497b1"
     },
     {
       "path": ".env.example",
@@ -2481,8 +2476,8 @@
     },
     {
       "path": "scripts/build_artifact_manifest.py",
-      "size_bytes": 3554,
-      "sha256": "641d2f8008668976f3bd617c801827944f314f2d3fdea646aa435a0f3c0cf459"
+      "size_bytes": 4113,
+      "sha256": "cab7fa548e35ca77bbcb37db3c5d7b4f379b65c715f2257caa00bf157f63a934"
     },
     {
       "path": "scripts/build_release_archive.py",
@@ -3476,8 +3471,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 11496,
-      "sha256": "406e9a6b052ae34fcc8e253df2b82a68e4d1f64219bbf947094dfd3cea5c48ff"
+      "size_bytes": 13065,
+      "sha256": "3b91ec040dd1438b74906caf0c6a0eb7fd2e3885350c9e7fcb4c76993c4f29c5"
     },
     {
       "path": "tests/test_scheduler_api.py",
