@@ -22,7 +22,7 @@ locals {
     "logging.googleapis.com",
     "monitoring.googleapis.com",
   ])
-  database_url = "postgresql+psycopg://assuranceos:${urlencode(random_password.database.result)}@/assuranceos?host=/cloudsql/${google_sql_database_instance.primary.connection_name}"
+  database_url         = "postgresql+psycopg://assuranceos:${urlencode(random_password.database.result)}@/assuranceos?host=/cloudsql/${google_sql_database_instance.primary.connection_name}"
   pubsub_service_agent = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
 }
 
@@ -60,9 +60,9 @@ resource "google_sql_database_instance" "primary" {
     edition           = "ENTERPRISE"
     tier              = var.database_tier
     availability_type = var.environment == "production" ? "REGIONAL" : "ZONAL"
-    disk_type          = "PD_SSD"
-    disk_size          = 20
-    disk_autoresize    = true
+    disk_type         = "PD_SSD"
+    disk_size         = 20
+    disk_autoresize   = true
 
     backup_configuration {
       enabled                        = true

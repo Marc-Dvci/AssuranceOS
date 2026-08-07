@@ -13,7 +13,7 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
 
-from tests.test_migrations import current_head
+from conftest import alembic_head as current_head
 
 from assuranceos.agent_release import verify_agent_release
 from assuranceos.audit_pack_release import verify_audit_pack_release

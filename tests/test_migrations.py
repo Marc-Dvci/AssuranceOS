@@ -2,17 +2,9 @@ from __future__ import annotations
 
 from alembic import command
 from alembic.config import Config
-from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, text
 
-
-def current_head() -> str:
-    """Resolve the head revision instead of pinning it.
-
-    These tests assert that an upgrade reaches head, so hardcoding the revision
-    made every new migration fail an unrelated test.
-    """
-    return ScriptDirectory.from_config(Config("alembic.ini")).get_current_head()
+from conftest import alembic_head as current_head
 
 
 def test_initial_migration_upgrades_fresh_database(tmp_path, monkeypatch):

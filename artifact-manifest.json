@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 700,
+  "file_count": 701,
   "files": [
     {
       "path": ".dockerignore",
@@ -2366,8 +2366,8 @@
     },
     {
       "path": "infrastructure/terraform/main.tf",
-      "size_bytes": 16811,
-      "sha256": "39848389d397d58926d59791bc024114601a5982f014ad5aa6ec75f80afc0bb6"
+      "size_bytes": 16816,
+      "sha256": "0a0578f9d4607dda6ca215d738905728d16aa507b4a4df567543bd09e05ceb14"
     },
     {
       "path": "infrastructure/terraform/outputs.tf",
@@ -3365,6 +3365,11 @@
       "sha256": "12b2f153ce67dd7a9e69a748bc2d59e5659423ebdb110246a24defaed1d3c1f9"
     },
     {
+      "path": "tests/conftest.py",
+      "size_bytes": 792,
+      "sha256": "4f8251d0ad2051144c4ee748b5f73b8e3c1e2e4ccebed31723861a18211a4369"
+    },
+    {
       "path": "tests/test_agent_governance.py",
       "size_bytes": 27855,
       "sha256": "8edc9ce7d09dcbd03b05eb1d33617e293ac3f7b9f9cf8d41ca0de02bb4ae93ad"
@@ -3441,8 +3446,8 @@
     },
     {
       "path": "tests/test_migrations.py",
-      "size_bytes": 14691,
-      "sha256": "16c49b8b46dafa4096ac97dbfb7c9c9e120eef2410bb6fdb99bb8fcf8289d30a"
+      "size_bytes": 14391,
+      "sha256": "96bcaef5978f9778fc41e4829c125987b21ef90714a3dfbfb1d45e6d252baab6"
     },
     {
       "path": "tests/test_orchestration.py",
@@ -3471,8 +3476,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 11493,
-      "sha256": "dc0c7917b00e21e84f7708d61da8f8b085b5ce599e8eb22ea5471e73ca112160"
+      "size_bytes": 11496,
+      "sha256": "406e9a6b052ae34fcc8e253df2b82a68e4d1f64219bbf947094dfd3cea5c48ff"
     },
     {
       "path": "tests/test_scheduler_api.py",
