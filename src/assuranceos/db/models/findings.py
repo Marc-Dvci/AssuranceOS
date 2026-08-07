@@ -50,6 +50,20 @@ class Finding(Base, TimestampMixin):
     affected_population_json: Mapped[JsonObject] = mapped_column(JSON, nullable=False, default=dict)
     limitations_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     requires_human_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # The evidence the conclusion rests on, and the contradictions the skeptic
+    # found against it. The contradictions are retained even when the finding is
+    # approved: "we considered this and it did not hold" is part of the record,
+    # and discarding it would leave a later reviewer unable to tell a searched
+    # finding from an unexamined one.
+    evidence_ids_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    contradictions_json: Mapped[list[JsonObject]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
+    exception_keys_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    source_run_id: Mapped[str | None] = mapped_column(String(64))
+    # The identity that proposed the finding. Retest independence is measured
+    # against this, so it has to be canonical rather than inferred from logs.
+    authored_by: Mapped[str | None] = mapped_column(String(128))
 
 
 class ApprovalDecision(Base):
@@ -91,6 +105,9 @@ class ManagementResponse(Base):
     submitted_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, nullable=False
     )
+    closure_evidence_ids_json: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
 
 
 class RemediationAction(Base, TimestampMixin):
@@ -110,6 +127,14 @@ class RemediationAction(Base, TimestampMixin):
     escalation_policy_json: Mapped[JsonObject] = mapped_column(JSON, nullable=False, default=dict)
     closure_evidence_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     declared_complete_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # An action is opened at most once per finding. The idempotency key is kept
+    # so a replay can be recognised as a replay rather than merely deduplicated,
+    # and the external reference is recorded so a retry never files a second
+    # ticket in Jira or ServiceNow.
+    idempotency_key: Mapped[str | None] = mapped_column(String(255))
+    external_system: Mapped[str] = mapped_column(String(32), nullable=False, default="none")
+    external_ref: Mapped[str | None] = mapped_column(String(255))
+    completed_by: Mapped[str | None] = mapped_column(String(128))
 
 
 class Retest(Base, TimestampMixin):
@@ -131,3 +156,11 @@ class Retest(Base, TimestampMixin):
     performed_by: Mapped[str | None] = mapped_column(String(128))
     result_json: Mapped[JsonObject] = mapped_column(JSON, nullable=False, default=dict)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    evidence_ids_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    idempotency_key: Mapped[str | None] = mapped_column(String(255))
+    # What the retester was checked against when independence was enforced. Kept
+    # so the separation-of-duties claim can be re-verified from the record rather
+    # than taken on trust.
+    independence_basis_json: Mapped[JsonObject] = mapped_column(
+        JSON, nullable=False, default=dict
+    )

@@ -1,0 +1,68 @@
+"""Finding adjudication, remediation, and independent retest.
+
+The component that turns deterministic control-test results into an audit
+conclusion: propose, search for contradictions, gate on a human decision, open a
+remediation obligation exactly once, collect closure evidence, and verify it with
+an independent retest.
+"""
+
+from .definitions import (
+    ALLOWED_TRANSITIONS,
+    CLOSING_OUTCOMES,
+    AdjudicationRequest,
+    ClosureSubmission,
+    Contradiction,
+    ContradictionKind,
+    FindingStatus,
+    FindingView,
+    HumanDecision,
+    ProposedFinding,
+    RecurrenceMatch,
+    RemediationRequest,
+    RetestOutcome,
+    RetestRequest,
+    SkepticVerdict,
+)
+from .exceptions import (
+    AdjudicationError,
+    ClosureEvidenceError,
+    FindingNotFoundError,
+    HumanGateError,
+    IdempotencyConflictError,
+    IndependenceError,
+    InvalidTransitionError,
+    RemediationNotFoundError,
+)
+from .repository import AdjudicationRepository
+from .service import AdjudicationService, finding_from_exceptions
+from .skeptic import SkepticReviewer
+
+__all__ = [
+    "ALLOWED_TRANSITIONS",
+    "CLOSING_OUTCOMES",
+    "AdjudicationError",
+    "AdjudicationRepository",
+    "AdjudicationRequest",
+    "AdjudicationService",
+    "ClosureEvidenceError",
+    "ClosureSubmission",
+    "Contradiction",
+    "ContradictionKind",
+    "FindingNotFoundError",
+    "FindingStatus",
+    "FindingView",
+    "HumanDecision",
+    "HumanGateError",
+    "IdempotencyConflictError",
+    "IndependenceError",
+    "InvalidTransitionError",
+    "ProposedFinding",
+    "RecurrenceMatch",
+    "RemediationNotFoundError",
+    "RemediationRequest",
+    "RetestOutcome",
+    "RetestRequest",
+    "SkepticReviewer",
+    "SkepticVerdict",
+    "finding_from_exceptions",
+]
