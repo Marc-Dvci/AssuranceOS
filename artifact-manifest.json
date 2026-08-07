@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 716,
+  "file_count": 717,
   "files": [
     {
       "path": ".dockerignore",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".env.example",
-      "size_bytes": 2109,
-      "sha256": "1a070f429d4d0081a819105436d74f453f1624b4d0eda9b14d52541290589166"
+      "size_bytes": 2840,
+      "sha256": "f1ef27cbfd5c8baa124c8cf92a22704aa735c1716674e416db2aae681ac27af9"
     },
     {
       "path": ".github/workflows/ci.yml",
@@ -2193,6 +2193,11 @@
       "path": "docs/ASSURANCEOS_DEVELOPER_HANDOFF.md",
       "size_bytes": 50872,
       "sha256": "d24357e116d694ac8aebbec7250a10e895ea3c0cf41302cecc6769e8cabcf648"
+    },
+    {
+      "path": "docs/SUBMISSION.md",
+      "size_bytes": 9525,
+      "sha256": "848817cd97f802d4a9709a3cc7f5c55ad94546d2a986172e8bae2cc213770cb0"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
