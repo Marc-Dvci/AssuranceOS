@@ -108,6 +108,18 @@ from .scheduling.exceptions import (
     ScheduleConfigurationError,
     ScheduleNotFoundError,
 )
+from .portfolio import (
+    AssuranceSource,
+    Candidate,
+    CapacityError,
+    CapacityPolicy,
+    PlanNotFoundError,
+    PlanStateError,
+    PortfolioService,
+    RiskFactors,
+    RiskNotFoundError,
+    ScoringPolicy,
+)
 from .security import JwtVerifier, Permission, Principal, effective_actor, require_permission
 from .standards import (
     AuditPackCompiler,
@@ -497,6 +509,12 @@ def _raise_http(exc: Exception) -> None:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     if isinstance(exc, (PackNotFoundError, StandardNotFoundError, CriterionNotFoundError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, (RiskNotFoundError, PlanNotFoundError)):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    # A plan that does not fit its own capacity is a 409, not a 422: the request
+    # is well formed, and what is wrong is the state of the proposal.
+    if isinstance(exc, (PlanStateError, CapacityError)):
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     # An unentitled standard is a 403: the request was well formed and the caller
     # was authenticated; the platform declined to reproduce licensed text for a
     # tenant with no licence. Reporting it as a 422 would invite a retry.
@@ -1502,6 +1520,288 @@ def verify_control_test_run(
         return _control_test_service().verify_reproducibility(
             tenant_id, run_id, domain_request
         ).model_dump(mode="json")
+    except Exception as exc:
+        _raise_http(exc)
+
+
+# --- audit universe, risk assessment, and portfolio planning ------------------
+#
+# Ratings are computed and plans are recommended. Neither becomes official
+# without a person, and both endpoints that make one official refuse an
+# automated actor in the service beneath them.
+
+
+def _portfolio_service() -> PortfolioService:
+    return PortfolioService(database)
+
+
+class RegisterEntityRequest(BaseModel):
+    entity_type: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=255)
+    external_ref: str | None = Field(default=None, max_length=255)
+    criticality: float = Field(default=0.0, ge=0, le=5)
+    attributes: dict = Field(default_factory=dict)
+
+
+class RegisterRiskRequest(BaseModel):
+    code: str = Field(min_length=2, max_length=64)
+    title: str = Field(min_length=3, max_length=255)
+    description: str | None = None
+
+
+class AssessRiskRequest(BaseModel):
+    """Declared inputs for a risk rating, and the date to score them as at.
+
+    ``as_at`` is required rather than defaulted to today. Ratings are recomputed
+    retrospectively often enough that letting the server pick the date makes
+    staleness unmeasurable.
+    """
+
+    factors: RiskFactors
+    as_at: date
+    policy: ScoringPolicy | None = None
+    assessed_by: str | None = None
+
+
+class OfficialRatingRequest(BaseModel):
+    rating: Literal["low", "medium", "high", "critical"]
+    reason: str = Field(min_length=10, max_length=4000)
+    actor_id: str | None = None
+
+
+class RecordCoverageRequest(BaseModel):
+    risk_code: str = Field(min_length=2, max_length=64)
+    source: AssuranceSource
+    obtained_on: date
+    scope_note: str = Field(default="", max_length=2000)
+    reference: str | None = Field(default=None, max_length=255)
+    engagement_id: str | None = None
+    recorded_by: str | None = None
+
+
+class ProposePlanRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    candidates: list[Candidate] = Field(min_length=1)
+    policy: CapacityPolicy
+    scenario: str = Field(default="baseline", max_length=64)
+    proposed_by: str | None = None
+
+
+class SimulatePlanRequest(BaseModel):
+    candidates: list[Candidate] = Field(min_length=1)
+    policy: CapacityPolicy
+
+
+class ApprovePlanRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=4000)
+    approved_by: str | None = None
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/universe/entities",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def register_universe_entity(tenant_id: str, body: RegisterEntityRequest) -> dict:
+    """Add or update something auditable. Keyed on the external reference."""
+    try:
+        entity_id = _portfolio_service().register_entity(
+            tenant_id=tenant_id,
+            entity_type=body.entity_type,
+            name=body.name,
+            external_ref=body.external_ref,
+            criticality=body.criticality,
+            attributes=body.attributes,
+        )
+        return {"entity_id": entity_id, "name": body.name}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/risks",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def register_risk(tenant_id: str, body: RegisterRiskRequest) -> dict:
+    try:
+        risk_id = _portfolio_service().register_risk(
+            tenant_id=tenant_id,
+            code=body.code,
+            title=body.title,
+            description=body.description,
+        )
+        return {"risk_id": risk_id, "code": body.code}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/risks/{code}/assessments",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def assess_risk(tenant_id: str, code: str, body: AssessRiskRequest, request: Request) -> dict:
+    """Score a risk from declared inputs under a versioned policy.
+
+    Behind `portfolio:write` rather than `portfolio:approve`: scoring is
+    arithmetic, and an agent is meant to do it. What an agent must not reach is
+    the official rating.
+    """
+    try:
+        assessment = _portfolio_service().assess_risk(
+            tenant_id=tenant_id,
+            risk_code=code,
+            factors=body.factors,
+            assessed_by=body.assessed_by or _actor(request),
+            as_at=body.as_at,
+            policy=body.policy,
+        )
+        return {
+            "assessment_id": assessment.assessment_id,
+            "version": assessment.version,
+            "inherent": assessment.inherent,
+            "residual": assessment.residual,
+            "rating": assessment.rating,
+            "confidence": assessment.confidence,
+            "audit_priority": assessment.audit_priority,
+            "uncovered": assessment.uncovered,
+            "components": dict(assessment.components_json or {}),
+            "rationale": assessment.rationale,
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/risks/{code}/official-rating",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_APPROVE))],
+)
+def set_official_rating(
+    tenant_id: str, code: str, body: OfficialRatingRequest, request: Request
+) -> dict:
+    """Set aside the computed rating, attributably.
+
+    The computed value stays beside the override so the disagreement remains
+    visible in the register rather than being replaced by the preferred number.
+    """
+    try:
+        assessment = _portfolio_service().set_official_rating(
+            tenant_id=tenant_id,
+            risk_code=code,
+            rating=body.rating,
+            actor_id=_actor(request, body.actor_id),
+            reason=body.reason,
+        )
+        return {
+            "code": code,
+            "computed_rating": assessment.rating,
+            "official_rating": assessment.official_rating,
+            "official_by": assessment.official_by,
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/risks",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_READ))],
+)
+def risk_register(tenant_id: str) -> dict:
+    """The register, with the computed and official ratings side by side."""
+    try:
+        return {"risks": _portfolio_service().register_view(tenant_id=tenant_id)}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/assurance-coverage",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def record_assurance_coverage(
+    tenant_id: str, body: RecordCoverageRequest, request: Request
+) -> dict:
+    try:
+        coverage_id = _portfolio_service().record_coverage(
+            tenant_id=tenant_id,
+            risk_code=body.risk_code,
+            source=body.source,
+            obtained_on=body.obtained_on,
+            recorded_by=_actor(request, body.recorded_by),
+            scope_note=body.scope_note,
+            reference=body.reference,
+            engagement_id=body.engagement_id,
+        )
+        return {"coverage_id": coverage_id, "risk_code": body.risk_code}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/plan-proposals",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def propose_plan(tenant_id: str, body: ProposePlanRequest, request: Request) -> dict:
+    """Recommend a plan, and record what it declined to cover."""
+    try:
+        return _portfolio_service().propose_plan(
+            tenant_id=tenant_id,
+            name=body.name,
+            candidates=body.candidates,
+            policy=body.policy,
+            proposed_by=body.proposed_by or _actor(request),
+            scenario=body.scenario,
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/plan-proposals/simulate",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_READ))],
+)
+def simulate_plan(tenant_id: str, body: SimulatePlanRequest) -> dict:
+    """Recompute a plan under a hypothetical without recording anything.
+
+    Behind the read permission because it writes nothing. "What stops if we lose
+    two people" is a question, and answering it must not create a plan.
+    """
+    try:
+        return _portfolio_service().simulate(candidates=body.candidates, policy=body.policy)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/plan-proposals/{proposal_id}",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_READ))],
+)
+def get_plan_proposal(tenant_id: str, proposal_id: str) -> dict:
+    try:
+        return _portfolio_service().proposal_view(
+            tenant_id=tenant_id, proposal_id=proposal_id
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/plan-proposals/{proposal_id}/approval",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_APPROVE))],
+)
+def approve_plan(
+    tenant_id: str, proposal_id: str, body: ApprovePlanRequest, request: Request
+) -> dict:
+    """Accept a proposal, and record what accepting it accepted.
+
+    The exclusions become attributed accepted residual. An audit committee that
+    accepted a plan accepted what it left out; this makes that retrievable.
+    """
+    try:
+        return _portfolio_service().approve_plan(
+            tenant_id=tenant_id,
+            proposal_id=proposal_id,
+            approved_by=_actor(request, body.approved_by),
+            reason=body.reason,
+        )
     except Exception as exc:
         _raise_http(exc)
 

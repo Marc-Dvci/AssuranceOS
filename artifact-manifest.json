@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 746,
+  "file_count": 759,
   "files": [
     {
       "path": ".dockerignore",
@@ -76,8 +76,8 @@
     },
     {
       "path": "Makefile",
-      "size_bytes": 1630,
-      "sha256": "82444bf3bbc7e2fb95d0e8927a296f8f47186d5976a08d4d48f39147561cd7b1"
+      "size_bytes": 1774,
+      "sha256": "608cfc541dd50aa383f0f017042900f74158cb31983108dc02bfef3a66b9360f"
     },
     {
       "path": "NOTICE.md",
@@ -1931,8 +1931,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 144499,
-      "sha256": "f148d345a55d772f164ac5a20b2810c2eac32169040fe232a0d7bd919170ec52"
+      "size_bytes": 173498,
+      "sha256": "85710d654c4a4752a54b3de40c0a950cf2e288792b4d67d6e61fe4c13e3945ca"
     },
     {
       "path": "api/protobuf/README.md",
@@ -2280,6 +2280,11 @@
       "sha256": "998ca795419470efa6f7e6c430e3f6cb0351d733dbb02c6df8b271a39051433d"
     },
     {
+      "path": "docs/architecture/risk-assessment-and-portfolio-planning.md",
+      "size_bytes": 9920,
+      "sha256": "e6a65ab6bd0619fc4b9c6edbfcc5d38b6a78b1f33212a9390671069e668be0e8"
+    },
+    {
       "path": "docs/architecture/standards-and-audit-pack-compilation.md",
       "size_bytes": 9853,
       "sha256": "b496ac61272791221cb21b8bd02c273c5dc759ac84ea8c89e91b9b83bd34fe27"
@@ -2490,6 +2495,11 @@
       "sha256": "05359f25d19b6cb2063a65203a1d09666f4aaab49c0c3c7a3b77f9c2d3959edf"
     },
     {
+      "path": "migrations/versions/0012_risk_assessment_and_planning.py",
+      "size_bytes": 8198,
+      "sha256": "f89657481131cebb56438cfcf668a2b39ef4df8afb8401aa7d7a795d65dd911d"
+    },
+    {
       "path": "migrations/versions/fa73e07500b5_canonical_domain_schema.py",
       "size_bytes": 55306,
       "sha256": "0f06333ed68119387cf7d5f8c5862c7f403d187e1138e75863e7f904f86e3524"
@@ -2648,6 +2658,11 @@
       "path": "scripts/run_pack_compiler_demo.py",
       "size_bytes": 1364,
       "sha256": "882ca8066a9f2fd3222fff26b37f33de5674dc03a8bc41d29cea026db60e2c7d"
+    },
+    {
+      "path": "scripts/run_portfolio_demo.py",
+      "size_bytes": 1269,
+      "sha256": "fcb8fdd0d7bc02229d28019785bf9f227be3b997ced1e25706ddc5abe7f94977"
     },
     {
       "path": "scripts/run_scheduler_demo.py",
@@ -2901,8 +2916,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 78201,
-      "sha256": "9c037bf6bf6082f2f57a6c2f9b66cef6ca2c08ea8fc4c52aa49eeba97eedfea3"
+      "size_bytes": 88435,
+      "sha256": "2580fe079c90e2532f0ba10645d0c44a4ed0ecee962918684c8a903869c3ddf9"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3071,8 +3086,8 @@
     },
     {
       "path": "src/assuranceos/db/models/__init__.py",
-      "size_bytes": 2753,
-      "sha256": "7db391b2a58a4c355c5b5f7f65be2bae588a3fd120e047a837b24b4c23f416bd"
+      "size_bytes": 3019,
+      "sha256": "8623c3d007e506edeb98ebe4f4d65244816caccc0e30084c6aa12785e38ea89e"
     },
     {
       "path": "src/assuranceos/db/models/agent_governance.py",
@@ -3123,6 +3138,11 @@
       "path": "src/assuranceos/db/models/planning.py",
       "size_bytes": 8422,
       "sha256": "6f0864fa24a3ed5e84eeb60049d92229c04c8840059b7a42e8a7dab9c95cfe74"
+    },
+    {
+      "path": "src/assuranceos/db/models/portfolio.py",
+      "size_bytes": 7105,
+      "sha256": "787fdee2f85b0756e1c7796bf67a30cfab6980e04746f8425758f12bdff5aa37"
     },
     {
       "path": "src/assuranceos/db/models/standards.py",
@@ -3285,6 +3305,41 @@
       "sha256": "9aa445dd516b05689542787fa3e3e5411143db241da995e898fd72c7c2d7bccc"
     },
     {
+      "path": "src/assuranceos/portfolio/__init__.py",
+      "size_bytes": 1455,
+      "sha256": "93aead15b72d6b90436931483e43955eb533ea83a9d6cbb4cac8f73c5fd7ca5a"
+    },
+    {
+      "path": "src/assuranceos/portfolio/demo.py",
+      "size_bytes": 16322,
+      "sha256": "6885898ac500563c0e7bfa6edd6a9dd9bbc10006821c76e9af46712eb70c5d6d"
+    },
+    {
+      "path": "src/assuranceos/portfolio/exceptions.py",
+      "size_bytes": 840,
+      "sha256": "8352c7f002d7ae5d4ea4deb4b5e68aaa84147cbb779488dd8b93b13432241014"
+    },
+    {
+      "path": "src/assuranceos/portfolio/planning.py",
+      "size_bytes": 13072,
+      "sha256": "b788046e43757ff4fc4e8a4376b09e24806082a2c5e43447a55432834999f333"
+    },
+    {
+      "path": "src/assuranceos/portfolio/repository.py",
+      "size_bytes": 4949,
+      "sha256": "1e59c2af9f015b73c546067cd6e2b2610dbcc1bfe23de7f1fd95924402c41872"
+    },
+    {
+      "path": "src/assuranceos/portfolio/scoring.py",
+      "size_bytes": 15784,
+      "sha256": "fe1971fb7c75599a6cd3f1f5223054fca40cf9887de5614ca7ca3a6179fcd514"
+    },
+    {
+      "path": "src/assuranceos/portfolio/service.py",
+      "size_bytes": 25659,
+      "sha256": "b12c6583bcc9e20044b4d2a36dc16e4cd4f4f1958cb1b9acbc7e1be8b7e32cc1"
+    },
+    {
       "path": "src/assuranceos/registry.py",
       "size_bytes": 3695,
       "sha256": "a948c1f884c8a217b6f562d85cb095f2ba3d387abcb0d81f5f1d1e9148fb6b94"
@@ -3346,8 +3401,8 @@
     },
     {
       "path": "src/assuranceos/security.py",
-      "size_bytes": 13913,
-      "sha256": "379e8efef9667dd95c02a92da712e9e3db563941b4a984501bc078b059f58439"
+      "size_bytes": 14631,
+      "sha256": "f52043c5423ce622615076fca5b2b5c5c03d34ba354e0e16b02bbe7f15a93825"
     },
     {
       "path": "src/assuranceos/standards/__init__.py",
@@ -3678,6 +3733,16 @@
       "path": "tests/test_policy.py",
       "size_bytes": 4416,
       "sha256": "55133bb938ca54f21d736f52e4b4073f1be48bc022dfe8e2e59128f7e0c013d2"
+    },
+    {
+      "path": "tests/test_portfolio.py",
+      "size_bytes": 22969,
+      "sha256": "0e2adaccbe044876f076262cfedbc3d43ecb0d5089169d4c98c77a321729105d"
+    },
+    {
+      "path": "tests/test_portfolio_demo.py",
+      "size_bytes": 3002,
+      "sha256": "1d8b2f44ed689ec87e08403089a3fcf88f66405c5795c1026d324e99b0c85134"
     },
     {
       "path": "tests/test_production_hardening.py",

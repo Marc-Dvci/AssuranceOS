@@ -2148,6 +2148,394 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/universe/entities:
+    post:
+      summary: Register Universe Entity
+      description: Add or update something auditable. Keyed on the external reference.
+      operationId: register_universe_entity_api_v1_tenants__tenant_id__universe_entities_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterEntityRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Register Universe Entity Api V1 Tenants  Tenant Id  Universe
+                  Entities Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/risks:
+    post:
+      summary: Register Risk
+      operationId: register_risk_api_v1_tenants__tenant_id__risks_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRiskRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Register Risk Api V1 Tenants  Tenant Id  Risks Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: Risk Register
+      description: The register, with the computed and official ratings side by side.
+      operationId: risk_register_api_v1_tenants__tenant_id__risks_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Risk Register Api V1 Tenants  Tenant Id  Risks Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/risks/{code}/assessments:
+    post:
+      summary: Assess Risk
+      description: 'Score a risk from declared inputs under a versioned policy.
+
+
+        Behind `portfolio:write` rather than `portfolio:approve`: scoring is
+
+        arithmetic, and an agent is meant to do it. What an agent must not reach is
+
+        the official rating.'
+      operationId: assess_risk_api_v1_tenants__tenant_id__risks__code__assessments_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessRiskRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Assess Risk Api V1 Tenants  Tenant Id  Risks  Code  Assessments
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/risks/{code}/official-rating:
+    post:
+      summary: Set Official Rating
+      description: 'Set aside the computed rating, attributably.
+
+
+        The computed value stays beside the override so the disagreement remains
+
+        visible in the register rather than being replaced by the preferred number.'
+      operationId: set_official_rating_api_v1_tenants__tenant_id__risks__code__official_rating_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfficialRatingRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Set Official Rating Api V1 Tenants  Tenant Id  Risks  Code  Official
+                  Rating Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/assurance-coverage:
+    post:
+      summary: Record Assurance Coverage
+      operationId: record_assurance_coverage_api_v1_tenants__tenant_id__assurance_coverage_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordCoverageRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Record Assurance Coverage Api V1 Tenants  Tenant Id  Assurance
+                  Coverage Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/plan-proposals:
+    post:
+      summary: Propose Plan
+      description: Recommend a plan, and record what it declined to cover.
+      operationId: propose_plan_api_v1_tenants__tenant_id__plan_proposals_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposePlanRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Propose Plan Api V1 Tenants  Tenant Id  Plan Proposals
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/plan-proposals/simulate:
+    post:
+      summary: Simulate Plan
+      description: 'Recompute a plan under a hypothetical without recording anything.
+
+
+        Behind the read permission because it writes nothing. "What stops if we lose
+
+        two people" is a question, and answering it must not create a plan.'
+      operationId: simulate_plan_api_v1_tenants__tenant_id__plan_proposals_simulate_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulatePlanRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Simulate Plan Api V1 Tenants  Tenant Id  Plan Proposals
+                  Simulate Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/plan-proposals/{proposal_id}:
+    get:
+      summary: Get Plan Proposal
+      operationId: get_plan_proposal_api_v1_tenants__tenant_id__plan_proposals__proposal_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: proposal_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Proposal Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Plan Proposal Api V1 Tenants  Tenant Id  Plan
+                  Proposals  Proposal Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/plan-proposals/{proposal_id}/approval:
+    post:
+      summary: Approve Plan
+      description: 'Accept a proposal, and record what accepting it accepted.
+
+
+        The exclusions become attributed accepted residual. An audit committee that
+
+        accepted a plan accepted what it left out; this makes that retrievable.'
+      operationId: approve_plan_api_v1_tenants__tenant_id__plan_proposals__proposal_id__approval_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: proposal_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Proposal Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovePlanRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Plan Api V1 Tenants  Tenant Id  Plan Proposals  Proposal
+                  Id  Approval Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/audit-packs:
     get:
       summary: List Audit Packs
@@ -3164,6 +3552,22 @@ components:
       required:
       - reason
       title: ApprovePackRequest
+    ApprovePlanRequest:
+      properties:
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+      type: object
+      required:
+      - reason
+      title: ApprovePlanRequest
     AssessMaterialityRequest:
       properties:
         inputs:
@@ -3190,6 +3594,57 @@ components:
         may compute this: the score is arithmetic over declared inputs, and what an
 
         agent must not reach is the approval that follows it.'
+    AssessRiskRequest:
+      properties:
+        factors:
+          $ref: '#/components/schemas/RiskFactors'
+        as_at:
+          type: string
+          format: date
+          title: As At
+        policy:
+          anyOf:
+          - $ref: '#/components/schemas/ScoringPolicy'
+          - type: 'null'
+        assessed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assessed By
+      type: object
+      required:
+      - factors
+      - as_at
+      title: AssessRiskRequest
+      description: 'Declared inputs for a risk rating, and the date to score them
+        as at.
+
+
+        ``as_at`` is required rather than defaulted to today. Ratings are recomputed
+
+        retrospectively often enough that letting the server pick the date makes
+
+        staleness unmeasurable.'
+    AssuranceSource:
+      type: string
+      enum:
+      - internal_audit
+      - external_audit
+      - continuous_monitor
+      - management_testing
+      - regulatory_examination
+      - none
+      title: AssuranceSource
+      description: 'Where assurance over a risk comes from, and how much it is worth.
+
+
+        Reliance differs by source and the differences are not opinions: an internal
+
+        audit engagement was performed by people who report to the audit committee,
+
+        management self-testing was not, and a continuous monitor covers a narrow
+
+        question continuously rather than a broad one once.'
     AuditPeriodRule:
       properties:
         kind:
@@ -3294,6 +3749,148 @@ components:
       - actor_id
       - reason
       title: CancellationRequest
+    Candidate:
+      properties:
+        candidate_key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Candidate Key
+        entity_ref:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Entity Ref
+        risk_ref:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Risk Ref
+        title:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Title
+        objective:
+          type: string
+          minLength: 10
+          title: Objective
+        score:
+          $ref: '#/components/schemas/RiskScore'
+        effort_days:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Effort Days
+        criticality:
+          type: number
+          maximum: 5.0
+          minimum: 0.0
+          title: Criticality
+          default: 0
+        disruption:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          title: Disruption
+          default: medium
+        expertise_required:
+          items:
+            type: string
+          type: array
+          title: Expertise Required
+        expertise_available:
+          type: boolean
+          title: Expertise Available
+          default: true
+        last_audited_on:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Audited On
+        data_dependencies:
+          items:
+            type: string
+          type: array
+          title: Data Dependencies
+        suggested_cadence_months:
+          type: integer
+          maximum: 60.0
+          minimum: 1.0
+          title: Suggested Cadence Months
+          default: 12
+        audit_pack_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Audit Pack Ref
+      additionalProperties: false
+      type: object
+      required:
+      - candidate_key
+      - entity_ref
+      - risk_ref
+      - title
+      - objective
+      - score
+      - effort_days
+      title: Candidate
+      description: 'One auditable thing, scored and costed.
+
+
+        ``effort_days`` and the qualitative columns are declared rather than inferred.
+
+        A planner that estimates its own costs is a planner whose recommendations
+
+        cannot be argued with.'
+    CapacityPolicy:
+      properties:
+        horizon_start:
+          type: string
+          format: date
+          title: Horizon Start
+        horizon_end:
+          type: string
+          format: date
+          title: Horizon End
+        available_days:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Available Days
+        minimum_coverage_criticality:
+          type: number
+          maximum: 5.0
+          minimum: 0.0
+          title: Minimum Coverage Criticality
+          default: 4.0
+        coverage_interval_months:
+          type: integer
+          maximum: 120.0
+          minimum: 1.0
+          title: Coverage Interval Months
+          default: 24
+        contingency_fraction:
+          type: number
+          maximum: 0.5
+          minimum: 0.0
+          title: Contingency Fraction
+          default: 0.15
+        max_high_disruption:
+          type: integer
+          minimum: 0.0
+          title: Max High Disruption
+          default: 2
+      additionalProperties: false
+      type: object
+      required:
+      - horizon_start
+      - horizon_end
+      - available_days
+      title: CapacityPolicy
+      description: What the audit function can actually deliver, and what it must
+        cover.
     ClaimStrength:
       type: string
       enum:
@@ -3444,6 +4041,56 @@ components:
       - connector_type
       - display_name
       title: ConnectorInstanceInput
+    ControlEvidence:
+      properties:
+        control_ref:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Control Ref
+        maturity:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Maturity
+        coverage:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Coverage
+        tested_effective:
+          type: boolean
+          title: Tested Effective
+          default: false
+        last_tested_on:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Tested On
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+      additionalProperties: false
+      type: object
+      required:
+      - control_ref
+      - maturity
+      - coverage
+      title: ControlEvidence
+      description: 'One control''s contribution to reducing a risk.
+
+
+        ``last_tested_on`` and ``tested_effective`` are separate on purpose. A control
+
+        that was tested and *failed* is not the same as one that was never tested,
+        and
+
+        neither of them reduces residual risk — but the first is a finding and the
+
+        second is a gap in the audit plan.'
     ControlTestDataset:
       properties:
         name:
@@ -3565,6 +4212,33 @@ components:
       - period_end
       - datasets
       title: ControlTestReproductionRequest
+    CoverageRecord:
+      properties:
+        source:
+          $ref: '#/components/schemas/AssuranceSource'
+        obtained_on:
+          type: string
+          format: date
+          title: Obtained On
+        scope_note:
+          type: string
+          maxLength: 2000
+          title: Scope Note
+          default: ''
+        reference:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Reference
+      additionalProperties: false
+      type: object
+      required:
+      - source
+      - obtained_on
+      title: CoverageRecord
+      description: Assurance obtained over this risk from somewhere other than this
+        plan.
     CriterionInput:
       properties:
         code:
@@ -4057,6 +4731,31 @@ components:
       - actor_id
       - reason
       title: OccurrenceDecision
+    OfficialRatingRequest:
+      properties:
+        rating:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+          title: Rating
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        actor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actor Id
+      type: object
+      required:
+      - rating
+      - reason
+      title: OfficialRatingRequest
     OpenRemediationRequest:
       properties:
         owner_ref:
@@ -4223,6 +4922,37 @@ components:
         absent register produces no contradiction of that kind rather than a silent
 
         pass.'
+    ProposePlanRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Name
+        candidates:
+          items:
+            $ref: '#/components/schemas/Candidate'
+          type: array
+          minItems: 1
+          title: Candidates
+        policy:
+          $ref: '#/components/schemas/CapacityPolicy'
+        scenario:
+          type: string
+          maxLength: 64
+          title: Scenario
+          default: baseline
+        proposed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Proposed By
+      type: object
+      required:
+      - name
+      - candidates
+      - policy
+      title: ProposePlanRequest
     ProposedFinding:
       properties:
         code:
@@ -4360,6 +5090,46 @@ components:
       - ground
       - statement
       title: RaiseDisputeRequest
+    RecordCoverageRequest:
+      properties:
+        risk_code:
+          type: string
+          maxLength: 64
+          minLength: 2
+          title: Risk Code
+        source:
+          $ref: '#/components/schemas/AssuranceSource'
+        obtained_on:
+          type: string
+          format: date
+          title: Obtained On
+        scope_note:
+          type: string
+          maxLength: 2000
+          title: Scope Note
+          default: ''
+        reference:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Reference
+        engagement_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+        recorded_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recorded By
+      type: object
+      required:
+      - risk_code
+      - source
+      - obtained_on
+      title: RecordCoverageRequest
     RecordRetestRequest:
       properties:
         procedure_ref:
@@ -4401,6 +5171,61 @@ components:
       - idempotency_key
       - outcome
       title: RecordRetestRequest
+    RegisterEntityRequest:
+      properties:
+        entity_type:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Entity Type
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Name
+        external_ref:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: External Ref
+        criticality:
+          type: number
+          maximum: 5.0
+          minimum: 0.0
+          title: Criticality
+          default: 0.0
+        attributes:
+          additionalProperties: true
+          type: object
+          title: Attributes
+      type: object
+      required:
+      - entity_type
+      - name
+      title: RegisterEntityRequest
+    RegisterRiskRequest:
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          minLength: 2
+          title: Code
+        title:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Title
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - code
+      - title
+      title: RegisterRiskRequest
     RegisterStandardRequest:
       properties:
         standard:
@@ -4489,6 +5314,112 @@ components:
           title: Reviewer Id
       type: object
       title: ReviewQualityRequest
+    RiskFactors:
+      properties:
+        impact:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Impact
+        likelihood:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Likelihood
+        velocity:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Velocity
+          default: 0.5
+        change_intensity:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Change Intensity
+          default: 0.0
+        detectability:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Detectability
+          default: 0.5
+        external_exposure:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: External Exposure
+          default: 0.0
+        controls:
+          items:
+            $ref: '#/components/schemas/ControlEvidence'
+          type: array
+          title: Controls
+        coverage:
+          items:
+            $ref: '#/components/schemas/CoverageRecord'
+          type: array
+          title: Coverage
+        evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Evidence Ids
+      additionalProperties: false
+      type: object
+      required:
+      - impact
+      - likelihood
+      title: RiskFactors
+      description: The declared inputs a residual rating is computed from.
+    RiskScore:
+      properties:
+        policy_id:
+          type: string
+          title: Policy Id
+        inherent:
+          type: number
+          title: Inherent
+        residual:
+          type: number
+          title: Residual
+        rating:
+          type: string
+          enum:
+          - low
+          - medium
+          - high
+          - critical
+          title: Rating
+        confidence:
+          type: number
+          title: Confidence
+        audit_priority:
+          type: number
+          title: Audit Priority
+        uncovered:
+          type: boolean
+          title: Uncovered
+        components:
+          additionalProperties: true
+          type: object
+          title: Components
+        rationale:
+          type: string
+          title: Rationale
+      type: object
+      required:
+      - policy_id
+      - inherent
+      - residual
+      - rating
+      - confidence
+      - audit_priority
+      - uncovered
+      - components
+      - rationale
+      title: RiskScore
+      description: A computed rating, its terms, and the confidence it is held with.
     ScheduleDecision:
       properties:
         actor_id:
@@ -4624,6 +5555,103 @@ components:
       - window_start
       - window_end
       title: ScheduleSimulationRequest
+    ScoringPolicy:
+      properties:
+        policy_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Policy Id
+          default: default-v1
+        max_control_reduction:
+          type: number
+          exclusiveMaximum: 1.0
+          exclusiveMinimum: 0.0
+          title: Max Control Reduction
+          default: 0.75
+        test_staleness_days:
+          type: integer
+          minimum: 1.0
+          title: Test Staleness Days
+          default: 365
+        velocity_weight:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Velocity Weight
+          default: 0.15
+        change_weight:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Change Weight
+          default: 0.2
+        exposure_weight:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Exposure Weight
+          default: 0.15
+        reliance:
+          additionalProperties:
+            type: number
+          propertyNames:
+            $ref: '#/components/schemas/AssuranceSource'
+          type: object
+          title: Reliance
+        coverage_staleness_days:
+          type: integer
+          minimum: 1.0
+          title: Coverage Staleness Days
+          default: 548
+        rating_bands:
+          items:
+            prefixItems:
+            - type: number
+            - type: string
+            type: array
+            maxItems: 2
+            minItems: 2
+          type: array
+          title: Rating Bands
+        confidence_floor:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence Floor
+          default: 0.5
+        uncertainty_premium:
+          type: number
+          maximum: 2.0
+          minimum: 0.0
+          title: Uncertainty Premium
+          default: 0.5
+      additionalProperties: false
+      type: object
+      title: ScoringPolicy
+      description: 'Configured weights and thresholds for risk scoring.
+
+
+        Held as data and versioned by ``policy_id``, and stored with every assessment,
+
+        so a rating computed under an old policy stays interpretable after the policy
+
+        changes.'
+    SimulatePlanRequest:
+      properties:
+        candidates:
+          items:
+            $ref: '#/components/schemas/Candidate'
+          type: array
+          minItems: 1
+          title: Candidates
+        policy:
+          $ref: '#/components/schemas/CapacityPolicy'
+      type: object
+      required:
+      - candidates
+      - policy
+      title: SimulatePlanRequest
     StandardInput:
       properties:
         code:

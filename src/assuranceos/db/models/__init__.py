@@ -45,6 +45,7 @@ from .organization import (
     Risk,
     RiskControlLink,
 )
+from .portfolio import AssuranceCoverage, PlanProposal, RiskAssessment
 from .standards import (
     AuditPackRegistration,
     Criterion,
@@ -66,6 +67,7 @@ from .tenancy import RoleAssignment, Tenant, User
 __all__ = [
     "AgentIdentityRecord",
     "AgentRelease",
+    "AssuranceCoverage",
     "ConnectorRun",
     "ConnectorInstance",
     "ConnectorCheckpoint",
@@ -106,11 +108,13 @@ __all__ = [
     "OrganizationProfile",
     "OutboxEvent",
     "PackCompilation",
+    "PlanProposal",
     "QualityReview",
     "ReasoningSpanRecord",
     "RemediationAction",
     "Retest",
     "Risk",
+    "RiskAssessment",
     "RiskControlLink",
     "RoleAssignment",
     "ScheduleCursor",

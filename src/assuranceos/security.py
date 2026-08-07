@@ -53,6 +53,13 @@ class Permission(StrEnum):
     # stand behind. Held apart from writing standards for the same reason
     # adjudicating a finding is held apart from writing one.
     STANDARDS_APPROVE = "standards:approve"
+    PORTFOLIO_READ = "portfolio:read"
+    PORTFOLIO_WRITE = "portfolio:write"
+    # Making a risk rating official, or approving an audit plan, is a decision
+    # about what the function will and will not look at this year. Held apart
+    # from writing them for the same reason adjudicating a finding is held apart
+    # from proposing one.
+    PORTFOLIO_APPROVE = "portfolio:approve"
 
 
 ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
@@ -66,6 +73,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_READ,
             Permission.FINDING_READ,
             Permission.STANDARDS_READ,
+            Permission.PORTFOLIO_READ,
         }
     ),
     "auditor": frozenset(
@@ -86,6 +94,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.REMEDIATION_WRITE,
             Permission.STANDARDS_READ,
             Permission.STANDARDS_WRITE,
+            Permission.PORTFOLIO_READ,
+            Permission.PORTFOLIO_WRITE,
         }
     ),
     # Management: may contest a finding and respond to it, and may do nothing else
@@ -116,6 +126,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.FINDING_ADJUDICATE,
             Permission.STANDARDS_READ,
             Permission.STANDARDS_APPROVE,
+            Permission.PORTFOLIO_READ,
+            Permission.PORTFOLIO_APPROVE,
         }
     ),
     "operator": frozenset(
@@ -132,6 +144,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.CONTROL_TEST_EXECUTE,
             Permission.FINDING_READ,
             Permission.STANDARDS_READ,
+            Permission.PORTFOLIO_READ,
         }
     ),
     "admin": frozenset(Permission),
@@ -151,6 +164,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.FINDING_READ,
             Permission.FINDING_WRITE,
             Permission.STANDARDS_READ,
+            Permission.PORTFOLIO_READ,
+            Permission.PORTFOLIO_WRITE,
         }
     ),
 }

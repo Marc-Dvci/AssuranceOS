@@ -1,4 +1,4 @@
-.PHONY: install validate migrate test coverage run demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo pack-demo governance-demo sync-control-tests openapi manifest outbox docker zip clean
+.PHONY: install validate migrate test coverage run demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo pack-demo portfolio-demo governance-demo sync-control-tests openapi manifest outbox docker zip clean
 
 install:
 	python -m pip install -e '.[dev]'
@@ -38,6 +38,9 @@ loop-demo:
 
 pack-demo:
 	python scripts/run_pack_compiler_demo.py
+
+portfolio-demo:
+	python scripts/run_portfolio_demo.py
 
 governance-demo:
 	python scripts/run_governance_demo.py
