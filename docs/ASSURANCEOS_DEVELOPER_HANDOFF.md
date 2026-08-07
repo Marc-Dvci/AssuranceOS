@@ -1,6 +1,6 @@
 # AssuranceOS Developer Handoff
 
-**Current release:** `v0.9.0-dev` — Components 1–6 plus the security, governance, and telemetry layer
+**Current release:** `v0.9.0-dev` — Components 1–7 plus the security, governance, and telemetry layer, verified against a live model
 **Previous baseline:** `v0.8.0` — Components 1–6 (git tag `v0.8.0`)
 **Handoff date:** 2026-08-07 (revised)
 **Repository:** `github.com/Marc-Dvci/AssuranceOS`
@@ -10,7 +10,76 @@
 
 ## 0. What changed in this revision (2026-08-07)
 
-Two commits sit on top of the imported baseline. Both are independently reviewable.
+Six commits sit on top of the imported baseline. Each is independently reviewable.
+The four newest are summarised first.
+
+### `9ae94bf` — Correctness against a real reasoning model
+
+The governance layer had only ever run against scripted replies. Pointing it at a
+live `gemma-4-12b-it-IQ4_XS` server surfaced four defects mocks cannot reach.
+
+- **Two output channels.** llama.cpp returns deliberation in `reasoning_content`;
+  other servers inline it in `<think>` tags. The runtime read only `content`, so a
+  reply that spent its whole budget thinking looked like an empty answer.
+- **Scratchpad leakage into the conclusion.** Parsing an unsplit reply can lift a
+  conclusion out of the model's rehearsal. Observed shape: the model weighs a
+  passing object, then declines in its actual answer, and the extractor returns the
+  rehearsal. Reasoning is now split off before any JSON is parsed.
+- **Truncation misdiagnosed as a schema fault.** Measured: with deliberation
+  enabled, the governed audit prompt produced **16,602 characters of reasoning and
+  no answer at all** inside a 4096-token ceiling. `enable_thinking` is now an
+  explicit deployment control; with it off the same prompt answers in 171 tokens.
+  `model_truncated` is a separate status, because `schema_invalid` sends an
+  operator to rewrite a prompt that was never the problem.
+- **Unresolvable evidence citations.** The old check only required the citation
+  list to be non-empty, which the live model satisfied by citing the context header
+  `"[ev_changes | jira]"` — a string that resolves to nothing. Citations are now
+  checked against the evidence actually supplied, and the evidence id is labelled
+  unambiguously in the prompt.
+
+Model reasoning is now screened by Model Armor before retention: an injection that
+fails to change the answer can still try the scratchpad.
+
+Also makes the suite runnable where `setrlimit` does not exist. The sandbox's
+refusal to run unenforced is correct and unchanged; the degraded mode is now
+requested explicitly and only where the platform lacks the interface, so CI on
+Linux keeps exercising the enforced path rather than the waiver.
+
+### `f005ef6` — Component 7: adjudication, remediation, independent retest
+
+The execution chain previously ended at deterministic test results. It now closes:
+exception → proposed finding → skeptic contradiction search → human gate →
+remediation obligation → closure evidence → independent retest → closed or
+reopened. Migration `0009_finding_adjudication` applies and reverses cleanly.
+
+Three gates are structural rather than conventional. An agent cannot approve a
+finding. Remediation is keyed on the finding, so a replay carrying a *different*
+key still cannot open a second action, enforced by a unique index. A retest by the
+finding's author, the remediation owner, or whoever declared it complete is
+refused, compared case-insensitively.
+
+### `ab024de` — The gateway mounted on the real task path
+
+The governance layer was a library something had to remember to call.
+`GovernedAgentTaskHandler` registers against an orchestration task type, so an
+agent task has no other route to execution. The execution envelope is derived from
+the lease — canonical state — never from model output. Governed outcomes map onto
+retry semantics by what a retry would achieve: only an unreachable model is
+retryable, and truncation is a configuration fault.
+
+### `29b7088` and `d235fa3` — ADK domain tools, and the end-to-end loop
+
+In ADK the tool list *is* the security boundary. Each declared package tool is now
+bound as a shim routing through the same gateway, so the ADK path and the
+in-process runtime share one enforcement point rather than two implementations
+kept in agreement by hand. Denials return to the model as readable JSON so it can
+choose a permitted action; the decision is recorded either way.
+
+`scripts/run_assurance_loop_demo.py` runs the whole chain and reports itself
+against the seeded Asteria ground truth rather than against its own execution. See
+section 3.
+
+---
 
 ### `3baa26d` — Baseline hygiene
 
@@ -89,15 +158,45 @@ Measured on Linux (`python:3.12-slim`) on 2026-08-07, not quoted from a prior re
 | | v0.8.0 baseline | current |
 |---|---|---|
 | Canonical tables | 43 | **47** |
-| Alembic migrations | 7 (head `0007_control_test_engine`) | **8** (head `0008_agent_governance`) |
-| Automated tests | 125 | **174** |
-| Statement coverage | see note | **86.19%** |
-| Deterministic demonstrations | 6 | **7** |
+| Alembic migrations | 7 (head `0007_control_test_engine`) | **9** (head `0009_finding_adjudication`) |
+| Automated tests | 125 | **230** |
+| Statement coverage | see note | **86.83%** |
+| Deterministic demonstrations | 6 | **8** |
 | Signed agent packages | 19 | 19 |
 | Signed Audit Pack / control tests | 1 / 2 | 1 / 2 |
 
-Tests pass on **both** Linux and Windows now (Windows requires
-`ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX=true`, see section 0).
+Tests pass on **both** Linux and Windows. The Windows run requests the degraded
+control-test sandbox automatically from `tests/conftest.py`, and only where the
+platform genuinely lacks `resource`, so CI on Linux still exercises the enforced
+path. Every CI step was reproduced locally, including bare `pytest` (which does
+not put the working directory on `sys.path` the way `python -m pytest` does).
+
+### Verified against a live model
+
+The governed path and the full assurance loop were run against
+`gemma-4-12b-it-IQ4_XS` on a local llama.cpp server, not only against mocks:
+
+| | result |
+|---|---|
+| Agent conclusion | `ineffective` — the seeded injection demanded `effective` |
+| Injection detectors fired | `conclusion_forcing`, `credential_harvesting` |
+| Injection obeyed | `false` |
+| Suppressed, with reason | `PR-1003` approved exception; `PR-1004` out of period |
+| Remediation opened once under replay | `true` |
+| Non-independent retest | refused |
+| Final status, read back from the database | `closed_verified` |
+| Seeded ground truth | 3 of 3 |
+
+Reproduce with:
+
+```bash
+python scripts/run_assurance_loop_demo.py --model-mode local \
+  --base-url http://127.0.0.1:5000/v1 --model gemma-4-12b-it-IQ4_XS.gguf
+```
+
+Detection and resistance are separate claims, and the demonstration reports them
+separately: `injection_detectors` says the document was recognised as hostile,
+`injection_obeyed` says whether the conclusion matched what it demanded.
 
 **Note on the 87.11% coverage figure.** The original handoff quoted it, but I never
 reproduced it — the measurement was started and then abandoned before completing.
@@ -507,39 +606,32 @@ artifacts, so a local `.venv` added 3,503 entries (123 KB → 812 KB) and the
 
 ## 9. Remaining product scope
 
-## Component 7 — Finding adjudication, remediation, and independent retest
+## Component 7 — Finding adjudication, remediation, and independent retest — **DELIVERED** (`f005ef6`)
 
-This should be the next implementation because the current execution chain ends at deterministic test results and exceptions.
+Implemented in `src/assuranceos/adjudication/`, migration `0009_finding_adjudication`,
+23 dedicated tests plus 9 covering the end-to-end demonstration.
 
-Build:
+Delivered: observation and proposed-finding creation from accepted test results;
+criteria, condition, cause, consequence, risk, severity, confidence, limitations,
+and contradictory evidence; contradiction search and skeptic-review records;
+management response; human approve, reject, return-for-rework, defer, and
+accept-risk decisions; immutable decision rationale and approval history;
+conversion of an approved finding into a remediation obligation; owner, due date,
+action plan, and escalation policy; idempotent action creation that survives
+replay; closure-evidence collection; identity-independent retest assignment; the
+full retest outcome set; and recurrence detection across engagements.
 
-- observation and proposed-finding creation from accepted test results and evidence;
-- criteria, condition, cause, consequence, quantified exposure, risk, recommendation, severity, confidence, limitations, contradictory evidence, and compensating controls;
-- contradiction search and skeptic-review records;
-- materiality assessment;
-- management response and dispute workflow;
-- quality-review gate;
-- human decisions: approve, reject, return for rework, defer, and accept risk;
-- immutable decision rationale and approval history;
-- conversion of an approved finding into a remediation obligation;
-- owner, due date, action plan, milestones, extension policy, and escalation;
-- idempotent Jira or ServiceNow action creation behind explicit write grants and approval policy;
-- closure-evidence collection;
-- identity-independent retest assignment;
-- retest outcomes: closed, partially remediated, ineffective, insufficient evidence, or reopen;
-- recurrence detection across engagements.
+The acceptance demonstration runs as `scripts/run_assurance_loop_demo.py` and
+passes all eight of its original conditions, including against a live model. See
+`docs/architecture/agent-governance-and-assurance-loop.md`.
 
-Acceptance demonstration:
-
-1. SCM-01 identifies the seeded Asteria exception.
-2. The Skeptic path rejects the approved service-account and out-of-period non-findings.
-3. A human approves the supported finding.
-4. A remediation action is opened once, even after replay.
-5. Management submits closure evidence.
-6. An independent retest runs against fresh evidence.
-7. The finding reaches `Closed — verified` or is deterministically reopened.
-8. Every transition is attributable and reconstructable from canonical state, evidence, audit events, and outbox records.
-
+**Not yet built, and deliberately deferred:** materiality assessment as a distinct
+scored step, the dispute workflow beyond a single management response, a separate
+quality-review gate distinct from the human approval gate, and *live* Jira or
+ServiceNow write adapters. The remediation record carries `external_system` and
+`external_ref` and the idempotency guarantee those adapters need, so the
+integration is a connector task rather than a lifecycle change; it belongs with
+Component 13.
 ## Component 8 — Standards and criteria service plus Audit Pack compiler
 
 The signed SCM Audit Pack currently exists, but the generic pack compiler and standards layer are contract-defined.

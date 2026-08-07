@@ -2191,8 +2191,8 @@
     },
     {
       "path": "docs/ASSURANCEOS_DEVELOPER_HANDOFF.md",
-      "size_bytes": 44659,
-      "sha256": "ba7e8ca7c8a245e35e69331f6981fd09d8a310e9292d0c589cbf17328a5ae8ea"
+      "size_bytes": 50872,
+      "sha256": "d24357e116d694ac8aebbec7250a10e895ea3c0cf41302cecc6769e8cabcf648"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
