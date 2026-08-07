@@ -64,6 +64,7 @@ class Settings:
     execution_signing_private_key: Path | None
     execution_signing_key_id: str
     execution_envelope_ttl_seconds: int
+    control_test_allow_degraded_sandbox: bool
 
     @property
     def is_production(self) -> bool:
@@ -94,7 +95,7 @@ class Settings:
             control_test_root=Path(os.getenv("ASSURANCEOS_CONTROL_TEST_ROOT", "./tests-library")),
             control_test_public_key=Path(os.getenv("ASSURANCEOS_CONTROL_TEST_PUBLIC_KEY", "./security/release-keys/control-test-release-public.pem")),
             model_mode=os.getenv("ASSURANCEOS_MODEL_MODE", "mock"),
-            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-2.5-flash"),
+            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.5-flash"),
             evidence_root=Path(os.getenv("ASSURANCEOS_EVIDENCE_ROOT", "./var/evidence")),
             evidence_export_root=Path(
                 os.getenv("ASSURANCEOS_EVIDENCE_EXPORT_ROOT", "./var/evidence-exports")
@@ -128,6 +129,9 @@ class Settings:
             ),
             execution_envelope_ttl_seconds=_int_env(
                 "ASSURANCEOS_EXECUTION_ENVELOPE_TTL_SECONDS", 900, minimum=1
+            ),
+            control_test_allow_degraded_sandbox=_bool_env(
+                "ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX", False
             ),
         )
         settings.validate()
@@ -176,6 +180,11 @@ class Settings:
                 raise ValueError("production schema changes must run through Alembic migrations")
             if not self.trusted_hosts or "*" in self.trusted_hosts:
                 raise ValueError("production trusted hosts must be explicit")
+            if self.control_test_allow_degraded_sandbox:
+                raise ValueError(
+                    "production control tests require an enforced sandbox; "
+                    "ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX cannot be enabled"
+                )
 
 
 settings = Settings.from_env()

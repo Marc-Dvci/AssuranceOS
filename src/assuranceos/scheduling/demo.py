@@ -23,7 +23,10 @@ def run_scheduler_demo(*, database: Database, workflow_path: Path) -> dict[str, 
         json.loads(workflow_path.read_text(encoding="utf-8"))
     )
     _reset_and_seed(database, workflow)
-    clock = lambda: SCHEDULER_DEMO_NOW
+
+    def clock() -> datetime:
+        return SCHEDULER_DEMO_NOW
+
     orchestrator = Orchestrator(database, clock=clock)
     scheduler = AuditScheduler(database, clock=clock, orchestrator=orchestrator)
 

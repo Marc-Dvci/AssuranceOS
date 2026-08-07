@@ -15,5 +15,7 @@ terraform.tfstate*
 .DS_Store
 coverage.xml
 htmlcov/
+.coverage
+.coverage.*
 
 var/

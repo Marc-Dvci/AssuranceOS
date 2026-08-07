@@ -21,12 +21,35 @@ class ExecutionOutput:
     environment: dict[str, Any]
 
 
+def _resource_limits_available() -> bool:
+    try:
+        import resource  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 class DeterministicRuntime:
     """Executes released Python or SQL tests with bounded, network-denied local isolation.
 
     The process boundary is intentionally provider-neutral. Production deployments can replace
     this adapter with a Cloud Run Job or hardened sandbox while preserving the package contract.
+
+    Hard memory and CPU limits require the POSIX ``resource`` interface. Platforms without it
+    (Windows developer machines) can only run with ``allow_degraded_sandbox=True``, which is
+    recorded in the execution environment and rejected by the production configuration.
     """
+
+    def __init__(self, *, allow_degraded_sandbox: bool | None = None):
+        if allow_degraded_sandbox is None:
+            from ..config import settings
+
+            allow_degraded_sandbox = settings.control_test_allow_degraded_sandbox
+        self.allow_degraded_sandbox = allow_degraded_sandbox
+
+    @property
+    def resource_limits_enforced(self) -> bool:
+        return _resource_limits_available()
 
     def execute(
         self,
@@ -50,6 +73,7 @@ class DeterministicRuntime:
                 "platform": platform.platform(),
                 "byteorder": sys.byteorder,
                 "timezone": "UTC",
+                "resource_limits_enforced": self.resource_limits_enforced,
             },
         )
 
@@ -74,6 +98,7 @@ class DeterministicRuntime:
             "parameters": parameters,
             "context": context,
             "limits": release.manifest.resources.model_dump(mode="json"),
+            "allow_degraded_sandbox": self.allow_degraded_sandbox,
         }
         worker = Path(__file__).with_name("python_worker.py")
         env = {

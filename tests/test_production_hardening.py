@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -79,6 +80,35 @@ def test_production_settings_fail_closed(monkeypatch: pytest.MonkeyPatch):
     with pytest.raises(ValueError, match="authentication cannot be disabled"):
         Settings.from_env()
 
+
+def test_production_rejects_a_degraded_control_test_sandbox(monkeypatch: pytest.MonkeyPatch):
+    """The sandbox downgrade is a developer affordance and must never reach production."""
+    monkeypatch.setenv("ASSURANCEOS_ENV", "production")
+    monkeypatch.setenv("ASSURANCEOS_DATABASE_URL", "postgresql+psycopg://u:p@db:5432/assuranceos")
+    monkeypatch.setenv("ASSURANCEOS_AUTH_MODE", "jwt")
+    monkeypatch.setenv("ASSURANCEOS_AUTH_JWT_ISSUER", "https://issuer.example")
+    monkeypatch.setenv("ASSURANCEOS_AUTH_JWT_AUDIENCE", "assuranceos")
+    monkeypatch.setenv("ASSURANCEOS_AUTH_JWKS_URL", "https://issuer.example/jwks")
+    monkeypatch.setenv("ASSURANCEOS_AUTH_JWT_ALGORITHMS", "RS256")
+    monkeypatch.setenv("ASSURANCEOS_AUTO_CREATE_SCHEMA", "false")
+    monkeypatch.setenv("ASSURANCEOS_TRUSTED_HOSTS", "assuranceos.example")
+
+    monkeypatch.setenv("ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX", "false")
+    assert Settings.from_env().control_test_allow_degraded_sandbox is False
+
+    monkeypatch.setenv("ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX", "true")
+    with pytest.raises(ValueError, match="require an enforced sandbox"):
+        Settings.from_env()
+
+
+def test_degraded_sandbox_is_recorded_in_the_execution_environment():
+    """A run produced without enforced limits must say so in its reproducibility record."""
+    from assuranceos.control_testing.runtime import DeterministicRuntime
+
+    enforced = DeterministicRuntime(allow_degraded_sandbox=False)
+    assert enforced.allow_degraded_sandbox is False
+    # The flag reports what the platform can actually enforce, not what was requested.
+    assert enforced.resource_limits_enforced == (sys.platform != "win32")
 
 
 def test_jwt_configuration_rejects_algorithm_confusion(monkeypatch: pytest.MonkeyPatch):

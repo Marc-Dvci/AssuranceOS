@@ -24,7 +24,10 @@ def run_evidence_vault_demo(
     export_path: Path,
 ) -> dict[str, Any]:
     _reset_demo(database, object_root)
-    clock = lambda: EVIDENCE_DEMO_NOW
+
+    def clock() -> datetime:
+        return EVIDENCE_DEMO_NOW
+
     vault = EvidenceVault(database, LocalObjectStore(object_root), clock=clock)
 
     sources = [

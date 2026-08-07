@@ -59,5 +59,4 @@ clean:
 	find var -type f \( -name '*.db' -o -name '*.sqlite3' \) -delete 2>/dev/null || true
 
 zip:
-	cd .. && zip -r assuranceos-backend-v0.8-components-01-06.zip assuranceos-backend-v0.8-component-06 \
-		-x '*/__pycache__/*' '*/.pytest_cache/*' '*/.coverage' '*.db' '*.sqlite3' '*.pyc'
+	python scripts/build_release_archive.py

@@ -137,10 +137,14 @@ class LocalObjectStore:
                     expected_sha256=expected_sha256,
                     expected_size=len(payload),
                 )
-            if created:
-                target.chmod(0o444)
         finally:
+            # Drop the temporary name before sealing the target. os.link leaves both
+            # names pointing at one inode, so sealing first would either make the
+            # temporary undeletable (Windows refuses to unlink a read-only entry) or
+            # force a chmod that would unseal the target through the shared inode.
             temporary.unlink(missing_ok=True)
+        if created:
+            target.chmod(0o444)
 
         stat = target.stat()
         return StoredObject(

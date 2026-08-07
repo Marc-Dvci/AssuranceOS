@@ -20,6 +20,9 @@ dependencies = [
   "httpx>=0.27,<1",
   "PyJWT[crypto]>=2.9,<3",
   "cryptography>=43,<47",
+  # Windows ships no system IANA database; the recurring audit scheduler resolves
+  # IANA zone names through zoneinfo and fails closed without it.
+  "tzdata>=2024.1; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
@@ -59,3 +62,10 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
+# Pinned explicitly. CI installs ruff from a version range, and the implicit
+# default ruleset widens between ruff releases, so an inherited default turns a
+# routine dependency bump into a red build on untouched files. Broadening this
+# set is a deliberate, separately reviewable change.
+select = ["E4", "E7", "E9", "F"]

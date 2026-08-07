@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -29,7 +30,10 @@ def test_scheduler_http_contracts(tmp_path, monkeypatch):
     database = Database.from_sqlite_path(tmp_path / "api-scheduler.db")
     database.create_schema()
     _reset_and_seed(database, workflow)
-    clock = lambda: SCHEDULER_DEMO_NOW
+
+    def clock() -> datetime:
+        return SCHEDULER_DEMO_NOW
+
     orchestrator = Orchestrator(database, clock=clock)
     scheduler = AuditScheduler(database, clock=clock, orchestrator=orchestrator)
     monkeypatch.setattr(api, "database", database)

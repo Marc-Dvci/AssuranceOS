@@ -3,11 +3,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import resource
 import socket
 import sys
 from pathlib import Path
 from typing import Any
+
+try:  # POSIX only; Windows exposes no equivalent rlimit interface.
+    import resource
+except ImportError:  # pragma: no cover - exercised on Windows developer machines
+    resource = None  # type: ignore[assignment]
 
 
 def _deny_network(*_: Any, **__: Any) -> None:
@@ -15,6 +19,19 @@ def _deny_network(*_: Any, **__: Any) -> None:
 
 
 def _limits(payload: dict[str, Any]) -> None:
+    """Apply hard resource limits, or refuse to run when they cannot be enforced.
+
+    The caller states whether an unenforced sandbox is acceptable. Silently
+    skipping the limits would leave the isolation guarantee untested on the very
+    platform that lacks it, so the degraded path must be requested explicitly.
+    """
+    if resource is None:
+        if payload.get("allow_degraded_sandbox"):
+            return
+        raise RuntimeError(
+            "resource limits cannot be enforced on this platform; deterministic "
+            "control tests refuse to run without an enforced sandbox"
+        )
     limits = payload["limits"]
     memory = int(limits["memory_mb"]) * 1024 * 1024
     cpu = int(limits["cpu_seconds"])

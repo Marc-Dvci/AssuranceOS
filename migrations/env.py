@@ -14,7 +14,7 @@ from alembic import context  # noqa: E402
 from sqlalchemy import engine_from_config, pool  # noqa: E402
 
 from assuranceos.db.base import Base  # noqa: E402
-import assuranceos.db.models  # noqa: F401  # noqa: F401 - registers mapped tables
+import assuranceos.db.models  # noqa: E402, F401 - imported to register mapped tables
 
 
 config = context.config
