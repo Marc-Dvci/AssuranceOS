@@ -60,6 +60,13 @@ class Permission(StrEnum):
     # from writing them for the same reason adjudicating a finding is held apart
     # from proposing one.
     PORTFOLIO_APPROVE = "portfolio:approve"
+    REPORT_READ = "reports:read"
+    REPORT_WRITE = "reports:write"
+    # Issuing a report is the organisation speaking. Held apart from writing one
+    # because they are different jobs, and because the service beneath refuses an
+    # automated actor - a separation that only means something if the permission
+    # model agrees.
+    REPORT_ISSUE = "reports:issue"
 
 
 ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
@@ -74,6 +81,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.FINDING_READ,
             Permission.STANDARDS_READ,
             Permission.PORTFOLIO_READ,
+            Permission.REPORT_READ,
         }
     ),
     "auditor": frozenset(
@@ -96,6 +104,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.STANDARDS_WRITE,
             Permission.PORTFOLIO_READ,
             Permission.PORTFOLIO_WRITE,
+            Permission.REPORT_READ,
+            Permission.REPORT_WRITE,
         }
     ),
     # Management: may contest a finding and respond to it, and may do nothing else
@@ -108,6 +118,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.FINDING_READ,
             Permission.FINDING_DISPUTE,
             Permission.REMEDIATION_WRITE,
+            Permission.REPORT_READ,
         }
     ),
     "approver": frozenset(
@@ -128,6 +139,8 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             Permission.STANDARDS_APPROVE,
             Permission.PORTFOLIO_READ,
             Permission.PORTFOLIO_APPROVE,
+            Permission.REPORT_READ,
+            Permission.REPORT_ISSUE,
         }
     ),
     "operator": frozenset(

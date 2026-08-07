@@ -2148,6 +2148,400 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence-search:
+    get:
+      summary: Search Evidence
+      description: 'Access-aware retrieval over canonical evidence.
+
+
+        Substring matching, deliberately not semantic. A semantic index is a useful
+
+        way to find candidates and a bad thing to let a conclusion rest on, because
+
+        the set it returns is not reproducible. Claims cite explicit ids; this is
+        only
+
+        how a person finds them.'
+      operationId: search_evidence_api_v1_tenants__tenant_id__evidence_search_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+      - name: query
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Query
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 200
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Search Evidence Api V1 Tenants  Tenant Id  Evidence
+                  Search Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/claims:
+    post:
+      summary: Record Claims
+      description: Persist claims and their evidence links as canonical rows.
+      operationId: record_claims_api_v1_tenants__tenant_id__engagements__engagement_id__claims_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordClaimsRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Record Claims Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Claims Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/evidence/{evidence_id}/usage:
+    get:
+      summary: Evidence Usage
+      description: Every claim this record has been used to support, anywhere.
+      operationId: evidence_usage_api_v1_tenants__tenant_id__evidence__evidence_id__usage_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: evidence_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Evidence Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Evidence Usage Api V1 Tenants  Tenant Id  Evidence  Evidence
+                  Id  Usage Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/reports/dry-run:
+    post:
+      summary: Dry Run Report
+      description: 'What would stop this report, without producing or storing anything.
+
+
+        Separate from prepare so that "can this be issued" never has the side effect
+
+        of creating a version.'
+      operationId: dry_run_report_api_v1_tenants__tenant_id__engagements__engagement_id__reports_dry_run_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareReportRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Dry Run Report Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Reports Dry Run Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/engagements/{engagement_id}/reports:
+    post:
+      summary: Prepare Report
+      description: 'Render a report and store it as a draft.
+
+
+        422 when a material claim is unsupported, with every issue in the detail.
+        The
+
+        request was well formed; what it asked for is a document that would not be
+
+        true.'
+      operationId: prepare_report_api_v1_tenants__tenant_id__engagements__engagement_id__reports_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Engagement Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareReportRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Prepare Report Api V1 Tenants  Tenant Id  Engagements  Engagement
+                  Id  Reports Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/reports/{report_id}/issuance:
+    post:
+      summary: Issue Report
+      description: 'Issue a prepared report.
+
+
+        Behind its own permission. A report is the organisation speaking, and issuing
+
+        one is not the same job as writing it.'
+      operationId: issue_report_api_v1_tenants__tenant_id__reports__report_id__issuance_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueReportRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Issue Report Api V1 Tenants  Tenant Id  Reports  Report
+                  Id  Issuance Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/reports/{report_id}:
+    get:
+      summary: Get Report
+      operationId: get_report_api_v1_tenants__tenant_id__reports__report_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Report Api V1 Tenants  Tenant Id  Reports  Report
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/reports/{report_id}/verification:
+    get:
+      summary: Verify Report
+      description: 'Recompute a stored report''s digest, and its signature where a
+        key exists.
+
+
+        "The report you were sent is the report we issued" is the claim an export
+
+        makes, and a claim nobody can check is not one.'
+      operationId: verify_report_api_v1_tenants__tenant_id__reports__report_id__verification_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Verify Report Api V1 Tenants  Tenant Id  Reports  Report
+                  Id  Verification Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/themes:
+    get:
+      summary: Cross Engagement Themes
+      description: Findings whose code recurs across engagements.
+      operationId: cross_engagement_themes_api_v1_tenants__tenant_id__themes_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Cross Engagement Themes Api V1 Tenants  Tenant Id  Themes
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/tenants/{tenant_id}/universe/entities:
     post:
       summary: Register Universe Entity
@@ -3891,6 +4285,78 @@ components:
       title: CapacityPolicy
       description: What the audit function can actually deliver, and what it must
         cover.
+    ClaimInput:
+      properties:
+        key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9._-]*$
+          title: Key
+        claim_type:
+          $ref: '#/components/schemas/ClaimType'
+        statement:
+          type: string
+          minLength: 10
+          title: Statement
+        material:
+          type: boolean
+          title: Material
+          default: true
+        confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
+          default: 0.0
+        supporting_evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Supporting Evidence Ids
+        contradicting_evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Contradicting Evidence Ids
+        qualifying_evidence_ids:
+          items:
+            type: string
+          type: array
+          title: Qualifying Evidence Ids
+        limitations:
+          items:
+            type: string
+          type: array
+          title: Limitations
+        finding_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Finding Id
+        task_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Task Id
+      additionalProperties: false
+      type: object
+      required:
+      - key
+      - claim_type
+      - statement
+      title: ClaimInput
+      description: 'A statement the report will make, and what it rests on.
+
+
+        ``material`` defaults to True. The safe direction: a claim whose materiality
+
+        nobody considered is treated as one the reader will act on, so forgetting
+        to
+
+        mark something material produces a refusal rather than an unsupported
+
+        sentence.'
     ClaimStrength:
       type: string
       enum:
@@ -3906,6 +4372,24 @@ components:
         preference will report both as findings of the same kind, which is how an
 
         audit function loses the argument about which findings matter.'
+    ClaimType:
+      type: string
+      enum:
+      - observation
+      - conclusion
+      - opinion
+      - recommendation
+      - context
+      - limitation
+      title: ClaimType
+      description: 'What kind of statement a claim is.
+
+
+        The distinction between an observation and an opinion is not cosmetic: they
+
+        require different support. An observation must resolve to evidence of the
+
+        thing observed; an opinion must resolve to the observations it rests on.'
     CollectionGrantInput:
       properties:
         grant_key:
@@ -4426,6 +4910,29 @@ components:
       - actor_id
       - purpose
       title: EvidenceExportRequest
+    EvidencePolicy:
+      properties:
+        freshness_days:
+          type: integer
+          minimum: 1.0
+          title: Freshness Days
+          default: 400
+        allow_out_of_period:
+          type: boolean
+          title: Allow Out Of Period
+          default: false
+        allow_cross_engagement:
+          type: boolean
+          title: Allow Cross Engagement
+          default: false
+        allow_tainted_sole_support:
+          type: boolean
+          title: Allow Tainted Sole Support
+          default: false
+      additionalProperties: false
+      type: object
+      title: EvidencePolicy
+      description: When evidence is current enough to support a claim.
     EvidencePurgeRequest:
       properties:
         actor_id:
@@ -4608,6 +5115,22 @@ components:
       - defer
       - accept_risk
       title: HumanDecision
+    IssueReportRequest:
+      properties:
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 10
+          title: Reason
+        issued_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Issued By
+      type: object
+      required:
+      - reason
+      title: IssueReportRequest
     LaunchMode:
       type: string
       enum:
@@ -4869,6 +5392,14 @@ components:
       additionalProperties: false
       type: object
       title: PreflightContext
+    PrepareReportRequest:
+      properties:
+        request:
+          $ref: '#/components/schemas/ReportRequest'
+      type: object
+      required:
+      - request
+      title: PrepareReportRequest
     ProposeFindingRequest:
       properties:
         finding:
@@ -5090,6 +5621,18 @@ components:
       - ground
       - statement
       title: RaiseDisputeRequest
+    RecordClaimsRequest:
+      properties:
+        claims:
+          items:
+            $ref: '#/components/schemas/ClaimInput'
+          type: array
+          minItems: 1
+          title: Claims
+      type: object
+      required:
+      - claims
+      title: RecordClaimsRequest
     RecordCoverageRequest:
       properties:
         risk_code:
@@ -5239,6 +5782,137 @@ components:
       required:
       - standard
       title: RegisterStandardRequest
+    ReportRequest:
+      properties:
+        template:
+          $ref: '#/components/schemas/ReportTemplate'
+        claims:
+          items:
+            $ref: '#/components/schemas/ClaimInput'
+          type: array
+          minItems: 1
+          title: Claims
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        as_at:
+          type: string
+          format: date
+          title: As At
+        policy:
+          $ref: '#/components/schemas/EvidencePolicy'
+        reuse_justifications:
+          items:
+            $ref: '#/components/schemas/ReuseJustification'
+          type: array
+          title: Reuse Justifications
+        prepared_by:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Prepared By
+      additionalProperties: false
+      type: object
+      required:
+      - template
+      - claims
+      - period_start
+      - period_end
+      - as_at
+      - prepared_by
+      title: ReportRequest
+      description: Everything a render depends on, supplied rather than looked up.
+    ReportSection:
+      properties:
+        key:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Key
+        heading:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Heading
+        claim_keys:
+          items:
+            type: string
+          type: array
+          title: Claim Keys
+        narrative:
+          type: string
+          title: Narrative
+          default: ''
+      additionalProperties: false
+      type: object
+      required:
+      - key
+      - heading
+      title: ReportSection
+    ReportTemplate:
+      properties:
+        template_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Template Id
+        version:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Version
+        report_type:
+          $ref: '#/components/schemas/ReportType'
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Title
+        sections:
+          items:
+            $ref: '#/components/schemas/ReportSection'
+          type: array
+          minItems: 1
+          title: Sections
+        required_sections:
+          items:
+            type: string
+          type: array
+          title: Required Sections
+      additionalProperties: false
+      type: object
+      required:
+      - template_id
+      - version
+      - report_type
+      - title
+      - sections
+      title: ReportTemplate
+      description: 'The shape of a report, and which claim kinds each section may
+        carry.
+
+
+        Versioned, because a report issued under one template and one issued under
+
+        another are not comparable, and an audit committee comparing them needs to
+
+        know which it is looking at.'
+    ReportType:
+      type: string
+      enum:
+      - engagement_report
+      - executive_summary
+      - audit_committee_summary
+      - findings_register
+      - remediation_dashboard
+      - coverage_and_limitations
+      - technical_evidence_package
+      title: ReportType
     ResolveDisputeRequest:
       properties:
         resolution:
@@ -5299,6 +5973,40 @@ components:
       additionalProperties: false
       type: object
       title: RetryPolicy
+    ReuseJustification:
+      properties:
+        evidence_id:
+          type: string
+          title: Evidence Id
+        rationale:
+          type: string
+          maxLength: 2000
+          minLength: 20
+          title: Rationale
+        approved_by:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Approved By
+      additionalProperties: false
+      type: object
+      required:
+      - evidence_id
+      - rationale
+      - approved_by
+      title: ReuseJustification
+      description: 'Why evidence gathered for one purpose may support another.
+
+
+        Reuse is normal and is not free. Evidence collected for a different engagement
+
+        or a different period was collected under a different scope, and carrying
+        it
+
+        across without saying so is how a conclusion about this year quietly rests
+        on
+
+        last year''s sample.'
     ReviewQualityRequest:
       properties:
         notes:

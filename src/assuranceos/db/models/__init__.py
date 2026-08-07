@@ -24,6 +24,7 @@ from .evidence import (
     EvidenceCustodyEvent,
     EvidenceRecord,
     EvidenceTransformation,
+    ReportVersion,
 )
 from .findings import (
     ApprovalDecision,
@@ -111,6 +112,7 @@ __all__ = [
     "PlanProposal",
     "QualityReview",
     "ReasoningSpanRecord",
+    "ReportVersion",
     "RemediationAction",
     "Retest",
     "Risk",

@@ -182,3 +182,49 @@ class ClaimEvidenceLink(Base):
     )
     relationship: Mapped[str] = mapped_column(String(32), nullable=False, default="supports")
     rationale: Mapped[str | None] = mapped_column(Text)
+
+
+class ReportVersion(Base, TimestampMixin):
+    """One rendered report, stored whole with the digest that identifies it.
+
+    The document is kept as rendered rather than as a set of references to be
+    reassembled. A report is a statement made at a moment, and reassembling it
+    later from records that have since changed produces a different statement
+    while claiming to be the same one.
+
+    Preparation and issuance are separate columns because they are separate acts:
+    rendering proves the claims are supported, issuing is the organisation
+    deciding to say them.
+    """
+
+    __tablename__ = "report_versions"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "engagement_id", "report_type", "version", name="uq_report_version"
+        ),
+        CheckConstraint("claim_count >= 0", name="claim_count_non_negative"),
+    )
+
+    report_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        ForeignKey("tenants.tenant_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    engagement_id: Mapped[str] = mapped_column(
+        ForeignKey("engagements.engagement_id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    report_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    template_ref: Mapped[str] = mapped_column(String(128), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    document_json: Mapped[JsonObject] = mapped_column(JSON, nullable=False, default=dict)
+    document_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    signature_json: Mapped[JsonObject] = mapped_column(JSON, nullable=False, default=dict)
+    claim_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    material_claim_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    limitation_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    evidence_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    prepared_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    issued_by: Mapped[str | None] = mapped_column(String(128))
+    issued_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    issue_reason: Mapped[str | None] = mapped_column(Text)

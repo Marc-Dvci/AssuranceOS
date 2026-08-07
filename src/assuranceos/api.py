@@ -120,6 +120,14 @@ from .portfolio import (
     RiskNotFoundError,
     ScoringPolicy,
 )
+from .reporting import (
+    ClaimInput,
+    ReportingError,
+    ReportNotFoundError,
+    ReportRequest,
+    ReportingService,
+    UnsupportedClaimError,
+)
 from .security import JwtVerifier, Permission, Principal, effective_actor, require_permission
 from .standards import (
     AuditPackCompiler,
@@ -509,8 +517,14 @@ def _raise_http(exc: Exception) -> None:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     if isinstance(exc, (PackNotFoundError, StandardNotFoundError, CriterionNotFoundError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    if isinstance(exc, (RiskNotFoundError, PlanNotFoundError)):
+    if isinstance(exc, (RiskNotFoundError, PlanNotFoundError, ReportNotFoundError)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    # An unsupported material claim is a 422: the request was well formed, and
+    # what it asked for is a document that would not be true.
+    if isinstance(exc, UnsupportedClaimError):
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if isinstance(exc, ReportingError):
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     # A plan that does not fit its own capacity is a 409, not a 422: the request
     # is well formed, and what is wrong is the state of the proposal.
     if isinstance(exc, (PlanStateError, CapacityError)):
@@ -1520,6 +1534,195 @@ def verify_control_test_run(
         return _control_test_service().verify_reproducibility(
             tenant_id, run_id, domain_request
         ).model_dump(mode="json")
+    except Exception as exc:
+        _raise_http(exc)
+
+
+# --- retrieval, the claim graph, and evidence-grounded reporting --------------
+#
+# There is no endpoint that issues a report without rendering it first, and no
+# endpoint that renders one bypassing the material-claim gate. Preparation and
+# issuance are separate calls because they are separate acts.
+
+
+def _reporting_service() -> ReportingService:
+    return ReportingService(database, signer=_export_signer)
+
+
+class PrepareReportRequest(BaseModel):
+    request: ReportRequest
+
+
+class IssueReportRequest(BaseModel):
+    reason: str = Field(min_length=10, max_length=4000)
+    issued_by: str | None = None
+
+
+class RecordClaimsRequest(BaseModel):
+    claims: list[ClaimInput] = Field(min_length=1)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence-search",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
+def search_evidence(
+    tenant_id: str,
+    engagement_id: str | None = Query(default=None),
+    query: str | None = Query(default=None),
+    limit: int = Query(default=200, ge=1, le=1000),
+) -> dict:
+    """Access-aware retrieval over canonical evidence.
+
+    Substring matching, deliberately not semantic. A semantic index is a useful
+    way to find candidates and a bad thing to let a conclusion rest on, because
+    the set it returns is not reproducible. Claims cite explicit ids; this is only
+    how a person finds them.
+    """
+    try:
+        results = _reporting_service().retrieve(
+            tenant_id=tenant_id, engagement_id=engagement_id, query=query, limit=limit
+        )
+        return {"evidence": [item.model_dump(mode="json") for item in results]}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/claims",
+    dependencies=[Depends(require_permission(Permission.FINDING_WRITE))],
+)
+def record_claims(tenant_id: str, engagement_id: str, body: RecordClaimsRequest) -> dict:
+    """Persist claims and their evidence links as canonical rows."""
+    try:
+        created = _reporting_service().record_claims(
+            tenant_id=tenant_id, engagement_id=engagement_id, claims=body.claims
+        )
+        return {"claims": created}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/usage",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
+def evidence_usage(tenant_id: str, evidence_id: str) -> dict:
+    """Every claim this record has been used to support, anywhere."""
+    try:
+        return {"usage": _reporting_service().evidence_usage(
+            tenant_id=tenant_id, evidence_id=evidence_id
+        )}
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/reports/dry-run",
+    dependencies=[Depends(require_permission(Permission.REPORT_WRITE))],
+)
+def dry_run_report(tenant_id: str, engagement_id: str, body: PrepareReportRequest) -> dict:
+    """What would stop this report, without producing or storing anything.
+
+    Separate from prepare so that "can this be issued" never has the side effect
+    of creating a version.
+    """
+    try:
+        issues = _reporting_service().dry_run(
+            tenant_id=tenant_id, engagement_id=engagement_id, request=body.request
+        )
+        return {
+            "renderable": not issues,
+            "issues": [item.model_dump(mode="json") for item in issues],
+        }
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/reports",
+    dependencies=[Depends(require_permission(Permission.REPORT_WRITE))],
+)
+def prepare_report(tenant_id: str, engagement_id: str, body: PrepareReportRequest) -> dict:
+    """Render a report and store it as a draft.
+
+    422 when a material claim is unsupported, with every issue in the detail. The
+    request was well formed; what it asked for is a document that would not be
+    true.
+    """
+    try:
+        return _reporting_service().prepare(
+            tenant_id=tenant_id, engagement_id=engagement_id, request=body.request
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/reports/{report_id}/issuance",
+    dependencies=[Depends(require_permission(Permission.REPORT_ISSUE))],
+)
+def issue_report(
+    tenant_id: str, report_id: str, body: IssueReportRequest, request: Request
+) -> dict:
+    """Issue a prepared report.
+
+    Behind its own permission. A report is the organisation speaking, and issuing
+    one is not the same job as writing it.
+    """
+    try:
+        return _reporting_service().issue(
+            tenant_id=tenant_id,
+            report_id=report_id,
+            issued_by=_actor(request, body.issued_by),
+            reason=body.reason,
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/reports/{report_id}",
+    dependencies=[Depends(require_permission(Permission.REPORT_READ))],
+)
+def get_report(tenant_id: str, report_id: str) -> dict:
+    try:
+        return _reporting_service().get(tenant_id=tenant_id, report_id=report_id)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/reports/{report_id}/verification",
+    dependencies=[Depends(require_permission(Permission.REPORT_READ))],
+)
+def verify_report(tenant_id: str, report_id: str) -> dict:
+    """Recompute a stored report's digest, and its signature where a key exists.
+
+    "The report you were sent is the report we issued" is the claim an export
+    makes, and a claim nobody can check is not one.
+    """
+    try:
+        public_key = (
+            settings.export_signing_public_key.read_bytes()
+            if settings.export_signing_public_key
+            else None
+        )
+        return _reporting_service().verify(
+            tenant_id=tenant_id, report_id=report_id, public_key_pem=public_key
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/themes",
+    dependencies=[Depends(require_permission(Permission.FINDING_READ))],
+)
+def cross_engagement_themes(tenant_id: str) -> dict:
+    """Findings whose code recurs across engagements."""
+    try:
+        return {"themes": _reporting_service().themes(tenant_id=tenant_id)}
     except Exception as exc:
         _raise_http(exc)
 
