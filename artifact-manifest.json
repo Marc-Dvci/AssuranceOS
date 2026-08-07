@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 710,
+  "file_count": 711,
   "files": [
     {
       "path": ".dockerignore",
@@ -2791,8 +2791,8 @@
     },
     {
       "path": "src/assuranceos/adk.py",
-      "size_bytes": 4469,
-      "sha256": "ae55803facfb38233247701f5a354890503d627f8d4bee5a168f572b7334359a"
+      "size_bytes": 9377,
+      "sha256": "7f984c1b1588eccc43d47f646713aed68f83140eb056c092a196518f0ac260cc"
     },
     {
       "path": "src/assuranceos/agent_release.py",
@@ -3408,6 +3408,11 @@
       "path": "tests/test_adjudication.py",
       "size_bytes": 26551,
       "sha256": "b7291755285b912266e5acb34f72329bf23fcbeeb1d61edc708d4332381ac711"
+    },
+    {
+      "path": "tests/test_adk_gateway_tools.py",
+      "size_bytes": 7310,
+      "sha256": "f477ca82eac505611a0cb401ea5a9657405bd204e464613d4f5c55d7fb58a7c4"
     },
     {
       "path": "tests/test_agent_governance.py",
