@@ -7,6 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "artifact-manifest.json"
+# The manifest is a release gate, so it must describe the source tree and nothing
+# else. Without these exclusions it hashes whatever happens to sit in the working
+# directory -- a local virtualenv alone adds thousands of entries -- and the
+# --check gate then fails on any machine whose environment differs.
 EXCLUDED_PARTS = {
     ".git",
     ".pytest_cache",
@@ -15,9 +19,24 @@ EXCLUDED_PARTS = {
     ".mypy_cache",
     ".terraform",
     "var",
+    ".venv",
+    "venv",
+    "node_modules",
+    "htmlcov",
+    "build",
+    "dist",
+    ".idea",
+    ".vscode",
 }
-EXCLUDED_NAMES = {".coverage"}
-EXCLUDED_SUFFIXES = {".db", ".sqlite3", ".pyc"}
+EXCLUDED_NAMES = {".coverage", ".DS_Store"}
+EXCLUDED_SUFFIXES = {".db", ".sqlite3", ".pyc", ".pyo"}
+
+
+def _is_build_artifact(relative: Path) -> bool:
+    return any(
+        part.endswith((".egg-info", ".egg-link")) or part.startswith(".coverage.")
+        for part in relative.parts
+    )
 
 
 def included_files() -> list[Path]:
@@ -27,6 +46,8 @@ def included_files() -> list[Path]:
             continue
         relative = path.relative_to(ROOT)
         if any(part in EXCLUDED_PARTS for part in relative.parts):
+            continue
+        if _is_build_artifact(relative):
             continue
         if path.suffix in EXCLUDED_SUFFIXES:
             continue

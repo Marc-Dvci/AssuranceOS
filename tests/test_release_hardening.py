@@ -13,6 +13,8 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
 
+from tests.test_migrations import current_head
+
 from assuranceos.agent_release import verify_agent_release
 from assuranceos.audit_pack_release import verify_audit_pack_release
 from assuranceos.connectors.adapters.github import GitHubPullRequestConnector
@@ -194,7 +196,7 @@ def test_production_hardening_migration_upgrades_populated_component5_database(
             version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
         assert str(row.available_at).startswith("2026-08-06 12:00:00")
         assert row.publish_attempts == 0
-        assert version == "0007_control_test_engine"
+        assert version == current_head()
     finally:
         engine.dispose()
 

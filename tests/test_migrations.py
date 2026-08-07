@@ -2,7 +2,17 @@ from __future__ import annotations
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, text
+
+
+def current_head() -> str:
+    """Resolve the head revision instead of pinning it.
+
+    These tests assert that an upgrade reaches head, so hardcoding the revision
+    made every new migration fail an unrelated test.
+    """
+    return ScriptDirectory.from_config(Config("alembic.ini")).get_current_head()
 
 
 def test_initial_migration_upgrades_fresh_database(tmp_path, monkeypatch):
@@ -29,11 +39,15 @@ def test_initial_migration_upgrades_fresh_database(tmp_path, monkeypatch):
         assert "control_test_runs" in tables
         assert "control_test_dataset_bindings" in tables
         assert "control_test_exceptions" in tables
+        assert "agent_identities" in tables
+        assert "agent_gateway_decisions" in tables
+        assert "agent_guardrail_findings" in tables
+        assert "agent_reasoning_spans" in tables
         with engine.connect() as connection:
             versions = connection.execute(
                 text("select version_num from alembic_version")
             ).scalars().all()
-            assert versions == ["0007_control_test_engine"]
+            assert versions == [current_head()]
     finally:
         engine.dispose()
 
@@ -326,6 +340,6 @@ def test_connector_migration_upgrades_populated_component4_database(tmp_path, mo
             ).scalar_one() == 1
             assert connection.execute(
                 text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == "0007_control_test_engine"
+            ).scalar_one() == current_head()
     finally:
         engine.dispose()

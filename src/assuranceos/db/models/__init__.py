@@ -1,3 +1,9 @@
+from .agent_governance import (
+    AgentIdentityRecord,
+    GatewayDecisionRecord,
+    GuardrailFindingRecord,
+    ReasoningSpanRecord,
+)
 from .control_testing import (
     ControlTestDatasetBinding,
     ControlTestException,
@@ -40,6 +46,7 @@ from .planning import (
 from .tenancy import RoleAssignment, Tenant, User
 
 __all__ = [
+    "AgentIdentityRecord",
     "AgentRelease",
     "ConnectorRun",
     "ConnectorInstance",
@@ -67,11 +74,14 @@ __all__ = [
     "EvidenceTransformation",
     "ExecutionTrace",
     "Finding",
+    "GatewayDecisionRecord",
+    "GuardrailFindingRecord",
     "IdempotencyRecord",
     "ManagementResponse",
     "OrganizationFact",
     "OrganizationProfile",
     "OutboxEvent",
+    "ReasoningSpanRecord",
     "RemediationAction",
     "Retest",
     "Risk",
