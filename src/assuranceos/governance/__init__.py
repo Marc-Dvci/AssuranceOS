@@ -14,9 +14,30 @@ Four subsystems, composed rather than layered ad hoc:
 :mod:`worker` mounts the composed runtime on the durable orchestration task path.
 Registering its handler is what makes the enforcement point unavoidable: an agent
 task has no other route to execution.
+
+Two further Google models sit beside the reasoning model, each behind the same
+transport contract and each deliberately non-authoritative:
+
+* :mod:`embeddings` — EmbeddingGemma. A semantic index over canonical evidence
+  that returns candidates for a person to check, never support for a claim.
+* :mod:`speech` — Chirp 3. Walkthrough interviews become transcripts, and
+  transcripts become assertions to be tested rather than facts to be reported.
 """
 
 from .armor import ArmorFinding, ArmorResult, ModelArmor
+from .embeddings import (
+    DeterministicEmbeddingClient,
+    EmbeddingBatch,
+    EmbeddingClient,
+    EmbeddingError,
+    EvidenceCandidate,
+    IndexedDocument,
+    LocalEmbeddingClient,
+    SemanticEvidenceIndex,
+    VertexEmbeddingClient,
+    build_embedding_client,
+    cosine_similarity,
+)
 from .gateway import AgentGateway, BoundedTool, GatewayDecision, GatewayDenied, TaskBudget
 from .identity import (
     AgentIdentity,
@@ -28,6 +49,17 @@ from .identity import (
     derive_granted_authority,
     generate_agent_identity_keypair,
     workload_uri,
+)
+from .speech import (
+    Chirp3Client,
+    ScriptedTranscriptionClient,
+    Transcript,
+    TranscriptionClient,
+    TranscriptionError,
+    TranscriptSegment,
+    WalkthroughAssertion,
+    build_transcription_client,
+    extract_assertions,
 )
 from .telemetry import (
     AgentTracer,
@@ -57,21 +89,41 @@ __all__ = [
     "ArmorFinding",
     "ArmorResult",
     "BoundedTool",
+    "Chirp3Client",
+    "DeterministicEmbeddingClient",
+    "EmbeddingBatch",
+    "EmbeddingClient",
+    "EmbeddingError",
+    "EvidenceCandidate",
     "GatewayDecision",
     "GatewayDenied",
     "GovernedAgentTaskHandler",
     "InMemoryRevocationList",
+    "IndexedDocument",
+    "LocalEmbeddingClient",
     "ModelArmor",
     "ReasoningChain",
     "RecordedSpan",
+    "ScriptedTranscriptionClient",
+    "SemanticEvidenceIndex",
     "SignedAgentIdentity",
     "TaskBudget",
     "TelemetryConfig",
+    "Transcript",
+    "TranscriptSegment",
+    "TranscriptionClient",
+    "TranscriptionError",
+    "VertexEmbeddingClient",
+    "WalkthroughAssertion",
     "audit_log_record",
+    "build_embedding_client",
+    "build_transcription_client",
     "configure_telemetry",
+    "cosine_similarity",
     "derive_granted_authority",
     "envelope_from_lease",
     "evidence_from_records",
+    "extract_assertions",
     "genai_attributes",
     "generate_agent_identity_keypair",
     "new_span_id",

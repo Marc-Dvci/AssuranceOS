@@ -5,6 +5,74 @@ end to end — plan, collect, test, conclude, remediate, retest — and makes ev
 step attributable, so an autonomous agent can do the work without anyone having
 to take its word for the result.
 
+It is the audit function for a company that does not have one. Two hundred
+people, real customers, real contractual obligations, and nobody whose job is to
+check that the controls they promised actually work — because a team to do that
+costs more than the risk feels like it is worth.
+
+## Run it in three commands
+
+```bash
+pip install -e '.[dev]'
+python scripts/migrate.py && make seed-demo    # one complete audit, in one tenant
+uvicorn assuranceos.api:app --port 8080        # / is the cockpit, /judge the evaluator surface
+```
+
+`make seed-demo` matters. Every demonstration entrypoint used to own a tenant and
+delete it on entry, so running them in sequence had each wipe the last. The
+seeder composes all eleven into `tnt_asteria_demo`: 6 risks, an approved plan, 10
+engagements, 34 tasks, 69 evidence records, 2 findings, 1 issued report, 1 trace.
+
+On Windows, prefix those commands with
+`ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX=true`. The control-test sandbox
+enforces hard memory and CPU limits through the POSIX `resource` interface and
+refuses to run rather than pretend when the platform has none.
+
+## What this uses, and where to look
+
+| Hackathon requirement | What runs | Where it lives |
+| --- | --- | --- |
+| Gemini 3.5 or newer, through the Gemini API or Vertex AI | **Gemini 3.6 Flash** via the Google GenAI SDK. Structured JSON is validated against per-task schemas before it can influence workflow state | [`governance/models_client.py`](src/assuranceos/governance/models_client.py) · [`agents/*/model_profiles.yaml`](agents) |
+| At least one Google agent framework | **Google ADK** and **Vertex AI Agent Engine**. Nineteen signed agent roles; deployment is gated on all 76 release cases passing | [`adk.py`](src/assuranceos/adk.py) · [`managed_fleet.py`](src/assuranceos/managed_fleet.py) · [`scripts/deploy_adk_agent.py`](scripts/deploy_adk_agent.py) |
+| At least one Google Cloud infrastructure service | **Cloud Run** service and jobs, **Cloud SQL**, **Cloud Storage**, **Pub/Sub**, **Secret Manager**, **Cloud Scheduler**, **Cloud Trace** | [`infrastructure/terraform/main.tf`](infrastructure/terraform/main.tf) |
+| Vertex AI Memory Bank | tenant-isolated, generated only from sessions approved for memory, bounded TTL, never authoritative evidence | [`managed_fleet.py`](src/assuranceos/managed_fleet.py) |
+
+Three further Google models carry the parts of an audit the reasoning model
+should not:
+
+| Model | What it does | Where it lives |
+| --- | --- | --- |
+| **Gemma 4** (12B / 26B `IQ4_XS`) | the same governed loop on loopback, for populations that cannot leave the auditee's network | [`models_client.py`](src/assuranceos/governance/models_client.py) · [`models/gemma-4-26b-a4b-iq4-xs`](models/gemma-4-26b-a4b-iq4-xs) |
+| **EmbeddingGemma** | semantic retrieval over canonical evidence: how a person finds the record, never what a claim resolves to | [`governance/embeddings.py`](src/assuranceos/governance/embeddings.py) · [`models/embeddinggemma`](models/embeddinggemma) |
+| **Chirp 3** | walkthrough interviews become transcripts, and transcripts become assertions to be tested | [`governance/speech.py`](src/assuranceos/governance/speech.py) · [`walkthrough.py`](src/assuranceos/walkthrough.py) · [`models/chirp-3`](models/chirp-3) |
+
+```bash
+make model-fleet-demo   # both new models over the Asteria corpus, offline and deterministic
+```
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+  User["Auditor / evaluator<br/>browser"] --> API["Cloud Run<br/>FastAPI · cockpit · Judge Mode"]
+  API --> Gateway["Agent Gateway<br/>identity · policy · Model Armor · budgets"]
+  Gateway --> Fleet["19 ADK agents<br/>Agent Engine + Memory Bank"]
+  Fleet --> Models["Gemini 3.6 Flash<br/>Gemma 4 · EmbeddingGemma · Chirp 3"]
+  Models -.->|"proposes only"| Gateway
+  Gateway --> Tests["Deterministic control tests<br/>Cloud Run Jobs, network denied"]
+  Gateway --> Sources["GitHub · Jira · Confluence · HR<br/>read-only connectors"]
+  Sources --> Vault[("Cloud Storage<br/>content-addressed evidence")]
+  Tests --> DB
+  Vault --> DB
+  Gateway --> DB[("Cloud SQL<br/>canonical state · audit events<br/>reasoning chains · outbox")]
+  DB --> Human{{"Human gate<br/>an agent cannot approve"}}
+  Human --> API
+```
+
+The models appear exactly once, and only as proposers: no edge runs from them to
+canonical state. The full version of this diagram, with every enforcement point,
+is under [Architecture](#architecture) below.
+
 ## The loop, in one command
 
 ```bash

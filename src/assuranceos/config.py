@@ -56,6 +56,17 @@ class Settings:
     local_model_url: str
     local_model_name: str
     local_model_allowed_hosts: tuple[str, ...]
+    # EmbeddingGemma. Retrieval is a separate deployment decision from reasoning:
+    # a 300M embedding model runs happily beside the data when the 12B one cannot.
+    embedding_mode: str
+    embedding_model: str
+    embedding_url: str
+    embedding_dimensions: int
+    # Chirp 3. Speech-to-Text v2 is regional and the model is not served from the
+    # global endpoint, so the location is configuration rather than a constant.
+    speech_mode: str
+    speech_model: str
+    speech_location: str
     evidence_root: Path
     evidence_export_root: Path
     evidence_storage: str
@@ -129,6 +140,19 @@ class Settings:
             ),
             local_model_name=os.getenv("ASSURANCEOS_LOCAL_MODEL_NAME", "local"),
             local_model_allowed_hosts=local_model_allowed_hosts,
+            embedding_mode=os.getenv("ASSURANCEOS_EMBEDDING_MODE", "deterministic"),
+            embedding_model=os.getenv(
+                "ASSURANCEOS_EMBEDDING_MODEL", "embeddinggemma-300m"
+            ),
+            embedding_url=os.getenv(
+                "ASSURANCEOS_EMBEDDING_URL", "http://127.0.0.1:5001/v1"
+            ),
+            embedding_dimensions=_int_env(
+                "ASSURANCEOS_EMBEDDING_DIMENSIONS", 768, minimum=128
+            ),
+            speech_mode=os.getenv("ASSURANCEOS_SPEECH_MODE", "scripted"),
+            speech_model=os.getenv("ASSURANCEOS_SPEECH_MODEL", "chirp_3"),
+            speech_location=os.getenv("ASSURANCEOS_SPEECH_LOCATION", "us-central1"),
             evidence_root=Path(os.getenv("ASSURANCEOS_EVIDENCE_ROOT", "./var/evidence")),
             evidence_export_root=Path(
                 os.getenv("ASSURANCEOS_EVIDENCE_EXPORT_ROOT", "./var/evidence-exports")
@@ -173,6 +197,13 @@ class Settings:
     def validate(self) -> None:
         if self.auth_mode not in {"disabled", "jwt"}:
             raise ValueError("ASSURANCEOS_AUTH_MODE must be 'disabled' or 'jwt'")
+        # EmbeddingGemma is a Matryoshka model: the trained representation can be
+        # truncated to these prefixes and no others. An untrained dimension does
+        # not error, it just quietly retrieves worse.
+        if self.embedding_dimensions not in {768, 512, 256, 128}:
+            raise ValueError(
+                "ASSURANCEOS_EMBEDDING_DIMENSIONS must be one of 768, 512, 256, 128"
+            )
         if self.evidence_storage not in {"local", "gcs"}:
             raise ValueError("ASSURANCEOS_EVIDENCE_STORAGE must be 'local' or 'gcs'")
         if self.evidence_storage == "gcs" and not self.evidence_bucket:
@@ -200,6 +231,28 @@ class Settings:
                 raise ValueError("local privacy mode requires an execution-envelope signing key")
             if self.control_test_allow_degraded_sandbox:
                 raise ValueError("local privacy mode requires the enforced control-test sandbox")
+            # The reasoning model is not the only thing that sees evidence. An
+            # index embeds every document it ranks and a recogniser hears the
+            # whole interview, so a loopback-only reasoning path with a hosted
+            # index or a hosted recogniser is not a private deployment — it is
+            # the same egress through a quieter door.
+            if self.embedding_mode not in {"local", "deterministic"}:
+                raise ValueError(
+                    "local privacy mode requires a loopback embedding model; "
+                    "set ASSURANCEOS_EMBEDDING_MODE=local"
+                )
+            if self.embedding_mode == "local":
+                embedding_host = (urlparse(self.embedding_url).hostname or "").lower()
+                if embedding_host not in self.local_model_allowed_hosts:
+                    raise ValueError(
+                        "local privacy embedding endpoint is outside "
+                        "ASSURANCEOS_LOCAL_MODEL_ALLOWED_HOSTS"
+                    )
+            if self.speech_mode not in {"scripted", "disabled"}:
+                raise ValueError(
+                    "local privacy mode cannot send interview audio to hosted "
+                    "speech recognition; set ASSURANCEOS_SPEECH_MODE=disabled"
+                )
         if self.auth_mode == "jwt":
             if not self.auth_jwt_issuer or not self.auth_jwt_audience:
                 raise ValueError("JWT issuer and audience are required when authentication is enabled")

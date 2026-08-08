@@ -14,10 +14,15 @@ human gates.
 
 ## Why it matters
 
-Internal audit teams spend too much time reconciling source systems, rebuilding
-workpapers, and proving how a conclusion was reached. Generic copilots can draft
-text; they do not provide the chain of custody, independence rules, replay
-protection, or evidence-grounded reporting required for assurance work.
+It is built for the companies that have no audit function at all. Two hundred
+people, real customers, real contractual obligations, and nobody whose job is to
+check that the controls they promised actually work — because a team to do that
+costs more than the risk feels like it is worth.
+
+Where audit teams do exist, they spend too much time reconciling source systems,
+rebuilding workpapers, and proving how a conclusion was reached. Generic copilots
+can draft text; they do not provide the chain of custody, independence rules,
+replay protection, or evidence-grounded reporting required for assurance work.
 
 AssuranceOS turns those controls into product primitives. The result is faster
 coverage without trading away accountability.
@@ -146,7 +151,108 @@ Judge Mode reads the application and release registries live. It exposes:
 Raw proof remains available behind expandable details, while the primary view
 explains the result in business language.
 
-## Gemma, and why the same governed path runs on both
+## Three more Google models, each doing a job the reasoning model should not
+
+Gemini 3.6 Flash reasons. It is not how an auditor *finds* the document that
+matters, it is not what should hear a walkthrough interview, and it is not what
+can run inside a network that evidence may not leave. Three further Google models
+carry those, and each one is deliberately bounded so that adding a model does not
+add a way to reach a conclusion.
+
+| Model | Job | Code | Tests |
+| --- | --- | --- | --- |
+| **EmbeddingGemma** (`embeddinggemma-300m`) | semantic retrieval over canonical evidence | `governance/embeddings.py` | `tests/test_embeddings.py` |
+| **Chirp 3** (Speech-to-Text v2) | walkthrough-interview transcription | `governance/speech.py`, `walkthrough.py` | `tests/test_walkthrough.py` |
+| **Gemma 4** (12B / 26B `IQ4_XS`) | the whole governed loop on loopback | `governance/models_client.py` | `tests/test_governed_runtime.py` |
+
+### EmbeddingGemma — retrieval that finds candidates and grants no authority
+
+`src/assuranceos/governance/embeddings.py`, tested in `tests/test_embeddings.py`.
+
+The reporting service's `retrieve` is a substring match, and its docstring says
+why: a semantic index is a useful way to find candidates and a terrible thing to
+let a conclusion rest on, because the set it returns is not reproducible.
+EmbeddingGemma sits beside that rule rather than replacing it.
+
+Four properties make a ranking admissible as a *pointer*:
+
+- **Every candidate is an evidence id and a content hash.** The index never
+  returns text it decided was relevant, so a citation always resolves to bytes.
+- **The access filter runs before ranking, not after.** A record outside the
+  caller's visible classifications is never scored, so neither the ordering nor
+  the result count can depend on evidence they are not cleared to know exists.
+  Post-filtering a top-k is the subtle version of the same leak.
+- **Candidates declare themselves non-authoritative** and carry the model and
+  dimension that produced them. A ranking is an opinion with a version.
+- **The transport declares whether it is semantic.** The offline test client
+  reports `semantic: false` and every surface showing its output carries a
+  warning, because a ranking with no meaning behind it looks exactly like one
+  that works.
+
+The embedding strategy is content-addressed: vectors are cached on
+`content_sha256`, not on the evidence id. The vault is content-addressed already,
+so identical bytes are embedded once and re-indexing a corpus after a partial
+change costs only the changed bytes. Task prefixes follow EmbeddingGemma's
+training — queries and documents go through different prompts, and the document
+prompt carries the title. Matryoshka truncation to 512, 256 or 128 dimensions is
+supported and renormalises; any other width is refused, because an untrained
+width does not error, it just retrieves worse.
+
+A 300M embedding model is small enough to run beside the data even where the
+reasoning model cannot, and that turns out to matter: an index embeds every
+document it ranks, so a loopback-only reasoning path with a hosted index is not a
+private deployment. `Settings.validate` refuses that combination.
+
+### Chirp 3 — what a person said is an assertion, not a fact
+
+`src/assuranceos/governance/speech.py` and `src/assuranceos/walkthrough.py`,
+tested in `tests/test_walkthrough.py`.
+
+Half of an audit happens in a room. A process owner explains how a control is
+meant to work, and everything downstream is aimed at what they said. It is also
+the least reliable input in the engagement: people describe the process they
+designed rather than the one that runs, and they do it in good faith.
+
+Chirp 3 transcribes the walkthrough, and the result enters the vault under a
+chain that never lets it become more than it is. The recording is original
+evidence, `accepted=False`. The transcript is a **derivative** of the recording,
+with the recogniser and its per-segment confidence in the lineage. An assertion
+becomes a claim about *what was said* — "at 00:02 in the recorded walkthrough,
+the head of support stated: …" — supported by the transcript, which genuinely
+supports that, and carrying a standing uncorroborated limitation that no caller
+can switch off. The claim that the control actually works that way has to come
+from system data.
+
+The details are where the guarantee lives:
+
+- the recording is ingested **before** transcription, so a bad recogniser day
+  never costs the only unarguable artefact in the room;
+- the transcript's audio digest must match the stored bytes or the derivative is
+  refused, otherwise the lineage is a guess and "listen for yourself" plays the
+  wrong recording;
+- segments below the confidence threshold produce no assertion at all — a
+  misheard sentence is a different sentence, not a weak one;
+- interviews default to `confidential`, decided in the module rather than at the
+  call site;
+- local privacy mode refuses hosted transcription outright. Interview audio is
+  the most identifying artefact in an engagement.
+
+In the Asteria corpus this is the beat the whole demonstration turns on. The head
+of support states that a priority-one incident gets a response within eight
+hours, and that the Jira automation checks it. Both are true descriptions of the
+documented process. The contract amendment signed four months earlier says four
+hours. The assertion is recorded, tested against the incident population by a
+signed deterministic control test, and contradicted.
+
+Both models run over the real corpus in one command:
+
+```bash
+make model-fleet-demo                                    # offline and deterministic
+python scripts/run_model_fleet_demo.py --embedding-mode vertex \
+    --speech-mode chirp --audio walkthrough.wav          # EmbeddingGemma + Chirp 3
+```
+
+### Gemma 4 — the same governed path, inside the auditee's network
 
 The governed runtime holds one model contract with three transports behind it:
 the Google GenAI SDK for Gemini 3.6 Flash on Vertex AI, an OpenAI-compatible
@@ -185,6 +291,75 @@ parity, and the primary golden audit remains the Google Cloud path.
 - Human-only approval and separation-of-duties checks for retesting.
 - Local privacy runtime with loopback-only model routing and signed bundle
   transfer for restricted engagements.
+
+## Data sources
+
+Everything the platform reads in the demonstration is synthetic and lives in the
+repository, so a judge can reproduce any result byte for byte.
+
+- **The Asteria corpus** — 51 files across nine source systems (`cloud`,
+  `confluence`, `finance`, `github`, `governance`, `hr`, `identity`, `jira`,
+  `legal`), generated deterministically by `scripts/build_demo_corpus.py`.
+  Regeneration is byte-identical, so cited evidence hashes stay valid. CSV, JSON,
+  Markdown and real `.xlsx` workbooks, read by a dependency-free spreadsheet
+  reader that refuses formula cells.
+- **A recorded walkthrough interview**, transcribed by Chirp 3 into
+  timecoded segments with per-word confidence.
+- **The published answer key**, `demo/asteria/ground_truth.yaml`, declaring all
+  ten seeded conditions so every run marks itself rather than reporting on its
+  own execution.
+- **Licensed methodology**, as three signed Audit Packs compiling criteria,
+  controls, deterministic tests, evidence requirements, agent roles and human
+  gates into an executable engagement graph.
+
+No production or personal data is used anywhere.
+
+## Findings and learnings
+
+**A reasoning model has two output channels, and only one of them is the
+answer.** Measured on `gemma-4-12b-it-IQ4_XS`: with deliberation enabled the
+governed audit prompt produced 16,602 characters of reasoning and no answer at
+all inside a 4096-token ceiling; with it off, the same prompt answered in 171
+tokens. Worse than the budget problem is the parsing one — a reasoning model
+routinely rehearses the output object inside its own scratchpad, so parsing an
+unsplit reply can lift a conclusion the model explicitly backed away from. The
+runtime splits the channels before any JSON extraction, keeps the reasoning as
+trace evidence, and screens it with Model Armor, because an injection that fails
+to change the answer can still try to move secrets out through the scratchpad.
+
+**A green test suite is blind to the axis it never varies.** 472 passing tests
+did not notice that five of nine cockpit screens were empty, because each
+demonstration entrypoint owned a tenant and deleted it on entry. Clicking every
+button in order, once, found four defects the suite could not: traces that were
+written but never given a header and so could never be opened; a detail view
+crashing on a column name; trace status derived from any errored span, which
+labelled every successful containment "failed"; and a proof button that rendered
+its own output and then immediately re-rendered over it.
+
+**Guardrail findings do not correlate on decision id.** A prompt injection is
+detected while screening *inbound context*, before any tool call exists, so those
+findings carry no decision id at all. Joining on decisions hides exactly the
+detections the fleet exists to make; the correlation has to run through the
+trace.
+
+**The fixture has to say when it is a fixture.** The offline embedding transport
+produces stable vectors with no semantics, and its ranking looks precisely like a
+working retrieval. Declaring `semantic: false` on the transport — and carrying
+that through every surface that displays a candidate — is the difference between
+a demonstration and a demonstration of nothing.
+
+**Generated demo data is hashed data.** `Path.write_text` emits CRLF on Windows,
+and a corpus whose evidence hashes are cited in the demonstration then hashes
+differently in CI than on the laptop. Every text write passes an explicit LF
+newline, and `.gitattributes` declares `*.xlsx binary`, because `* text=auto`
+leaves a zip container to a heuristic.
+
+**A fixture has to demonstrate what it claims.** The seeded "time-zone false
+positive" was constructed backwards: `-02:00` at 23:30 on 30 June really is
+inside July UTC. The trap only works as `+02:00` at 00:30 on 1 July, which reads
+as July and resolves to 22:30Z on 30 June. Two helpers — a naive period filter
+and the correct one in the signed control test — classified the same record
+differently, and only one of them was in the signed artefact.
 
 ## Quality
 

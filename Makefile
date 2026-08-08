@@ -1,4 +1,4 @@
-.PHONY: install validate migrate test coverage run corpus seed-demo demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo pack-demo portfolio-demo reporting-demo governance-demo evaluate-agents sync-control-tests openapi manifest outbox docker local-privacy zip clean
+.PHONY: install validate migrate test coverage run corpus seed-demo demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo model-fleet-demo pack-demo portfolio-demo reporting-demo governance-demo evaluate-agents sync-control-tests openapi manifest outbox docker local-privacy zip clean
 
 install:
 	python -m pip install -e '.[dev]'
@@ -41,6 +41,9 @@ connector-demo:
 
 loop-demo:
 	python scripts/run_assurance_loop_demo.py
+
+model-fleet-demo:
+	python scripts/run_model_fleet_demo.py
 
 pack-demo:
 	python scripts/run_pack_compiler_demo.py

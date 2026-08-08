@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 871,
+  "file_count": 881,
   "files": [
     {
       "path": ".dockerignore",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".env.example",
-      "size_bytes": 3642,
-      "sha256": "fa63ec494782f65b4847dc5fe1f7aa91bfb1a40d7b834977d15a235356919c08"
+      "size_bytes": 4946,
+      "sha256": "adde0b905f34665b4535b11510a64e2d3cb7e193b5d2b77b1f6b8c9572c3f37f"
     },
     {
       "path": ".gitattributes",
@@ -91,8 +91,8 @@
     },
     {
       "path": "Makefile",
-      "size_bytes": 2105,
-      "sha256": "b48377ea2b245e0f9ed01895ff0c2a6d78307c37928b7ea69beb96ff9fa2ae5a"
+      "size_bytes": 2181,
+      "sha256": "96714f500bbf643fb1a81af79022c0b18c73a018a27071898ebb21778d2ed3aa"
     },
     {
       "path": "NOTICE.md",
@@ -106,8 +106,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 28054,
-      "sha256": "a6ca1e7401c6959cbcda10ef8af53041ad4acf7ea83b530bb70897796a3f4ddc"
+      "size_bytes": 32529,
+      "sha256": "655dcf786c34f102fa52f8ca15c46331ada3063154a89c514ad8d693c65626e5"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -1946,8 +1946,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 222830,
-      "sha256": "a00a1bd9750bcc99e2699be57a6a727e7e19d8635588540211ec3ecc33a6c285"
+      "size_bytes": 229875,
+      "sha256": "1a141371d3dd33e4530998ce8041278b480764e8a1daa6e08b9a3b89eb83b9f0"
     },
     {
       "path": "api/protobuf/README.md",
@@ -1966,8 +1966,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 62353,
-      "sha256": "9069be2bcdbb9a239da2ee7d764951577b87c17028325e441691a0a28b51717a"
+      "size_bytes": 66195,
+      "sha256": "d6dec73cf0f6e230acca07f81a60bdb407cd248af6ca5bdb8f599139e23a5d3c"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2511,8 +2511,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 8989,
-      "sha256": "822f8c766655547e57772ef49a46d6c23d7345369818f79973bb8f6dab4704cd"
+      "size_bytes": 18966,
+      "sha256": "a5bed3dd6b8df7029f70dcf29d03f5ab5300c5ba035c69beacfc54b40bd309b8"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2830,9 +2830,14 @@
       "sha256": "0f06333ed68119387cf7d5f8c5862c7f403d187e1138e75863e7f904f86e3524"
     },
     {
+      "path": "models/chirp-3/README.md",
+      "size_bytes": 3535,
+      "sha256": "8daf8de9536d0bcf24be3352347ed41fd0139f34d03a797d0153642b38879f87"
+    },
+    {
       "path": "models/embeddinggemma/README.md",
-      "size_bytes": 212,
-      "sha256": "8b29a5db996734fcba5b49359c6289e48c1deb7aa35a5a30d8bd7043dcb22380"
+      "size_bytes": 3105,
+      "sha256": "217e7fcde5a385fb0b1b12058658d023552340a1efe7466bf11e72c8eb7a94ac"
     },
     {
       "path": "models/gemma-4-26b-a4b-iq4-xs/README.md",
@@ -2871,8 +2876,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2402,
-      "sha256": "6dcf2e716d094284b5d72d94d74e5f71bcf73d7e4a3fddb47f73897ce6c243c6"
+      "size_bytes": 2840,
+      "sha256": "3a7ded991a839b326d8266e6ba3225c25a08b5a4ed6732f7993c983481280884"
     },
     {
       "path": "scripts/build_artifact_manifest.py",
@@ -2983,6 +2988,11 @@
       "path": "scripts/run_governance_demo.py",
       "size_bytes": 2715,
       "sha256": "762766a36c351865b085a904a051ee4f861d3154c965cd276afdbcfa876c9457"
+    },
+    {
+      "path": "scripts/run_model_fleet_demo.py",
+      "size_bytes": 3260,
+      "sha256": "6f52b758fd166091ab291f14fa0a3ba846526466fa822c2b0a02b26aacc49927"
     },
     {
       "path": "scripts/run_orchestrator_demo.py",
@@ -3266,8 +3276,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 108816,
-      "sha256": "874700157c0dfb926a7f4e531651dfbe64eb8fd60b842fcb59af2df7f8b8edc9"
+      "size_bytes": 109529,
+      "sha256": "80a7058d3ec5785852882ae9a7d97bfa1236998ede5af57634395d7d1b7f3447"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3276,8 +3286,8 @@
     },
     {
       "path": "src/assuranceos/config.py",
-      "size_bytes": 12238,
-      "sha256": "7ca581044425b5ca0721bfc7a5d2a6cd81df97fa565b42fdea5c6d065227df66"
+      "size_bytes": 15149,
+      "sha256": "304af6a7672e9555571371b5721bae5a077a0a1cb8bbfc2d8cb6d205e3450d90"
     },
     {
       "path": "src/assuranceos/connectors/__init__.py",
@@ -3545,6 +3555,11 @@
       "sha256": "4a0b3f1510bf558aebb54d1a201ae8fb5ae42592a8ce69f1953c6ffb535dcaf2"
     },
     {
+      "path": "src/assuranceos/delegation.py",
+      "size_bytes": 12674,
+      "sha256": "bad441059dccce4947186cfd4849f2b3c8c2ceff247f0578150f64ce0f52dc0a"
+    },
+    {
       "path": "src/assuranceos/demo.py",
       "size_bytes": 12442,
       "sha256": "182249ac782f405bfb334c838ad6adf2f356d5449f22a25857fd3356c986634b"
@@ -3576,8 +3591,8 @@
     },
     {
       "path": "src/assuranceos/governance/__init__.py",
-      "size_bytes": 2319,
-      "sha256": "465746080f6754e6b5bd7a84c679846f8a0758c6c5bfb29b32524c6d0e72a625"
+      "size_bytes": 3846,
+      "sha256": "e8186bb45e8cc2b1ed70a21de7fc882d4ce9dc43d4c47224c6d41dcf535f782c"
     },
     {
       "path": "src/assuranceos/governance/armor.py",
@@ -3588,6 +3603,11 @@
       "path": "src/assuranceos/governance/demo.py",
       "size_bytes": 11867,
       "sha256": "5438fe8cd90da2b0bd109ca7818ad78b14214fee67d9e2e59e33c4f4239b248a"
+    },
+    {
+      "path": "src/assuranceos/governance/embeddings.py",
+      "size_bytes": 21801,
+      "sha256": "e192931c86af5908ff8cba9d4c45a87ecf6537da8c5fb47935449b89c6b0387c"
     },
     {
       "path": "src/assuranceos/governance/gateway.py",
@@ -3615,6 +3635,11 @@
       "sha256": "1eefd93e6a3eb422648b0acbbd35b1b0116bdbf243586ac27cf07d5a2c4085bf"
     },
     {
+      "path": "src/assuranceos/governance/speech.py",
+      "size_bytes": 16565,
+      "sha256": "fb22970367bfe9aaf1f70e7f1cf219ca8cdf7cfeeab25c8c1c60ade1255c408e"
+    },
+    {
       "path": "src/assuranceos/governance/telemetry.py",
       "size_bytes": 16499,
       "sha256": "72862a2ab7f07e32d4082c39752d390cc1c5666bd7746d7ec2bb743d0ba85a9d"
@@ -3633,6 +3658,11 @@
       "path": "src/assuranceos/managed_fleet.py",
       "size_bytes": 8058,
       "sha256": "495c6088373b5a451ea4be09a1b973706ab40261b3dfb306df7b39c3fe6391dd"
+    },
+    {
+      "path": "src/assuranceos/model_fleet_demo.py",
+      "size_bytes": 9802,
+      "sha256": "27f34f53e51760042659239b72e28790ad2dd40c19c386fdf90f4820347ce1c8"
     },
     {
       "path": "src/assuranceos/models.py",
@@ -3746,8 +3776,8 @@
     },
     {
       "path": "src/assuranceos/product_schemas.py",
-      "size_bytes": 2979,
-      "sha256": "cb7f2c1591076dec4562f0951595d280e1178a02402d4b9499857210e18f65c1"
+      "size_bytes": 4582,
+      "sha256": "f75bb64cc2f441a6ac3bf99e2c4ad8d62711a544c7e44a738bed59e050694d55"
     },
     {
       "path": "src/assuranceos/registry.py",
@@ -3958,6 +3988,11 @@
       "path": "src/assuranceos/vault/storage.py",
       "size_bytes": 7363,
       "sha256": "1e94a385a8fac3c0decf324c27edaf61e62d668e49cc55c94fdae62537d290e8"
+    },
+    {
+      "path": "src/assuranceos/walkthrough.py",
+      "size_bytes": 9675,
+      "sha256": "322c597cdf2fdc2f68b7bb3c1a6b0c6048dc64ba2ac6fa5d80bf334762aab099"
     },
     {
       "path": "tests-library/common/README.md",
@@ -4185,6 +4220,11 @@
       "sha256": "0f586c1c07e3b89b71c65e412ab1ef3b7c72f6017c98f68f067b96a9aa7e676a"
     },
     {
+      "path": "tests/test_embeddings.py",
+      "size_bytes": 11954,
+      "sha256": "f20b7267e98a7b22f6e6908ce67ce45955d2e4520500f7e9fe021e21a6923f4e"
+    },
+    {
       "path": "tests/test_evaluation.py",
       "size_bytes": 3590,
       "sha256": "eee2ec3fda4be6e05b6bb046d8f08dfe0a8785bb9ecafed7f330d91d2a94eee3"
@@ -4233,6 +4273,11 @@
       "path": "tests/test_migrations.py",
       "size_bytes": 14759,
       "sha256": "93f20c14fddc4a4e83fba41b4a7854c59f2f610ebfbecde21db90acb1b62664d"
+    },
+    {
+      "path": "tests/test_model_fleet_demo.py",
+      "size_bytes": 5038,
+      "sha256": "ab1c1903b98d42cac8f9304c259b886427f434be5ecda203f3122081f137b01e"
     },
     {
       "path": "tests/test_monitoring.py",
@@ -4353,6 +4398,11 @@
       "path": "tests/test_vault_demo.py",
       "size_bytes": 888,
       "sha256": "a463f3d69ca051e0b93bf6baee7f95b837010475fab2ba7e4a5e1522e75e1f9e"
+    },
+    {
+      "path": "tests/test_walkthrough.py",
+      "size_bytes": 12134,
+      "sha256": "283ba1426ac8269692d7dc172663d82b3cff6016e8abc7e0bdef41608a697f43"
     },
     {
       "path": "uv.lock",

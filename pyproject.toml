@@ -56,7 +56,15 @@ gcp-runtime = [
 ]
 agent-cloud = [
   "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+  # Also the transport for EmbeddingGemma on Vertex AI.
   "google-genai>=2.9,<3",
+]
+# Chirp 3, for walkthrough-interview transcription. Separate from agent-cloud on
+# purpose: an engagement that never records an interview should not carry a
+# speech dependency, and a deployment that must not transcribe can then prove the
+# library is absent instead of trusting a configuration flag.
+speech = [
+  "google-cloud-speech>=2.28,<3",
 ]
 cloud = [
   "google-cloud-storage>=2.18,<4",
@@ -65,6 +73,7 @@ cloud = [
   "google-cloud-logging>=3.11,<4",
   "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
   "google-genai>=2.9,<3",
+  "google-cloud-speech>=2.28,<3",
 ]
 
 [tool.setuptools.packages.find]

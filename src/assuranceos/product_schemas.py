@@ -81,6 +81,78 @@ class JudgeOverviewResponse(BaseModel):
     components: list[ComponentProof]
 
 
+class DelegatedTask(BaseModel):
+    task_key: str
+    task_type: str
+    status: str
+    attempts: int
+    human_gate: str | None = None
+
+
+class GuardrailFindingProof(BaseModel):
+    direction: str
+    detector: str
+    category: str
+    severity: str
+    verdict: str
+
+
+class DelegatedAgent(BaseModel):
+    agent_role: str
+    display_name: str
+    version: str | None = None
+    release_digest: str | None = None
+    tasks: list[DelegatedTask]
+    task_count: int
+    tasks_executed: int
+    human_gates: list[str]
+    tools_permitted: list[str]
+    tools_called: list[str]
+    #: Tools actually called over tools the signed package permits. Bounded
+    #: authority only means something if the bound is visibly unreached.
+    authority_exercised: str
+    allowed: int
+    denied: int
+    denial_reasons: list[str]
+    guardrail_findings: list[GuardrailFindingProof]
+
+
+class DelegationStep(BaseModel):
+    step: int
+    task_key: str
+    task_type: str
+    agent_role: str
+    status: str
+    human_gate: str | None = None
+    attempts: int
+    last_error: str | None = None
+
+
+class DelegationEngagement(BaseModel):
+    engagement_id: str
+    code: str
+    title: str
+    status: str
+    audit_pack_ref: str | None = None
+    finding_count: int
+
+
+class DelegationTotals(BaseModel):
+    specialist_agents: int
+    tasks: int
+    human_gates: int
+    gateway_allowed: int
+    gateway_denied: int
+    guardrail_blocks: int
+
+
+class DelegationResponse(BaseModel):
+    engagement: DelegationEngagement | None
+    agents: list[DelegatedAgent]
+    handoff: list[DelegationStep]
+    totals: DelegationTotals
+
+
 class GroundTruthCondition(BaseModel):
     id: str
     expected: str

@@ -4270,6 +4270,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/delegation:
+    get:
+      summary: Product Delegation
+      description: 'One engagement, as it was actually routed across the specialist
+        fleet.
+
+
+        The fleet inventory says which agents exist. This says which of them touched
+
+        this piece of work, in what order, and how much of their granted authority
+
+        they used doing it.'
+      operationId: product_delegation_api_v1_tenants__tenant_id__delegation_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/judge/overview:
     get:
       summary: Judge Overview
@@ -5509,6 +5552,234 @@ components:
       - relation
       - rationale
       title: CrosswalkRequest
+    DelegatedAgent:
+      properties:
+        agent_role:
+          type: string
+          title: Agent Role
+        display_name:
+          type: string
+          title: Display Name
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        release_digest:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Digest
+        tasks:
+          items:
+            $ref: '#/components/schemas/DelegatedTask'
+          type: array
+          title: Tasks
+        task_count:
+          type: integer
+          title: Task Count
+        tasks_executed:
+          type: integer
+          title: Tasks Executed
+        human_gates:
+          items:
+            type: string
+          type: array
+          title: Human Gates
+        tools_permitted:
+          items:
+            type: string
+          type: array
+          title: Tools Permitted
+        tools_called:
+          items:
+            type: string
+          type: array
+          title: Tools Called
+        authority_exercised:
+          type: string
+          title: Authority Exercised
+        allowed:
+          type: integer
+          title: Allowed
+        denied:
+          type: integer
+          title: Denied
+        denial_reasons:
+          items:
+            type: string
+          type: array
+          title: Denial Reasons
+        guardrail_findings:
+          items:
+            $ref: '#/components/schemas/GuardrailFindingProof'
+          type: array
+          title: Guardrail Findings
+      type: object
+      required:
+      - agent_role
+      - display_name
+      - tasks
+      - task_count
+      - tasks_executed
+      - human_gates
+      - tools_permitted
+      - tools_called
+      - authority_exercised
+      - allowed
+      - denied
+      - denial_reasons
+      - guardrail_findings
+      title: DelegatedAgent
+    DelegatedTask:
+      properties:
+        task_key:
+          type: string
+          title: Task Key
+        task_type:
+          type: string
+          title: Task Type
+        status:
+          type: string
+          title: Status
+        attempts:
+          type: integer
+          title: Attempts
+        human_gate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Gate
+      type: object
+      required:
+      - task_key
+      - task_type
+      - status
+      - attempts
+      title: DelegatedTask
+    DelegationEngagement:
+      properties:
+        engagement_id:
+          type: string
+          title: Engagement Id
+        code:
+          type: string
+          title: Code
+        title:
+          type: string
+          title: Title
+        status:
+          type: string
+          title: Status
+        audit_pack_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Audit Pack Ref
+        finding_count:
+          type: integer
+          title: Finding Count
+      type: object
+      required:
+      - engagement_id
+      - code
+      - title
+      - status
+      - finding_count
+      title: DelegationEngagement
+    DelegationResponse:
+      properties:
+        engagement:
+          anyOf:
+          - $ref: '#/components/schemas/DelegationEngagement'
+          - type: 'null'
+        agents:
+          items:
+            $ref: '#/components/schemas/DelegatedAgent'
+          type: array
+          title: Agents
+        handoff:
+          items:
+            $ref: '#/components/schemas/DelegationStep'
+          type: array
+          title: Handoff
+        totals:
+          $ref: '#/components/schemas/DelegationTotals'
+      type: object
+      required:
+      - engagement
+      - agents
+      - handoff
+      - totals
+      title: DelegationResponse
+    DelegationStep:
+      properties:
+        step:
+          type: integer
+          title: Step
+        task_key:
+          type: string
+          title: Task Key
+        task_type:
+          type: string
+          title: Task Type
+        agent_role:
+          type: string
+          title: Agent Role
+        status:
+          type: string
+          title: Status
+        human_gate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Human Gate
+        attempts:
+          type: integer
+          title: Attempts
+        last_error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Error
+      type: object
+      required:
+      - step
+      - task_key
+      - task_type
+      - agent_role
+      - status
+      - attempts
+      title: DelegationStep
+    DelegationTotals:
+      properties:
+        specialist_agents:
+          type: integer
+          title: Specialist Agents
+        tasks:
+          type: integer
+          title: Tasks
+        human_gates:
+          type: integer
+          title: Human Gates
+        gateway_allowed:
+          type: integer
+          title: Gateway Allowed
+        gateway_denied:
+          type: integer
+          title: Gateway Denied
+        guardrail_blocks:
+          type: integer
+          title: Guardrail Blocks
+      type: object
+      required:
+      - specialist_agents
+      - tasks
+      - human_gates
+      - gateway_allowed
+      - gateway_denied
+      - guardrail_blocks
+      title: DelegationTotals
     DependencyDefinition:
       properties:
         task_key:
@@ -5983,6 +6254,31 @@ components:
       - audit_period
       - seeded_conditions
       title: GroundTruthResponse
+    GuardrailFindingProof:
+      properties:
+        direction:
+          type: string
+          title: Direction
+        detector:
+          type: string
+          title: Detector
+        category:
+          type: string
+          title: Category
+        severity:
+          type: string
+          title: Severity
+        verdict:
+          type: string
+          title: Verdict
+      type: object
+      required:
+      - direction
+      - detector
+      - category
+      - severity
+      - verdict
+      title: GuardrailFindingProof
     HTTPValidationError:
       properties:
         detail:

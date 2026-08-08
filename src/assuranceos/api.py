@@ -125,6 +125,7 @@ from .portfolio import (
     RiskNotFoundError,
     ScoringPolicy,
 )
+from .delegation import engagement_delegation
 from .product import (
     evaluator_overview,
     finding_detail,
@@ -133,6 +134,7 @@ from .product import (
     trace_detail,
 )
 from .product_schemas import (
+    DelegationResponse,
     EvaluationSummaryResponse,
     GroundTruthResponse,
     IdempotencyProofResponse,
@@ -3004,6 +3006,23 @@ def finding_recurrence(tenant_id: str, code: str) -> dict:
 def product_cockpit(tenant_id: str) -> dict:
     """The bounded live read model shared by the product's lifecycle routes."""
     return tenant_cockpit(database, tenant_id)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/delegation",
+    response_model=DelegationResponse,
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def product_delegation(tenant_id: str, engagement_id: str | None = None) -> dict:
+    """One engagement, as it was actually routed across the specialist fleet.
+
+    The fleet inventory says which agents exist. This says which of them touched
+    this piece of work, in what order, and how much of their granted authority
+    they used doing it.
+    """
+    return engagement_delegation(
+        database, tenant_id, engagement_id=engagement_id, packages=_registry()
+    )
 
 
 @app.get(
