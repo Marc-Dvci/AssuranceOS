@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -19,6 +20,13 @@ from assuranceos.standards import AuditPackRegistry
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_PROMPT_SECTIONS = ["ROLE", "AUTHORITY", "NON_GOALS", "CANONICAL_CONTEXT", "OBJECTIVE", "REQUIRED_PROCEDURE", "TOOL_RULES", "EVIDENCE_RULES", "ABSTAIN_OR_ESCALATE_WHEN", "OUTPUT", "SELF_CHECK"]
 REQUIRED_FILES = ["manifest.yaml", "system_prompt.md", "input.schema.json", "output.schema.json", "company_context.schema.json", "tools.yaml", "policy.yaml", "model_profiles.yaml", "evaluations.yaml", "known_limitations.md", "README.md", "release.json", "release.signature.json"]
+SECRET_PATTERNS = {
+    "Google API key": re.compile(rb"AIza[0-9A-Za-z_-]{35}"),
+    "GitHub token": re.compile(rb"gh[pousr]_[A-Za-z0-9]{36,255}"),
+    "AWS access key": re.compile(rb"(?:AKIA|ASIA)[A-Z0-9]{16}"),
+    "Slack token": re.compile(rb"xox[baprs]-[A-Za-z0-9-]{20,}"),
+}
+PUBLIC_TEST_SENTINELS = (b"AKIAIOSFODNN7EXAMPLE",)
 
 
 def fail(message: str) -> None:
@@ -55,7 +63,37 @@ def _tracked_pem_files() -> list[Path]:
     ]
 
 
+def _tracked_files() -> list[Path]:
+    try:
+        listing = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=ROOT,
+            capture_output=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    return [
+        ROOT / name.decode("utf-8")
+        for name in listing.stdout.split(b"\0")
+        if name and (ROOT / name.decode("utf-8")).is_file()
+    ]
+
+
+def _reject_committed_secrets() -> None:
+    for path in _tracked_files():
+        if path.stat().st_size > 2_000_000:
+            continue
+        content = path.read_bytes()
+        for sentinel in PUBLIC_TEST_SENTINELS:
+            content = content.replace(sentinel, b"")
+        for label, pattern in SECRET_PATTERNS.items():
+            if pattern.search(content):
+                fail(f"{label} pattern found in tracked file: {path.relative_to(ROOT)}")
+
+
 def main() -> None:
+    _reject_committed_secrets()
     agent_dirs = sorted(path for path in (ROOT / "agents").iterdir() if path.is_dir())
     if len(agent_dirs) != 19:
         fail(f"expected 19 agent packages, found {len(agent_dirs)}")

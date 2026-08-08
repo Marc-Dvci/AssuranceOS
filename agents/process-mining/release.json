@@ -4,7 +4,7 @@
     "README.md": "84b78ef2a43a72079bfb988f9447997fc7999a9d1470ee155e5d82c89fccd1bd",
     "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "adversarial_cases/prompt_injection.yaml": "bee990a6678e4a370298244707417b1d16cf1f933d4fff643419643c07d86322",
-    "agent.py": "26e65461890c78817dda1a654ea2c3a84d2d7b0ebd580fbc9bc93c8b70ed9087",
+    "agent.py": "9a938d8e2a4082ca9193c02b7492e8f1de7a5130c62652ba91e4d0bd62227c95",
     "company_context.schema.json": "91802397f09791cf72bd454d30ad31523a8f3f9e731d547d4fb9e888a72c66c1",
     "cross_industry_cases/trucking.yaml": "4a4e239391aaac151f91d4ddf0ab3ce5c900ed617c2adf790e170b8576f139eb",
     "evaluations.yaml": "3ef63eb6b3edea74c71d1d26d0ce23119535128781d18a3fe7b5b44e0c3321eb",
@@ -12,15 +12,15 @@
     "golden_cases/missing_evidence.yaml": "4ab239a598ddb94d7f172305a7860658dbc351fb68bfd79307684f6ce203ae5e",
     "input.schema.json": "e12458efb40285b8e872bc0218c2a78d0a8ac56aa7e16759611203f21b99cc83",
     "known_limitations.md": "29c7315b1f2760f19784f94d4c017f636e0797d099d8e2325719b80e0bc2a6e6",
-    "manifest.yaml": "6e5947081713245096947dc673097697d43996829901db948714064eb0c160f9",
-    "model_profiles.yaml": "92af2d15318d2e27efd6d16dfb0cf302f2cf73ae12483acffebe6e18aec5f010",
+    "manifest.yaml": "1831db3556c3628578c325651a3910263c2b211f06e2a338f726cefcc7c07dda",
+    "model_profiles.yaml": "8ba395ed0142bc68115f3390d9876c9b6fa2b34d92a078ed1e9814390808927a",
     "output.schema.json": "8d1e7d04486050fd73cd233ed45fc6b6531e7a79bf023585119117ef745eb24e",
     "policy.yaml": "21f7bfd7c2fddaa98b0795a7a1396f4e05d099783c7ff6504c2f306b60a2b535",
     "system_prompt.md": "f96ea996dd04e02da77acf39a85666c6583e37c485c0334af9a49d7e89027e0f",
     "tools.yaml": "b71b5152b56b241c7b4c4076d0e50a0b50da1136da0829ea9aa71801420d0915"
   },
-  "package_sha256": "8f4eac0a636efbee5d00d167ad06a4b18d04fc7d508b34e636f1373307fd4bdb",
-  "released_at": "2026-08-06T18:45:00+00:00",
+  "package_sha256": "7291a0608bda730c3014462b2dc9df24323aab6a56cfb41301fe9202dea8482c",
+  "released_at": "2026-08-08T13:30:50.886107+00:00",
   "schema": "assurance.agent_release.v1",
-  "version": "0.7.0"
+  "version": "0.8.0"
 }

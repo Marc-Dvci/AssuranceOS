@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from functools import lru_cache
+import hashlib
 from pathlib import Path
 from typing import Literal
 import os
@@ -32,6 +34,7 @@ from .adjudication import (
     RetestRequest,
     SeverityOverrideRequest,
     SkepticReviewer,
+    writer_from_connector,
 )
 from .adjudication.exceptions import (
     ClosureEvidenceError,
@@ -46,6 +49,7 @@ from .adjudication.exceptions import (
     RemediationNotFoundError,
     TicketingError,
 )
+from .adjudication.demo import run_assurance_loop_demo
 from .config import settings
 from .control_testing import (
     ControlTestDataset,
@@ -75,6 +79,7 @@ from .connectors.exceptions import (
 from .db.session import Database
 from .execution_authority import ExecutionAuthority
 from .execution_security import Ed25519ExecutionEnvelopeSigner
+from .evaluation import AgentEvaluationRunner
 from .demo import ENGAGEMENT_ID, TENANT_ID, run_golden_engagement
 from .ledger import AuditLedger
 from .orchestration import (
@@ -120,6 +125,26 @@ from .portfolio import (
     RiskNotFoundError,
     ScoringPolicy,
 )
+from .product import evaluator_overview, ground_truth, tenant_cockpit, trace_detail
+from .product_schemas import (
+    EvaluationSummaryResponse,
+    GroundTruthResponse,
+    IdempotencyProofResponse,
+    JudgeOverviewResponse,
+    PromptInjectionProofResponse,
+)
+from .monitoring import (
+    ContinuousMonitoringService,
+    MonitorDefinitionInput,
+    MonitorExecutionInput,
+)
+from .onboarding import (
+    FactDecisionInput,
+    FactProposalInput,
+    OnboardingService,
+    OnboardingStartInput,
+    PublicSourceInput,
+)
 from .reporting import (
     ClaimInput,
     ReportingError,
@@ -151,7 +176,12 @@ from .standards.exceptions import (
     PackNotReleasedError,
     StandardNotFoundError,
 )
-from .vault import BaselineContentInspector, Ed25519ManifestSigner, EvidenceVault, GoogleCloudStorageObjectStore
+from .vault import (
+    BaselineContentInspector,
+    Ed25519ManifestSigner,
+    EvidenceVault,
+    GoogleCloudStorageObjectStore,
+)
 from .vault.exceptions import (
     AcquisitionConflictError,
     EvidenceDeletedError,
@@ -162,6 +192,7 @@ from .vault.exceptions import (
     RetentionPolicyError,
 )
 from .vault.inspection import ContentInspectionRejected
+from .governance.armor import ModelArmor
 
 app = FastAPI(title="AssuranceOS API", version="0.8.0")
 app.state.settings = settings
@@ -248,6 +279,14 @@ def _control_test_service() -> ControlTestService:
     )
 
 
+def _monitoring_service() -> ContinuousMonitoringService:
+    return ContinuousMonitoringService(database, _control_test_service())
+
+
+def _onboarding_service() -> OnboardingService:
+    return OnboardingService(database, vault)
+
+
 # The Audit Pack registry is loaded at import, like the control-test registry, so
 # a deployment carrying an unsigned or incoherent pack fails to start rather than
 # failing on the first engagement someone tries to compile.
@@ -313,6 +352,10 @@ class EvidencePurgeRequest(BaseModel):
 class GrantRevocationRequest(BaseModel):
     actor_id: str = Field(min_length=1, max_length=255)
     reason: str = Field(min_length=1, max_length=4000)
+
+
+class OnboardingApprovalRequest(BaseModel):
+    approved_by: str | None = Field(default=None, max_length=255)
 
 
 class EvidenceExportRequest(BaseModel):
@@ -560,7 +603,6 @@ def _raise_http(exc: Exception) -> None:
     raise exc
 
 
-
 def _actor(request: Request, requested: str | None = None) -> str:
     principal = getattr(request.state, "principal", Principal.local_system())
     return effective_actor(principal, requested)
@@ -576,6 +618,7 @@ def health() -> dict:
         "status": "ok",
         "environment": settings.environment,
         "model_mode": settings.model_mode,
+        "local_privacy_mode": settings.is_local_privacy,
         "agent_packages": len(_registry()),
         "control_test_packages": len(control_test_registry.list()),
         "database_dialect": database.engine.dialect.name,
@@ -593,9 +636,9 @@ def readiness() -> JSONResponse:
     try:
         checks["agent_registry"] = len(_registry()) == 19
         checks["control_test_registry"] = len(control_test_registry.list()) >= 2
-        checks["control_test_registry_database"] = (
-            len(_control_test_service().list_releases()) == len(control_test_registry.list())
-        )
+        checks["control_test_registry_database"] = len(
+            _control_test_service().list_releases()
+        ) == len(control_test_registry.list())
     except Exception:
         checks["agent_registry"] = False
     ready = all(checks.values())
@@ -620,7 +663,9 @@ def list_agents() -> list[dict]:
     ]
 
 
-@app.get("/api/v1/agents/{agent_id}", dependencies=[Depends(require_permission(Permission.AGENTS_READ))])
+@app.get(
+    "/api/v1/agents/{agent_id}", dependencies=[Depends(require_permission(Permission.AGENTS_READ))]
+)
 def get_agent(agent_id: str) -> dict:
     package = _registry().get(agent_id)
     if not package:
@@ -655,7 +700,10 @@ def demo_events() -> list[dict]:
     return ledger.list_events(TENANT_ID, ENGAGEMENT_ID)
 
 
-@app.post("/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/workflow", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_WRITE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/workflow",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_WRITE))],
+)
 def compile_engagement_workflow(
     tenant_id: str, engagement_id: str, workflow: WorkflowDefinition
 ) -> dict:
@@ -668,7 +716,10 @@ def compile_engagement_workflow(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/start", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_WRITE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/start",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_WRITE))],
+)
 def start_engagement_workflow(tenant_id: str, engagement_id: str) -> dict:
     try:
         return orchestrator.start_engagement(
@@ -679,12 +730,15 @@ def start_engagement_workflow(tenant_id: str, engagement_id: str) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/orchestration", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/orchestration",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))],
+)
 def get_engagement_orchestration(tenant_id: str, engagement_id: str) -> dict:
     try:
-        return orchestrator.snapshot(
-            tenant_id=tenant_id, engagement_id=engagement_id
-        ).model_dump(mode="json")
+        return orchestrator.snapshot(tenant_id=tenant_id, engagement_id=engagement_id).model_dump(
+            mode="json"
+        )
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
@@ -814,33 +868,50 @@ def fail_task(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/approve", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))])
-def approve_task_gate(tenant_id: str, task_id: str, decision: GateDecision, http_request: Request) -> dict:
+@app.post(
+    "/api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/approve",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))],
+)
+def approve_task_gate(
+    tenant_id: str, task_id: str, decision: GateDecision, http_request: Request
+) -> dict:
     try:
         return orchestrator.approve_gate(
             tenant_id=tenant_id,
             task_id=task_id,
-            decision=decision.model_copy(update={"actor_id": _actor(http_request, decision.actor_id)}),
+            decision=decision.model_copy(
+                update={"actor_id": _actor(http_request, decision.actor_id)}
+            ),
         ).model_dump(mode="json")
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/reject", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))])
-def reject_task_gate(tenant_id: str, task_id: str, decision: GateDecision, http_request: Request) -> dict:
+@app.post(
+    "/api/v1/tenants/{tenant_id}/tasks/{task_id}/gate/reject",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))],
+)
+def reject_task_gate(
+    tenant_id: str, task_id: str, decision: GateDecision, http_request: Request
+) -> dict:
     try:
         return orchestrator.reject_gate(
             tenant_id=tenant_id,
             task_id=task_id,
-            decision=decision.model_copy(update={"actor_id": _actor(http_request, decision.actor_id)}),
+            decision=decision.model_copy(
+                update={"actor_id": _actor(http_request, decision.actor_id)}
+            ),
         ).model_dump(mode="json")
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/cancel", dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/engagements/{engagement_id}/cancel",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_APPROVE))],
+)
 def cancel_engagement_workflow(
     tenant_id: str,
     engagement_id: str,
@@ -859,7 +930,10 @@ def cancel_engagement_workflow(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/demo/orchestration/run", dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))])
+@app.post(
+    "/api/v1/demo/orchestration/run",
+    dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
+)
 def run_orchestration_demo() -> dict:
     root = Path(__file__).resolve().parents[2]
     return run_orchestrator_demo(
@@ -877,9 +951,7 @@ def list_engagement_attempts(tenant_id: str, engagement_id: str) -> list[dict]:
     try:
         return [
             item.model_dump(mode="json")
-            for item in orchestrator.list_attempts(
-                tenant_id=tenant_id, engagement_id=engagement_id
-            )
+            for item in orchestrator.list_attempts(tenant_id=tenant_id, engagement_id=engagement_id)
         ]
     except Exception as exc:
         _raise_http(exc)
@@ -1032,7 +1104,10 @@ def disable_schedule(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/simulate", dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/simulate",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))],
+)
 def simulate_schedule(
     tenant_id: str, schedule_id: str, request: ScheduleSimulationRequest
 ) -> list[dict]:
@@ -1052,10 +1127,11 @@ def simulate_schedule(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/evaluate", dependencies=[Depends(require_permission(Permission.SCHEDULE_WRITE))])
-def evaluate_schedule(
-    tenant_id: str, schedule_id: str, request: ScheduleEvaluationRequest
-) -> dict:
+@app.post(
+    "/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/evaluate",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_WRITE))],
+)
+def evaluate_schedule(tenant_id: str, schedule_id: str, request: ScheduleEvaluationRequest) -> dict:
     try:
         return scheduler.evaluate_due(
             tenant_id=tenant_id,
@@ -1069,7 +1145,10 @@ def evaluate_schedule(
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/occurrences", dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/schedules/{schedule_id}/occurrences",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))],
+)
 def list_schedule_occurrences(tenant_id: str, schedule_id: str) -> list[dict]:
     try:
         return [
@@ -1083,7 +1162,10 @@ def list_schedule_occurrences(tenant_id: str, schedule_id: str) -> list[dict]:
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}", dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_READ))],
+)
 def get_schedule_occurrence(tenant_id: str, occurrence_id: str) -> dict:
     try:
         return scheduler.get_occurrence(
@@ -1094,7 +1176,10 @@ def get_schedule_occurrence(tenant_id: str, occurrence_id: str) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/approve", dependencies=[Depends(require_permission(Permission.SCHEDULE_APPROVE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/approve",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_APPROVE))],
+)
 def approve_schedule_occurrence(
     tenant_id: str,
     occurrence_id: str,
@@ -1105,14 +1190,19 @@ def approve_schedule_occurrence(
         return scheduler.approve_occurrence(
             tenant_id=tenant_id,
             occurrence_id=occurrence_id,
-            decision=decision.model_copy(update={"actor_id": _actor(http_request, decision.actor_id)}),
+            decision=decision.model_copy(
+                update={"actor_id": _actor(http_request, decision.actor_id)}
+            ),
         ).model_dump(mode="json")
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/cancel", dependencies=[Depends(require_permission(Permission.SCHEDULE_APPROVE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/occurrences/{occurrence_id}/cancel",
+    dependencies=[Depends(require_permission(Permission.SCHEDULE_APPROVE))],
+)
 def cancel_schedule_occurrence(
     tenant_id: str,
     occurrence_id: str,
@@ -1123,14 +1213,19 @@ def cancel_schedule_occurrence(
         return scheduler.cancel_occurrence(
             tenant_id=tenant_id,
             occurrence_id=occurrence_id,
-            decision=decision.model_copy(update={"actor_id": _actor(http_request, decision.actor_id)}),
+            decision=decision.model_copy(
+                update={"actor_id": _actor(http_request, decision.actor_id)}
+            ),
         ).model_dump(mode="json")
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/evidence", dependencies=[Depends(require_permission(Permission.EVIDENCE_WRITE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/evidence",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_WRITE))],
+)
 async def ingest_evidence(
     tenant_id: str,
     request: Request,
@@ -1175,7 +1270,10 @@ async def ingest_evidence(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/evidence/derived", dependencies=[Depends(require_permission(Permission.EVIDENCE_WRITE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/evidence/derived",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_WRITE))],
+)
 async def create_derived_evidence(
     tenant_id: str,
     request: Request,
@@ -1212,7 +1310,10 @@ async def create_derived_evidence(
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/evidence", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def list_evidence(
     tenant_id: str,
     engagement_id: str | None = None,
@@ -1234,18 +1335,24 @@ def list_evidence(
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def get_evidence(tenant_id: str, evidence_id: str, include_deleted: bool = False) -> dict:
     try:
-        return vault.get(
-            tenant_id, evidence_id, include_deleted=include_deleted
-        ).model_dump(mode="json")
+        return vault.get(tenant_id, evidence_id, include_deleted=include_deleted).model_dump(
+            mode="json"
+        )
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/content", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/content",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def download_evidence_content(
     tenant_id: str,
     evidence_id: str,
@@ -1271,7 +1378,10 @@ def download_evidence_content(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/verify", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/verify",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def verify_evidence_integrity(tenant_id: str, evidence_id: str) -> dict:
     try:
         return vault.verify_integrity(tenant_id, evidence_id).model_dump(mode="json")
@@ -1280,13 +1390,16 @@ def verify_evidence_integrity(tenant_id: str, evidence_id: str) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/custody", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/custody",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def get_evidence_custody(tenant_id: str, evidence_id: str) -> dict:
     try:
         return {
-            "verification": vault.verify_custody_chain(
-                tenant_id, evidence_id
-            ).model_dump(mode="json"),
+            "verification": vault.verify_custody_chain(tenant_id, evidence_id).model_dump(
+                mode="json"
+            ),
             "events": [
                 event.model_dump(mode="json")
                 for event in vault.list_custody(tenant_id, evidence_id)
@@ -1297,7 +1410,10 @@ def get_evidence_custody(tenant_id: str, evidence_id: str) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/lineage", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/lineage",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
 def get_evidence_lineage(tenant_id: str, evidence_id: str) -> dict:
     try:
         return vault.lineage(tenant_id, evidence_id).model_dump(mode="json")
@@ -1306,7 +1422,10 @@ def get_evidence_lineage(tenant_id: str, evidence_id: str) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.put("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/retention", dependencies=[Depends(require_permission(Permission.EVIDENCE_ADMIN))])
+@app.put(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/retention",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_ADMIN))],
+)
 def update_evidence_retention(
     tenant_id: str,
     evidence_id: str,
@@ -1327,7 +1446,10 @@ def update_evidence_retention(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/purge", dependencies=[Depends(require_permission(Permission.EVIDENCE_ADMIN))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/evidence/{evidence_id}/purge",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_ADMIN))],
+)
 def purge_evidence(
     tenant_id: str,
     evidence_id: str,
@@ -1347,8 +1469,13 @@ def purge_evidence(
         raise AssertionError("unreachable")
 
 
-@app.post("/api/v1/tenants/{tenant_id}/evidence-exports", dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))])
-def export_evidence(tenant_id: str, payload: EvidenceExportRequest, http_request: Request) -> FileResponse:
+@app.post(
+    "/api/v1/tenants/{tenant_id}/evidence-exports",
+    dependencies=[Depends(require_permission(Permission.EVIDENCE_READ))],
+)
+def export_evidence(
+    tenant_id: str, payload: EvidenceExportRequest, http_request: Request
+) -> FileResponse:
     settings.evidence_export_root.mkdir(parents=True, exist_ok=True)
     descriptor, raw_path = tempfile.mkstemp(
         prefix=f"{tenant_id}-evidence-", suffix=".zip", dir=settings.evidence_export_root
@@ -1380,7 +1507,98 @@ def export_evidence(tenant_id: str, payload: EvidenceExportRequest, http_request
     )
 
 
-@app.post("/api/v1/tenants/{tenant_id}/connectors", dependencies=[Depends(require_permission(Permission.CONNECTOR_WRITE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def start_onboarding(tenant_id: str, body: OnboardingStartInput) -> dict:
+    try:
+        return _onboarding_service().start(tenant_id, body)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_READ))],
+)
+def get_onboarding(tenant_id: str, workflow_id: str) -> dict:
+    try:
+        return _onboarding_service().get(tenant_id, workflow_id)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/sources",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_WRITE))],
+)
+def capture_onboarding_source(
+    tenant_id: str, workflow_id: str, body: PublicSourceInput, request: Request
+) -> dict:
+    try:
+        return _onboarding_service().capture_source(
+            tenant_id, workflow_id, body, actor_id=_actor(request)
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/facts",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_WRITE))],
+)
+def propose_onboarding_fact(tenant_id: str, workflow_id: str, body: FactProposalInput) -> dict:
+    try:
+        return _onboarding_service().propose_fact(tenant_id, workflow_id, body)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/facts/{fact_id}/decision",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_APPROVE))],
+)
+def decide_onboarding_fact(
+    tenant_id: str,
+    workflow_id: str,
+    fact_id: str,
+    body: FactDecisionInput,
+    request: Request,
+) -> dict:
+    try:
+        return _onboarding_service().decide_fact(
+            tenant_id,
+            workflow_id,
+            fact_id,
+            body.model_copy(update={"decided_by": _actor(request, body.decided_by)}),
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/approval",
+    dependencies=[Depends(require_permission(Permission.PORTFOLIO_APPROVE))],
+)
+def approve_onboarding(
+    tenant_id: str,
+    workflow_id: str,
+    body: OnboardingApprovalRequest,
+    request: Request,
+) -> dict:
+    try:
+        return _onboarding_service().approve(
+            tenant_id, workflow_id, approved_by=_actor(request, body.approved_by)
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/connectors",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_WRITE))],
+)
 def register_connector(tenant_id: str, request: ConnectorInstanceInput) -> dict:
     try:
         return connector_service.register_instance(tenant_id, request).model_dump(mode="json")
@@ -1389,12 +1607,18 @@ def register_connector(tenant_id: str, request: ConnectorInstanceInput) -> dict:
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/connectors", dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/connectors",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))],
+)
 def list_connectors(tenant_id: str) -> list[dict]:
     return [item.model_dump(mode="json") for item in connector_service.list_instances(tenant_id)]
 
 
-@app.post("/api/v1/tenants/{tenant_id}/connectors/{connector_instance_id}/grants", dependencies=[Depends(require_permission(Permission.CONNECTOR_APPROVE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/connectors/{connector_instance_id}/grants",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_APPROVE))],
+)
 def create_collection_grant(
     tenant_id: str,
     connector_instance_id: str,
@@ -1412,17 +1636,21 @@ def create_collection_grant(
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/collection-grants", dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))])
-def list_collection_grants(
-    tenant_id: str, connector_instance_id: str | None = None
-) -> list[dict]:
+@app.get(
+    "/api/v1/tenants/{tenant_id}/collection-grants",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))],
+)
+def list_collection_grants(tenant_id: str, connector_instance_id: str | None = None) -> list[dict]:
     return [
         item.model_dump(mode="json")
         for item in connector_service.list_grants(tenant_id, connector_instance_id)
     ]
 
 
-@app.post("/api/v1/tenants/{tenant_id}/collection-grants/{grant_id}/revoke", dependencies=[Depends(require_permission(Permission.CONNECTOR_APPROVE))])
+@app.post(
+    "/api/v1/tenants/{tenant_id}/collection-grants/{grant_id}/revoke",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_APPROVE))],
+)
 def revoke_collection_grant(
     tenant_id: str,
     grant_id: str,
@@ -1434,14 +1662,17 @@ def revoke_collection_grant(
             tenant_id,
             grant_id,
             actor_id=_actor(http_request, payload.actor_id),
-            reason=payload.reason
+            reason=payload.reason,
         ).model_dump(mode="json")
     except Exception as exc:
         _raise_http(exc)
         raise AssertionError("unreachable")
 
 
-@app.get("/api/v1/tenants/{tenant_id}/connector-runs/{run_id}", dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))])
+@app.get(
+    "/api/v1/tenants/{tenant_id}/connector-runs/{run_id}",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_READ))],
+)
 def get_connector_run(tenant_id: str, run_id: str) -> dict:
     try:
         return connector_service.get_run(tenant_id, run_id).model_dump(mode="json")
@@ -1509,6 +1740,51 @@ def get_control_test_run(tenant_id: str, run_id: str) -> dict:
 
 
 @app.post(
+    "/api/v1/tenants/{tenant_id}/continuous-monitors",
+    dependencies=[Depends(require_permission(Permission.CONNECTOR_APPROVE))],
+)
+def activate_continuous_monitor(
+    tenant_id: str, body: MonitorDefinitionInput, request: Request
+) -> dict:
+    try:
+        return _monitoring_service().activate(
+            tenant_id,
+            body.model_copy(update={"approved_by": _actor(request, body.approved_by)}),
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
+    "/api/v1/tenants/{tenant_id}/continuous-monitors/{monitor_id}/runs",
+    dependencies=[Depends(require_permission(Permission.CONTROL_TEST_EXECUTE))],
+)
+def execute_continuous_monitor(
+    tenant_id: str, monitor_id: str, body: MonitorExecutionInput, request: Request
+) -> dict:
+    try:
+        test_request = body.test_request.model_copy(
+            update={"requested_by": _actor(request, body.test_request.requested_by)}
+        )
+        return _monitoring_service().execute(
+            tenant_id, monitor_id, body.model_copy(update={"test_request": test_request})
+        )
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/continuous-monitors",
+    dependencies=[Depends(require_permission(Permission.CONTROL_TEST_READ))],
+)
+def continuous_monitor_overview(tenant_id: str) -> dict:
+    try:
+        return _monitoring_service().overview(tenant_id)
+    except Exception as exc:
+        _raise_http(exc)
+
+
+@app.post(
     "/api/v1/tenants/{tenant_id}/control-test-runs/{run_id}/verify-reproducibility",
     dependencies=[Depends(require_permission(Permission.CONTROL_TEST_EXECUTE))],
 )
@@ -1531,9 +1807,11 @@ def verify_control_test_run(
             parameters=body.parameters,
             datasets=body.datasets,
         )
-        return _control_test_service().verify_reproducibility(
-            tenant_id, run_id, domain_request
-        ).model_dump(mode="json")
+        return (
+            _control_test_service()
+            .verify_reproducibility(tenant_id, run_id, domain_request)
+            .model_dump(mode="json")
+        )
     except Exception as exc:
         _raise_http(exc)
 
@@ -1610,9 +1888,11 @@ def record_claims(tenant_id: str, engagement_id: str, body: RecordClaimsRequest)
 def evidence_usage(tenant_id: str, evidence_id: str) -> dict:
     """Every claim this record has been used to support, anywhere."""
     try:
-        return {"usage": _reporting_service().evidence_usage(
-            tenant_id=tenant_id, evidence_id=evidence_id
-        )}
+        return {
+            "usage": _reporting_service().evidence_usage(
+                tenant_id=tenant_id, evidence_id=evidence_id
+            )
+        }
     except Exception as exc:
         _raise_http(exc)
 
@@ -1979,9 +2259,7 @@ def simulate_plan(tenant_id: str, body: SimulatePlanRequest) -> dict:
 )
 def get_plan_proposal(tenant_id: str, proposal_id: str) -> dict:
     try:
-        return _portfolio_service().proposal_view(
-            tenant_id=tenant_id, proposal_id=proposal_id
-        )
+        return _portfolio_service().proposal_view(tenant_id=tenant_id, proposal_id=proposal_id)
     except Exception as exc:
         _raise_http(exc)
 
@@ -2077,9 +2355,7 @@ def list_audit_packs() -> dict:
                 "version": pack.manifest.version,
                 "package_sha256": pack.package_sha256,
                 "objective": pack.manifest.objective,
-                "standard": (
-                    f"{pack.manifest.standard.code}@{pack.manifest.standard.version}"
-                ),
+                "standard": (f"{pack.manifest.standard.code}@{pack.manifest.standard.version}"),
                 "entitlement_required": pack.manifest.standard.entitlement_required,
                 "procedures": len(pack.manifest.procedures),
                 "human_gates": list(pack.manifest.human_gates),
@@ -2133,7 +2409,11 @@ def approve_audit_pack(
             approved_by=_actor(request, body.approved_by),
             reason=body.reason,
         )
-        return {"registration_id": registration_id, "pack": f"{pack_id}@{version}", "status": "approved"}
+        return {
+            "registration_id": registration_id,
+            "pack": f"{pack_id}@{version}",
+            "status": "approved",
+        }
     except Exception as exc:
         _raise_http(exc)
 
@@ -2180,9 +2460,7 @@ def compile_engagement_from_pack(
 def engagement_provenance(tenant_id: str, engagement_id: str) -> dict:
     """What this engagement was compiled from, and against which criteria."""
     try:
-        return _standards_service().provenance(
-            tenant_id=tenant_id, engagement_id=engagement_id
-        )
+        return _standards_service().provenance(tenant_id=tenant_id, engagement_id=engagement_id)
     except Exception as exc:
         _raise_http(exc)
 
@@ -2338,9 +2616,11 @@ def list_findings(tenant_id: str, engagement_id: str | None = Query(default=None
 def get_finding(tenant_id: str, finding_id: str) -> dict:
     """The finding and every decision, action, and retest attached to it."""
     try:
-        return _adjudication_service().view(
-            tenant_id=tenant_id, finding_id=finding_id
-        ).model_dump(mode="json")
+        return (
+            _adjudication_service()
+            .view(tenant_id=tenant_id, finding_id=finding_id)
+            .model_dump(mode="json")
+        )
     except Exception as exc:
         _raise_http(exc)
 
@@ -2599,15 +2879,29 @@ def open_remediation(tenant_id: str, finding_id: str, body: OpenRemediationReque
 def sync_remediation_ticket(tenant_id: str, action_id: str) -> dict:
     """File the remediation in its external system, at most once.
 
-    No writer is passed here, so an action registered against Jira or ServiceNow
-    is refused rather than silently filed nowhere. Live provider credentials are
-    resolved through the connector registry in a deployed environment; until one
-    is configured, this endpoint serves the ``none`` case and reports the mismatch
-    for the others instead of pretending to have written.
+    A write adapter is resolved from exactly one active tenant-owned connector.
+    Ambiguous or incomplete configuration is refused before any provider call.
     """
     try:
-        return _adjudication_service().sync_remediation_ticket(
+        action = _adjudication_service().get_remediation_action(
             tenant_id=tenant_id, action_id=action_id
+        )
+        writer = None
+        if action["external_system"] != "none":
+            instances = ConnectorService(database, vault).list_instances(tenant_id)
+            candidates = [
+                item
+                for item in instances
+                if item.status == "active" and item.connector_type == action["external_system"]
+            ]
+            if len(candidates) != 1:
+                raise TicketingError(
+                    f"remediation ticketing requires exactly one active "
+                    f"{action['external_system']} connector; found {len(candidates)}"
+                )
+            writer = writer_from_connector(candidates[0])
+        return _adjudication_service().sync_remediation_ticket(
+            tenant_id=tenant_id, action_id=action_id, writer=writer
         )
     except Exception as exc:
         _raise_http(exc)
@@ -2690,9 +2984,162 @@ def finding_recurrence(tenant_id: str, code: str) -> dict:
         _raise_http(exc)
 
 
-@app.get("/judge", response_class=HTMLResponse)
-def judge_mode() -> str:
+@app.get(
+    "/api/v1/tenants/{tenant_id}/cockpit",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))],
+)
+def product_cockpit(tenant_id: str) -> dict:
+    """The bounded live read model shared by the product's lifecycle routes."""
+    return tenant_cockpit(database, tenant_id)
+
+
+@app.get(
+    "/api/v1/judge/overview",
+    response_model=JudgeOverviewResponse,
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def judge_overview() -> dict:
+    result = evaluator_overview(
+        database=database,
+        packages=_registry(),
+        control_tests=control_test_registry.list(),
+        audit_packs=audit_pack_registry.list(),
+        repository_root=Path(__file__).resolve().parents[2],
+        environment=settings.environment,
+        model_mode=settings.model_mode,
+        model_name=(
+            settings.gemini_model
+            if settings.model_mode in {"gemini", "vertex"}
+            else os.getenv("ASSURANCEOS_LOCAL_MODEL_NAME", settings.model_mode)
+        ),
+    )
+    qualification = _contract_evaluation()
+    result["fleet"]["evaluation"] = qualification
+    result["components"].append(
+        {
+            "name": "Agent Evaluation",
+            "status": "operational" if qualification["passed"] else "attention",
+            "proof": (
+                f"{qualification['passed_cases']}/{qualification['case_count']} release cases · "
+                f"{qualification['passed_agents']}/{qualification['agent_count']} agents"
+            ),
+        }
+    )
+    return result
+
+
+@lru_cache(maxsize=1)
+def _contract_evaluation() -> dict:
+    return (
+        AgentEvaluationRunner(repository_root=Path(__file__).resolve().parents[2])
+        .run()
+        .as_dict(include_agents=False)
+    )
+
+
+@app.get(
+    "/api/v1/evaluations/summary",
+    response_model=EvaluationSummaryResponse,
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def agent_evaluation_summary() -> dict:
+    return _contract_evaluation()
+
+
+@app.get(
+    "/api/v1/judge/ground-truth",
+    response_model=GroundTruthResponse,
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def judge_ground_truth() -> dict:
+    return ground_truth(Path(__file__).resolve().parents[2])
+
+
+@app.post(
+    "/api/v1/judge/proofs/prompt-injection",
+    response_model=PromptInjectionProofResponse,
+    dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
+)
+def replay_prompt_injection() -> dict:
+    """Replay the published attack through the same deterministic runtime guardrail."""
+    root = Path(__file__).resolve().parents[2]
+    evidence_path = root / "demo/asteria/sources/confluence/change_management_policy.md"
+    result = ModelArmor().inspect_context(
+        evidence_path.read_text(encoding="utf-8"),
+        reference="change_management_policy.md",
+    )
+    return {
+        "source": "change_management_policy.md",
+        "verdict": result.verdict,
+        "tainted": bool(result.findings),
+        "instruction_neutralized": bool(
+            result.findings
+            and result.verdict in {"redact", "block"}
+            and result.sanitized_text != evidence_path.read_text(encoding="utf-8")
+        ),
+        "canonical_state_mutated": False,
+        "detectors": [item.as_dict() for item in result.findings],
+        "sanitized_sha256": hashlib.sha256(
+            (result.sanitized_text or "").encode("utf-8")
+        ).hexdigest(),
+    }
+
+
+@app.post(
+    "/api/v1/judge/proofs/idempotency",
+    response_model=IdempotencyProofResponse,
+    dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
+)
+def replay_idempotent_remediation() -> dict:
+    """Replay the canonical assurance loop and expose its duplicate-action proofs."""
+    result = run_assurance_loop_demo(
+        database=database,
+        repository_root=Path(__file__).resolve().parents[2],
+    )
+    return {
+        "tenant_id": result["tenant_id"],
+        "engagement_id": result["engagement_id"],
+        "finding_id": result["finding_id"],
+        "remediation_action_id": result["remediation_action_id"],
+        "remediation_opened_once": result["remediation_opened_once"],
+        "external_correlation_key": result["jira_correlation_key"],
+        "external_ticket_ref": result["jira_ticket_ref"],
+        "external_ticket_filed_once": result["jira_ticket_filed_once"],
+        "final_status": result["final_status"],
+        "ground_truth_match": result["ground_truth_match"],
+    }
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/traces/{trace_id}",
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def get_correlated_trace(tenant_id: str, trace_id: str) -> dict:
+    result = trace_detail(database, tenant_id, trace_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="trace not found")
+    return result
+
+
+def _product_template() -> str:
     template = Path("apps/web/judge.html")
     if not template.exists():
         template = Path(__file__).resolve().parents[2] / "apps/web/judge.html"
     return template.read_text(encoding="utf-8")
+
+
+@app.get("/judge", response_class=HTMLResponse, include_in_schema=False)
+def judge_mode() -> str:
+    return _product_template()
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/plan-proposals", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/audits", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/findings", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/evidence", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/standards", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/governance", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/reporting", response_class=HTMLResponse, include_in_schema=False)
+def product_app() -> str:
+    return _product_template()

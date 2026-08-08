@@ -550,7 +550,7 @@ def test_otel_bridge_exports_spans_and_preserves_the_join_key():
 
     # Two roots: OpenTelemetry splits them into separate traces by design.
     with tracer.span("assuranceos.agent.task"):
-        with tracer.span(SPAN_MODEL, **genai_attributes(model="gemini-3.5-flash",
+        with tracer.span(SPAN_MODEL, **genai_attributes(model="gemini-3.6-flash",
                                                         input_tokens=120)):
             tracer.allow()
     with tracer.span("assuranceos.agent.task"):
@@ -575,7 +575,7 @@ def test_otel_bridge_exports_spans_and_preserves_the_join_key():
     }
 
     model_span = next(s for s in spans if s.name == SPAN_MODEL)
-    assert model_span.attributes["gen_ai.request.model"] == "gemini-3.5-flash"
+    assert model_span.attributes["gen_ai.request.model"] == "gemini-3.6-flash"
     assert model_span.attributes["gen_ai.usage.input_tokens"] == 120
 
 

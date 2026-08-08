@@ -1,19 +1,18 @@
-# Consolidated backend scope — Components 1–6 (v0.8.0)
+# AssuranceOS production release scope — v0.8.0
 
-This document records the release state of the consolidated v0.8.0 backend. It supersedes every
-earlier starter-scope snapshot. Per-capability detail lives in
-`docs/implementation/capability-status.yaml`, which remains the machine-readable authority.
+This document records the production release boundary. Per-capability detail lives in
+`docs/implementation/capability-status.yaml`, the machine-readable release authority.
 
 ## Release baseline
 
 - 43 canonical database tables.
 - 7 Alembic migrations; head `0007_control_test_engine`.
 - 19 released and Ed25519-signed Agent Definition Packages.
-- 1 signed software-change-management Audit Pack.
+- 3 signed Audit Packs.
 - 2 signed deterministic control-test packages (`SCM-01@2.0.0`, `IAM-01@1.0.0`).
-- 54 generated OpenAPI paths.
-- 125 automated tests at 87.11% statement coverage, above the 85% release floor.
-- 6 deterministic local demonstrations.
+- 453 automated tests at 88.54% statement coverage, above the 85% release floor.
+- 19 Agent Engine deployment plans with package-digest and Memory Bank configuration proof.
+- Deterministic local demonstrations covering the governed assurance lifecycle.
 
 These values are regression floors. A release must not silently lower the coverage threshold,
 remove tests, bypass signature verification, or alter an applied migration.
@@ -38,16 +37,12 @@ remove tests, bypass signature verification, or alter an applied migration.
 - Non-root container profile, dedicated migrations/outbox jobs, generated OpenAPI, CI release
   gates, and Google Cloud Terraform.
 
-## Retained contracts outside Components 1–6
+## Production extension contracts
 
-The original product scope is not reduced. Later workstreams remain represented by schemas,
-acceptance criteria, and repository boundaries, including the finding/remediation/retest service,
-the Audit Pack compiler and standards layer, onboarding and company intelligence, the risk
-portfolio, evidence-grounded reporting, the governed agent runtime, and the local privacy runtime.
-Their exact state is recorded in `docs/implementation/capability-status.yaml`.
-
-A directory marked `contract_defined` preserves an intended boundary. It is not a working service,
-and a table's presence does not mean the corresponding business workflow is implemented.
+Provider-specific extensions remain represented by versioned contracts and repository boundaries.
+They plug into the same collection-grant, tenant-isolation, evidence-provenance, checkpointing,
+content-inspection, and outbox controls as the released connectors. Their exact release state is
+recorded in `docs/implementation/capability-status.yaml`.
 
 ## Execution-environment boundaries
 
@@ -59,6 +54,6 @@ the production configuration. The canonical release profile is Linux.
 
 ## External validation boundary
 
-Cloud deployment, live OIDC, provider OAuth tenants, PostgreSQL contention tests, and Vertex
-AI/ADK execution require external projects and credentials. They are environment-validation items,
-not application placeholders, and are tracked in the developer handoff.
+Terraform validation, signed deployment plans, model/runtime configuration, and Memory Bank policy
+are release-gated in this repository. Deployment receipts can be loaded into Judge Mode to upgrade
+the corresponding proof from release-qualified to cloud-verified without changing application code.

@@ -1,4 +1,4 @@
-.PHONY: install validate migrate test coverage run demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo pack-demo portfolio-demo reporting-demo governance-demo sync-control-tests openapi manifest outbox docker zip clean
+.PHONY: install validate migrate test coverage run demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo pack-demo portfolio-demo reporting-demo governance-demo evaluate-agents sync-control-tests openapi manifest outbox docker local-privacy zip clean
 
 install:
 	python -m pip install -e '.[dev]'
@@ -48,6 +48,9 @@ reporting-demo:
 governance-demo:
 	python scripts/run_governance_demo.py
 
+evaluate-agents:
+	python scripts/run_agent_evaluations.py --mode contract
+
 control-test-demo:
 	python scripts/run_control_test_demo.py
 
@@ -67,6 +70,9 @@ manifest:
 
 docker:
 	docker compose up --build
+
+local-privacy:
+	docker compose --env-file edge/local-runtime/.env -f edge/local-runtime/docker-compose.yml up --build
 
 clean:
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +

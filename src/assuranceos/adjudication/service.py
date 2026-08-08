@@ -1303,6 +1303,21 @@ class AdjudicationService:
                 )
             ]
 
+    def get_remediation_action(self, *, tenant_id: str, action_id: str) -> dict[str, Any]:
+        """Return the routing metadata needed to select an external writer."""
+        with self.database.read_session() as session:
+            action = AdjudicationRepository(session).get_action(tenant_id, action_id)
+            if action is None:
+                raise RemediationNotFoundError(
+                    f"remediation action {action_id!r} was not found"
+                )
+            return {
+                "action_id": action.action_id,
+                "external_system": action.external_system,
+                "external_target": action.external_target,
+                "external_ref": action.external_ref,
+            }
+
     # -- internals -------------------------------------------------------------
 
     @staticmethod

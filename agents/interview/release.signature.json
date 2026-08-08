@@ -1,7 +1,7 @@
 {
   "algorithm": "Ed25519",
-  "key_id": "hackathon-release-2026-08",
-  "public_key_sha256": "dd1977f85c9a588641552b1f5db1564a60c6496ce58033d825386d986a8214df",
+  "key_id": "assuranceos-agent-release-2026-v1",
+  "public_key_sha256": "768af62720688c3b6a4ed9537bab9bfb44ea868a1f76167b4cced08731fb5124",
   "schema": "assurance.agent_release_signature.v1",
-  "signature_base64": "+1O/rnft/Zfno2VNWM/6e8BPfQxvGV+HP8w/Jm8BndSY2fjPOWhb0yzFK7OU3M0g4c0MP/3CoFRmhSZpF1xqBg=="
+  "signature_base64": "rNgpJe1kPcPFRj2gdoUdmbaI1olDbEjgYylfyb/6JpHMPSoVU94cdO3XJbXsLFNyYh9QyJOXcG+/Jk9MUM0tAA=="
 }

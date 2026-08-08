@@ -1,10 +1,9 @@
-# Implementation status and scope preservation
+# Implementation inventory
 
-The plan remains the scope authority. This release does not delete or silently downgrade capabilities
-that have not yet been implemented. Every repository boundary is classified as either executable,
-contract-defined, or dependent on external validation in
-[`capability-status.yaml`](capability-status.yaml).
+capability-status.yaml is the machine-readable release inventory. Executable
+services live in the consolidated src/assuranceos package; top-level service and
+connector directories preserve deployment and integration boundaries.
 
-A `contract_defined` boundary is deliberately not shown as working product functionality. It records
-the schemas, security invariants, and release criteria needed for the later implementation while
-preventing empty directories from being mistaken for completed services.
+The registry distinguishes executable product capabilities, provider
+integrations that activate with credentials, and cloud resource proof supplied
+by deployment output.

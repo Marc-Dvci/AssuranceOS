@@ -28,7 +28,7 @@ def main() -> None:
         print("OpenAPI contract is current.")
         return
     DESTINATION.parent.mkdir(parents=True, exist_ok=True)
-    DESTINATION.write_text(content, encoding="utf-8")
+    DESTINATION.write_text(content, encoding="utf-8", newline="\n")
     print(f"Wrote {DESTINATION.relative_to(ROOT)}")
 
 

@@ -3,6 +3,9 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
+
+from dotenv import load_dotenv
 
 
 def _bool_env(name: str, default: bool) -> bool:
@@ -49,6 +52,10 @@ class Settings:
     audit_pack_public_key: Path
     model_mode: str
     gemini_model: str
+    local_privacy_mode: bool
+    local_model_url: str
+    local_model_name: str
+    local_model_allowed_hosts: tuple[str, ...]
     evidence_root: Path
     evidence_export_root: Path
     evidence_storage: str
@@ -75,8 +82,14 @@ class Settings:
     def is_production(self) -> bool:
         return self.environment.lower() in {"prod", "production"}
 
+    @property
+    def is_local_privacy(self) -> bool:
+        return self.local_privacy_mode or self.environment == "local-privacy"
+
     @classmethod
     def from_env(cls) -> "Settings":
+        # Local quickstarts use .env; deployed variables always win.
+        load_dotenv(override=False)
         environment = os.getenv("ASSURANCEOS_ENV", "local").strip().lower()
         auth_mode = os.getenv("ASSURANCEOS_AUTH_MODE", "disabled").strip().lower()
         algorithms = tuple(
@@ -87,6 +100,13 @@ class Settings:
         trusted_hosts = tuple(
             item.strip()
             for item in os.getenv("ASSURANCEOS_TRUSTED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
+            if item.strip()
+        )
+        local_model_allowed_hosts = tuple(
+            item.strip().lower()
+            for item in os.getenv(
+                "ASSURANCEOS_LOCAL_MODEL_ALLOWED_HOSTS", "127.0.0.1,localhost"
+            ).split(",")
             if item.strip()
         )
         private_key = os.getenv("ASSURANCEOS_EXPORT_SIGNING_PRIVATE_KEY")
@@ -102,7 +122,13 @@ class Settings:
             audit_pack_root=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_ROOT", "./audit-packs")),
             audit_pack_public_key=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_PUBLIC_KEY", "./security/release-keys/audit-pack-release-public.pem")),
             model_mode=os.getenv("ASSURANCEOS_MODEL_MODE", "mock"),
-            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.5-flash"),
+            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.6-flash"),
+            local_privacy_mode=_bool_env("ASSURANCEOS_LOCAL_PRIVACY_MODE", False),
+            local_model_url=os.getenv(
+                "ASSURANCEOS_LOCAL_MODEL_URL", "http://127.0.0.1:5000/v1"
+            ),
+            local_model_name=os.getenv("ASSURANCEOS_LOCAL_MODEL_NAME", "local"),
+            local_model_allowed_hosts=local_model_allowed_hosts,
             evidence_root=Path(os.getenv("ASSURANCEOS_EVIDENCE_ROOT", "./var/evidence")),
             evidence_export_root=Path(
                 os.getenv("ASSURANCEOS_EVIDENCE_EXPORT_ROOT", "./var/evidence-exports")
@@ -151,6 +177,29 @@ class Settings:
             raise ValueError("ASSURANCEOS_EVIDENCE_STORAGE must be 'local' or 'gcs'")
         if self.evidence_storage == "gcs" and not self.evidence_bucket:
             raise ValueError("ASSURANCEOS_EVIDENCE_BUCKET is required for GCS storage")
+        if self.is_local_privacy:
+            model_host = (urlparse(self.local_model_url).hostname or "").lower()
+            if self.model_mode != "local":
+                raise ValueError("local privacy mode requires ASSURANCEOS_MODEL_MODE=local")
+            if model_host not in self.local_model_allowed_hosts:
+                raise ValueError(
+                    "local privacy model endpoint is outside "
+                    "ASSURANCEOS_LOCAL_MODEL_ALLOWED_HOSTS"
+                )
+            if self.evidence_storage != "local":
+                raise ValueError("local privacy mode requires local evidence storage")
+            if self.auth_mode != "jwt":
+                raise ValueError("local privacy mode requires JWT authentication")
+            if self.database_url.startswith("sqlite"):
+                raise ValueError("local privacy mode requires PostgreSQL")
+            if self.auto_create_schema:
+                raise ValueError("local privacy schema changes must run through Alembic")
+            if self.export_signing_private_key is None:
+                raise ValueError("local privacy mode requires an export-signing key")
+            if self.execution_signing_private_key is None:
+                raise ValueError("local privacy mode requires an execution-envelope signing key")
+            if self.control_test_allow_degraded_sandbox:
+                raise ValueError("local privacy mode requires the enforced control-test sandbox")
         if self.auth_mode == "jwt":
             if not self.auth_jwt_issuer or not self.auth_jwt_audience:
                 raise ValueError("JWT issuer and audience are required when authentication is enabled")

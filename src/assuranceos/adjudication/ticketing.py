@@ -27,7 +27,11 @@ from datetime import date
 from typing import Any, Protocol
 
 from ..connectors.adapters.common import RestAdapter
+from ..connectors.credentials import CredentialResolver
+from ..connectors.definitions import ConnectorInstanceView
 from ..connectors.exceptions import ConnectorProtocolError
+from ..connectors.transport import HttpTransport, HttpxTransport
+from .exceptions import TicketingError
 
 #: Prefix that makes an AssuranceOS correlation key recognisable in a provider
 #: whose records come from many sources.
@@ -292,3 +296,42 @@ TICKET_WRITERS: dict[str, type[Any]] = {
     "jira": JiraTicketWriter,
     "servicenow": ServiceNowTicketWriter,
 }
+
+
+def writer_from_connector(
+    instance: ConnectorInstanceView,
+    *,
+    credentials: CredentialResolver | None = None,
+    transport: HttpTransport | None = None,
+) -> TicketWriter:
+    """Build a write adapter from one active, tenant-owned connector record.
+
+    Credential material is resolved only at the network boundary.  It is never
+    copied into canonical connector metadata, logs, ticket details, or responses.
+    """
+    if instance.status != "active":
+        raise TicketingError(
+            f"connector {instance.connector_key!r} is not active"
+        )
+    writer_type = TICKET_WRITERS.get(instance.connector_type)
+    if writer_type is None:
+        raise TicketingError(
+            f"connector type {instance.connector_type!r} cannot file remediation tickets"
+        )
+    if not instance.base_url:
+        raise TicketingError("ticket connector requires a base_url")
+    if not instance.credential_ref:
+        raise TicketingError("ticket connector requires a credential reference")
+    try:
+        credential = (credentials or CredentialResolver()).resolve(instance.credential_ref)
+    except (RuntimeError, ValueError) as exc:
+        raise TicketingError(f"ticket connector credential is unavailable: {exc}") from exc
+
+    kwargs: dict[str, Any] = {
+        "base_url": instance.base_url,
+        "transport": transport or HttpxTransport(),
+        "credential": credential,
+    }
+    if instance.connector_type == "jira":
+        kwargs["issue_type"] = str(instance.config.get("issue_type", "Task"))
+    return writer_type(**kwargs)

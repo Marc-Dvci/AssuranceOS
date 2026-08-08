@@ -69,6 +69,7 @@ from .ticketing import (
     TicketRequest,
     TicketWriter,
     correlation_key,
+    writer_from_connector,
 )
 
 __all__ = [
@@ -126,6 +127,7 @@ __all__ = [
     "TicketRequest",
     "TicketWriter",
     "TicketingError",
+    "writer_from_connector",
     "assess",
     "content_hash",
     "correlation_key",

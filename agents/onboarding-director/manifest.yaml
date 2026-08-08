@@ -1,6 +1,6 @@
 schema_version: assurance.agent_manifest.v1
 agent_id: onboarding-director
-version: 0.7.0
+version: 0.8.0
 display_name: Onboarding Director Agent
 status: released
 accountable_owner: AssuranceOS Hackathon Team
@@ -69,4 +69,4 @@ release:
   - security
   - engineering
   signature: release.signature.json
-  release_key_id: hackathon-release-2026-08
+  release_key_id: assuranceos-agent-release-2026-v1

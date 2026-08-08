@@ -1,16 +1,19 @@
-FROM python:3.12-slim AS runtime
+FROM python:3.12-slim@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/app/.venv/bin:$PATH" \
     PORT=8080
 
 RUN groupadd --system assuranceos && useradd --system --gid assuranceos --home /app assuranceos
 WORKDIR /app
 
-COPY pyproject.toml README.md alembic.ini ./
+COPY pyproject.toml uv.lock README.md alembic.ini ./
 COPY src ./src
-RUN pip install --no-cache-dir '.[postgres,gcp-runtime]'
+RUN pip install --no-cache-dir uv==0.11.17 \
+    && uv sync --frozen --no-dev --extra postgres --extra gcp-runtime --extra agent-cloud \
+    && uv cache clean
 
 COPY migrations ./migrations
 COPY scripts ./scripts

@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 # The hackathon mandates Gemini 3.5 or newer.
-DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 
 
 @dataclass
@@ -156,16 +156,18 @@ class GeminiClient:
         response = client.models.generate_content(
             model=self.model_name,
             contents=prompt,
+            # Gemini 3.6 no longer accepts temperature/top-p/top-k. Keep the
+            # protocol argument for other transports, but deliberately omit it
+            # for the stable Gemini transport.
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
-                temperature=temperature,
                 max_output_tokens=max_output_tokens,
                 response_mime_type="application/json",
             ),
         )
         usage = getattr(response, "usage_metadata", None)
 
-        # Gemini 3.5 returns deliberation as parts flagged `thought`. `response.text`
+        # Gemini returns deliberation as parts flagged `thought`. `response.text`
         # already excludes them, but they are the reasoning chain the Fortified
         # Enterprise Fleet track asks us to make auditable, so collect them
         # explicitly rather than discarding them.

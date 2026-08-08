@@ -20,6 +20,7 @@ from .exceptions import (
     RetentionPolicyError,
 )
 from .service import EvidenceVault
+from .bundle import bundle_admission_result, import_signed_bundle
 from .gcs import GoogleCloudStorageObjectStore
 from .inspection import BaselineContentInspector, ContentInspectionRejected, InspectionResult
 from .signing import Ed25519ManifestSigner, generate_ed25519_keypair
@@ -34,6 +35,8 @@ __all__ = [
     "EvidenceItem",
     "EvidenceNotFoundError",
     "EvidenceVault",
+    "bundle_admission_result",
+    "import_signed_bundle",
     "EvidenceVaultError",
     "ExportPackageError",
     "ExportVerification",

@@ -118,7 +118,7 @@ def main() -> None:
         print("Artifact manifest verified.")
         return
     MANIFEST_PATH.write_text(
-        json.dumps(build_manifest(), indent=2) + "\n", encoding="utf-8"
+        json.dumps(build_manifest(), indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     print(f"Wrote {MANIFEST_PATH.relative_to(ROOT)}")
 

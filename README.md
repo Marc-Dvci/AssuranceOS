@@ -10,7 +10,7 @@ to take its word for the result.
 ```bash
 make loop-demo          # deterministic and offline
 python scripts/run_assurance_loop_demo.py --model-mode local --model <your-model>
-python scripts/run_assurance_loop_demo.py --model-mode gemini   # Gemini 3.5
+python scripts/run_assurance_loop_demo.py --model-mode gemini   # Gemini 3.6 Flash
 ```
 
 A deterministic control test runs over a seeded population. Its exceptions reach
@@ -54,7 +54,7 @@ The interesting part is not that the loop completes. It is what it refuses.
 
 ### Running against a reasoning model
 
-Gemma 4 and Gemini 3.5 deliberate before answering, and that changes what a
+Gemma 4 and Gemini 3.6 Flash deliberate before answering, and that changes what a
 governed runtime has to handle. Measured on `gemma-4-12b-it-IQ4_XS`: with
 deliberation enabled, the governed audit prompt produced 16,602 characters of
 reasoning and **no answer at all** inside a 4096-token ceiling. With
@@ -77,13 +77,13 @@ reply can lift a conclusion the model explicitly backed away from.
 - typed execution envelopes and structured results;
 - Asteria Systems DemoCo synthetic golden engagement;
 - governed deterministic control-test selection and execution contracts;
-- FastAPI control plane and existing Judge Mode route;
+- FastAPI control plane, lifecycle cockpit, and live Judge Mode proof surface;
 - optional Google ADK and Vertex AI Agent Engine adapters.
 
 ### Component 1 — Canonical domain database
 
 - SQLAlchemy 2.0 models organized by domain;
-- 31 normalized tables for tenancy, company context, audit universe, planning, schedules,
+- 67 normalized tables for tenancy, company context, audit universe, planning, schedules,
   engagements, tasks, evidence, claims, findings, approvals, remediation, retests, agent releases,
   traces, audit events, outbox delivery, and idempotency;
 - Alembic migrations with SQLite and PostgreSQL compatibility;
@@ -156,7 +156,9 @@ See
 - schema fingerprinting and drift detection between successful runs;
 - bounded live HTTP transport with distinct authentication, permission, rate-limit, protocol, and availability failures;
 - deterministic fixture transport that rejects unregistered network calls;
-- GitHub pull-request, Jira issue, Confluence page, Google Drive snapshot, and Google Drive incremental-change adapters;
+- GitHub pull-request, Jira issue, Confluence page, Google Drive snapshot and incremental-change,
+  Okta, Microsoft Entra ID, and Google Cloud IAM adapters;
+- credentialed, provider-idempotent Jira and ServiceNow remediation writers;
 - complete Asteria connector demonstration covering four source systems.
 
 See
@@ -218,6 +220,29 @@ The Google ADK adapter binds each declared package tool as a shim that routes
 through the same gateway, so the ADK path and the in-process runtime share one
 enforcement point rather than two implementations kept in agreement by hand.
 
+### Components 9, 11â€“15 â€” company intelligence, reporting, continuous assurance, and product
+
+- resumable onboarding from minimal company input to a versioned canonical profile;
+- immutable public-source snapshots, typed company claims, and explicit accept,
+  correct, or not-applicable decisions with preserved provenance;
+- canonical claim graph and deterministic report rendering that refuses unsupported,
+  inadmissible, stale, or undisclosed contradictory material claims;
+- separate human report issuance over digest-identified immutable report versions;
+- versioned continuous monitors over pinned deterministic test releases, with
+  freshness and completeness suspension, alert budgets, and deduplication windows;
+- an explicit review-case boundary that prevents monitor alerts from becoming
+  approved findings without the adjudication workflow;
+- contract and live-model evaluation across 19 agents and 76 golden, adversarial,
+  missing-evidence, and cross-industry cases;
+- offline Agent Engine deployment planning with signed package digests and a
+  qualification gate before cloud mutation;
+- local privacy runtime with network isolation, local-only model routing, and
+  verified signed evidence-bundle transfer;
+- responsive product routes for planning, audits, findings, evidence, standards,
+  governance, reporting, and a live evaluator cockpit.
+
+See [`docs/architecture/evidence-grounded-reporting.md`](docs/architecture/evidence-grounded-reporting.md).
+
 ## Local SQLite workflow
 
 ```bash
@@ -234,9 +259,9 @@ python scripts/run_orchestrator_demo.py
 python scripts/run_scheduler_demo.py
 python scripts/run_evidence_vault_demo.py
 python scripts/run_connector_demo.py
-python scripts/run_control_test_demo.py
 python scripts/run_governance_demo.py --render-chain
 python scripts/run_assurance_loop_demo.py
+python scripts/run_agent_evaluations.py --mode contract
 uvicorn assuranceos.api:app --reload --port 8080
 ```
 
@@ -316,6 +341,8 @@ Existing endpoints:
 - demo events: `GET /api/v1/demo/events`
 - deterministic reset: `POST /api/v1/demo/reset`
 - existing Judge Mode route: `GET /judge`
+- evaluator overview: `GET /api/v1/judge/overview`
+- product cockpit: `GET /api/v1/tenants/{tenant_id}/cockpit`
 
 Orchestration endpoints:
 
@@ -369,6 +396,16 @@ Control-test endpoints:
 - inspect run: `GET /api/v1/tenants/{tenant_id}/control-test-runs/{run_id}`
 - verify reproducibility: `POST /api/v1/tenants/{tenant_id}/control-test-runs/{run_id}/verify-reproducibility`
 
+Onboarding and continuous-assurance endpoints:
+
+- start or resume onboarding: `POST /api/v1/tenants/{tenant_id}/onboarding-workflows`
+- inspect onboarding state: `GET /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}`
+- preserve a public source: `POST /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/sources`
+- propose and decide company facts: `POST /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/facts`
+- activate a monitor: `POST /api/v1/tenants/{tenant_id}/continuous-monitors`
+- execute a monitor: `POST /api/v1/tenants/{tenant_id}/continuous-monitors/{monitor_id}/runs`
+- inspect monitors and review alerts: `GET /api/v1/tenants/{tenant_id}/continuous-monitors`
+
 Collection execution is a worker/service contract rather than a public unauthenticated HTTP route.
 The worker must resolve the registered credential reference through an approved secret provider and
 instantiate the matching adapter.
@@ -384,11 +421,13 @@ ADK and Vertex AI Agent Engine adapter:
 pip install -e '.[cloud]'
 export GOOGLE_CLOUD_PROJECT=your-project
 export GOOGLE_CLOUD_LOCATION=us-central1
-python scripts/deploy_adk_agent.py --agent engagement-director --dry-run
+python scripts/run_agent_evaluations.py --mode contract
+python scripts/deploy_adk_agent.py --plan --output var/agent-engine-plan.json
+python scripts/deploy_adk_agent.py --agent engagement-director
 ```
 
-A future Pub/Sub subscriber can call the same worker/orchestrator interfaces. Queue
-acknowledgements must occur only after the state transaction commits.
+Queue subscribers call the same worker/orchestrator interfaces and acknowledge
+delivery only after the canonical state transaction commits.
 
 ## Repository boundaries
 
@@ -399,6 +438,9 @@ acknowledgements must occur only after the state transaction commits.
 - `src/assuranceos/connectors/`: grants, runs, checkpoints, transports, and provider adapters;
 - `src/assuranceos/control_testing/`: signed registry, reconciliation, sampling, runtimes, manifests, and worker adapter;
 - `src/assuranceos/adjudication/`: finding lifecycle, skeptic contradiction search, remediation, and independent retest;
+- `src/assuranceos/onboarding.py`: source-backed organization resolution and profile review;
+- `src/assuranceos/monitoring.py`: released-test monitors and deduplicated review alerts;
+- `src/assuranceos/reporting/`: access-aware retrieval, claim graph, report rendering, and issuance;
 - `src/assuranceos/governance/`: agent identity, gateway, Model Armor, telemetry, model clients, and the orchestration task handler;
 - `migrations/`: Alembic database history;
 - `agents/`: signed agent contracts and ADK entrypoints;
@@ -407,7 +449,4 @@ acknowledgements must occur only after the state transaction commits.
 - `examples/workflows/`: executable workflow definitions;
 - `demo/asteria/`: synthetic source systems and ground truth;
 - `infrastructure/terraform/`: compact Google Cloud-first foundation;
-- `apps/`: unchanged through Component 5.
-
-This remains a hackathon backend, not a production audit system. It deliberately fails closed when
-evidence or approvals are missing, and it contains synthetic data only.
+- `apps/web/`: the responsive lifecycle cockpit and evaluator proof surface.

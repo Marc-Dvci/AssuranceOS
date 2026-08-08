@@ -47,7 +47,9 @@ def main() -> None:
         release["signature"] = "release.signature.json"
         release["release_key_id"] = args.key_id
         manifest["release"] = release
-        manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+        manifest_path.write_text(
+            yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8", newline="\n"
+        )
 
         document = build_release_document(
             agent_dir=agent_dir,
@@ -57,10 +59,14 @@ def main() -> None:
         )
         signature = sign_release_document(document, private_key=loaded, key_id=args.key_id)
         (agent_dir / "release.json").write_text(
-            json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            json.dumps(document, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
         )
         (agent_dir / "release.signature.json").write_text(
-            json.dumps(signature, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            json.dumps(signature, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+            newline="\n",
         )
     print("Released 19 signed agent packages.")
 

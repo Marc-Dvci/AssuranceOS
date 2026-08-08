@@ -1749,6 +1749,246 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows:
+    post:
+      summary: Start Onboarding
+      operationId: start_onboarding_api_v1_tenants__tenant_id__onboarding_workflows_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingStartInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Start Onboarding Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}:
+    get:
+      summary: Get Onboarding
+      operationId: get_onboarding_api_v1_tenants__tenant_id__onboarding_workflows__workflow_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Onboarding Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows  Workflow Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/sources:
+    post:
+      summary: Capture Onboarding Source
+      operationId: capture_onboarding_source_api_v1_tenants__tenant_id__onboarding_workflows__workflow_id__sources_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicSourceInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Capture Onboarding Source Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows  Workflow Id  Sources Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/facts:
+    post:
+      summary: Propose Onboarding Fact
+      operationId: propose_onboarding_fact_api_v1_tenants__tenant_id__onboarding_workflows__workflow_id__facts_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FactProposalInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Propose Onboarding Fact Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows  Workflow Id  Facts Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/facts/{fact_id}/decision:
+    post:
+      summary: Decide Onboarding Fact
+      operationId: decide_onboarding_fact_api_v1_tenants__tenant_id__onboarding_workflows__workflow_id__facts__fact_id__decision_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      - name: fact_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Fact Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FactDecisionInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Decide Onboarding Fact Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows  Workflow Id  Facts  Fact Id  Decision Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/onboarding-workflows/{workflow_id}/approval:
+    post:
+      summary: Approve Onboarding
+      operationId: approve_onboarding_api_v1_tenants__tenant_id__onboarding_workflows__workflow_id__approval_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingApprovalRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Approve Onboarding Api V1 Tenants  Tenant Id  Onboarding
+                  Workflows  Workflow Id  Approval Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/tenants/{tenant_id}/connectors:
     post:
       summary: Register Connector
@@ -2101,6 +2341,110 @@ paths:
                 additionalProperties: true
                 title: Response Get Control Test Run Api V1 Tenants  Tenant Id  Control
                   Test Runs  Run Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/continuous-monitors:
+    post:
+      summary: Activate Continuous Monitor
+      operationId: activate_continuous_monitor_api_v1_tenants__tenant_id__continuous_monitors_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorDefinitionInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Activate Continuous Monitor Api V1 Tenants  Tenant
+                  Id  Continuous Monitors Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: Continuous Monitor Overview
+      operationId: continuous_monitor_overview_api_v1_tenants__tenant_id__continuous_monitors_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Continuous Monitor Overview Api V1 Tenants  Tenant
+                  Id  Continuous Monitors Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/continuous-monitors/{monitor_id}/runs:
+    post:
+      summary: Execute Continuous Monitor
+      operationId: execute_continuous_monitor_api_v1_tenants__tenant_id__continuous_monitors__monitor_id__runs_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: monitor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Monitor Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorExecutionInput'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Execute Continuous Monitor Api V1 Tenants  Tenant
+                  Id  Continuous Monitors  Monitor Id  Runs Post
         '422':
           description: Validation Error
           content:
@@ -3722,15 +4066,9 @@ paths:
       description: 'File the remediation in its external system, at most once.
 
 
-        No writer is passed here, so an action registered against Jira or ServiceNow
+        A write adapter is resolved from exactly one active tenant-owned connector.
 
-        is refused rather than silently filed nowhere. Live provider credentials are
-
-        resolved through the connector registry in a deployed environment; until one
-
-        is configured, this endpoint serves the ``none`` case and reports the mismatch
-
-        for the others instead of pretending to have written.'
+        Ambiguous or incomplete configuration is refused before any provider call.'
       operationId: sync_remediation_ticket_api_v1_tenants__tenant_id__remediation_actions__action_id__ticket_post
       security:
       - HTTPBearer: []
@@ -3892,17 +4230,140 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /judge:
+  /api/v1/tenants/{tenant_id}/cockpit:
     get:
-      summary: Judge Mode
-      operationId: judge_mode_judge_get
+      summary: Product Cockpit
+      description: The bounded live read model shared by the product's lifecycle routes.
+      operationId: product_cockpit_api_v1_tenants__tenant_id__cockpit_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
       responses:
         '200':
           description: Successful Response
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
+                type: object
+                additionalProperties: true
+                title: Response Product Cockpit Api V1 Tenants  Tenant Id  Cockpit
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/judge/overview:
+    get:
+      summary: Judge Overview
+      operationId: judge_overview_api_v1_judge_overview_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JudgeOverviewResponse'
+      security:
+      - HTTPBearer: []
+  /api/v1/evaluations/summary:
+    get:
+      summary: Agent Evaluation Summary
+      operationId: agent_evaluation_summary_api_v1_evaluations_summary_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationSummaryResponse'
+      security:
+      - HTTPBearer: []
+  /api/v1/judge/ground-truth:
+    get:
+      summary: Judge Ground Truth
+      operationId: judge_ground_truth_api_v1_judge_ground_truth_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroundTruthResponse'
+      security:
+      - HTTPBearer: []
+  /api/v1/judge/proofs/prompt-injection:
+    post:
+      summary: Replay Prompt Injection
+      description: Replay the published attack through the same deterministic runtime
+        guardrail.
+      operationId: replay_prompt_injection_api_v1_judge_proofs_prompt_injection_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptInjectionProofResponse'
+      security:
+      - HTTPBearer: []
+  /api/v1/judge/proofs/idempotency:
+    post:
+      summary: Replay Idempotent Remediation
+      description: Replay the canonical assurance loop and expose its duplicate-action
+        proofs.
+      operationId: replay_idempotent_remediation_api_v1_judge_proofs_idempotency_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdempotencyProofResponse'
+      security:
+      - HTTPBearer: []
+  /api/v1/tenants/{tenant_id}/traces/{trace_id}:
+    get:
+      summary: Get Correlated Trace
+      operationId: get_correlated_trace_api_v1_tenants__tenant_id__traces__trace_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: trace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Trace Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Correlated Trace Api V1 Tenants  Tenant Id  Traces  Trace
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     AdjudicateFindingRequest:
@@ -3930,6 +4391,52 @@ components:
       - reason
       - idempotency_key
       title: AdjudicateFindingRequest
+    AgentReleaseProof:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        display_name:
+          type: string
+          title: Display Name
+        version:
+          type: string
+          title: Version
+        owner:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Owner
+        release_status:
+          type: string
+          const: signed
+          title: Release Status
+        release_digest:
+          type: string
+          title: Release Digest
+        tool_count:
+          type: integer
+          title: Tool Count
+        human_gates:
+          items:
+            type: string
+          type: array
+          title: Human Gates
+        deployment_target:
+          type: string
+          title: Deployment Target
+      type: object
+      required:
+      - agent_id
+      - display_name
+      - version
+      - owner
+      - release_status
+      - release_digest
+      - tool_count
+      - human_gates
+      - deployment_target
+      title: AgentReleaseProof
     ApprovePackRequest:
       properties:
         reason:
@@ -3962,6 +4469,35 @@ components:
       required:
       - reason
       title: ApprovePlanRequest
+    ArmorDetectorProof:
+      properties:
+        detector:
+          type: string
+          title: Detector
+        category:
+          type: string
+          title: Category
+        severity:
+          type: string
+          title: Severity
+        match_count:
+          type: integer
+          title: Match Count
+        excerpt_digest:
+          type: string
+          title: Excerpt Digest
+        detail:
+          type: string
+          title: Detail
+      type: object
+      required:
+      - detector
+      - category
+      - severity
+      - match_count
+      - excerpt_digest
+      - detail
+      title: ArmorDetectorProof
     AssessMaterialityRequest:
       properties:
         inputs:
@@ -4487,6 +5023,26 @@ components:
         happens to live, so the compilation record can state what the graph was a
 
         function of.'
+    ComponentProof:
+      properties:
+        name:
+          type: string
+          title: Name
+        status:
+          type: string
+          enum:
+          - operational
+          - attention
+          title: Status
+        proof:
+          type: string
+          title: Proof
+      type: object
+      required:
+      - name
+      - status
+      - proof
+      title: ComponentProof
     ConnectorInstanceInput:
       properties:
         connector_key:
@@ -4696,6 +5252,67 @@ components:
       - period_end
       - datasets
       title: ControlTestReproductionRequest
+    ControlTestRunRequest:
+      properties:
+        test_id:
+          type: string
+          title: Test Id
+        version:
+          type: string
+          title: Version
+        purpose:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Purpose
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        requested_by:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Requested By
+        idempotency_key:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Idempotency Key
+        engagement_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+        task_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Task Id
+        parameters:
+          additionalProperties: true
+          type: object
+          title: Parameters
+        datasets:
+          items:
+            $ref: '#/components/schemas/ControlTestDataset'
+          type: array
+          title: Datasets
+      type: object
+      required:
+      - test_id
+      - version
+      - purpose
+      - period_start
+      - period_end
+      - requested_by
+      - idempotency_key
+      - datasets
+      title: ControlTestRunRequest
     CoverageRecord:
       properties:
         source:
@@ -4848,6 +5465,51 @@ components:
       required:
       - task_key
       title: DependencyDefinition
+    DeploymentProof:
+      properties:
+        target:
+          type: string
+          title: Target
+        project:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Project
+        region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Region
+        revision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revision
+        service:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Service
+        configuration:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Configuration
+        infrastructure_commit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Infrastructure Commit
+      type: object
+      required:
+      - target
+      - project
+      - region
+      - revision
+      - service
+      - configuration
+      - infrastructure_commit
+      title: DeploymentProof
     DisputeGround:
       type: string
       enum:
@@ -4881,6 +5543,32 @@ components:
         change voids the quality review and the approval it was granted under, because
 
         both were given for text that no longer stands.'
+    EvaluationSummaryResponse:
+      properties:
+        passed:
+          type: boolean
+          title: Passed
+        agent_count:
+          type: integer
+          title: Agent Count
+        passed_agents:
+          type: integer
+          title: Passed Agents
+        case_count:
+          type: integer
+          title: Case Count
+        passed_cases:
+          type: integer
+          title: Passed Cases
+      additionalProperties: true
+      type: object
+      required:
+      - passed
+      - agent_count
+      - passed_agents
+      - case_count
+      - passed_cases
+      title: EvaluationSummaryResponse
     EvidenceExportRequest:
       properties:
         evidence_ids:
@@ -4983,6 +5671,71 @@ components:
       - actor_id
       - reason
       title: EvidenceRetentionRequest
+    FactDecisionInput:
+      properties:
+        decision:
+          type: string
+          enum:
+          - accept
+          - correct
+          - not_applicable
+          title: Decision
+        decided_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Decided By
+        reason:
+          type: string
+          maxLength: 4000
+          minLength: 3
+          title: Reason
+        corrected_value:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Corrected Value
+      type: object
+      required:
+      - decision
+      - decided_by
+      - reason
+      title: FactDecisionInput
+    FactProposalInput:
+      properties:
+        fact_key:
+          type: string
+          pattern: ^[a-z][a-z0-9_.-]{1,159}$
+          title: Fact Key
+        value:
+          title: Value
+        claim_type:
+          type: string
+          enum:
+          - observed
+          - proposed
+          - inference
+          - assertion
+          - unknown
+          title: Claim Type
+        snapshot_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Snapshot Id
+        confidence:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: 'null'
+          title: Confidence
+      type: object
+      required:
+      - fact_key
+      - value
+      - claim_type
+      title: FactProposalInput
     FactorAssertion:
       properties:
         factor:
@@ -5034,6 +5787,34 @@ components:
       - lease_expired
       - human_rejected
       title: FailureClass
+    FleetProof:
+      properties:
+        agent_count:
+          type: integer
+          title: Agent Count
+        released_count:
+          type: integer
+          title: Released Count
+        agents:
+          items:
+            $ref: '#/components/schemas/AgentReleaseProof'
+          type: array
+          title: Agents
+        managed_runtime:
+          $ref: '#/components/schemas/ManagedFleetProof'
+        evaluation:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Evaluation
+      type: object
+      required:
+      - agent_count
+      - released_count
+      - agents
+      - managed_runtime
+      title: FleetProof
     GateDecision:
       properties:
         actor_id:
@@ -5097,6 +5878,49 @@ components:
       - actor_id
       - reason
       title: GrantRevocationRequest
+    GroundTruthCondition:
+      properties:
+        id:
+          type: string
+          title: Id
+        expected:
+          type: string
+          title: Expected
+        source:
+          type: string
+          title: Source
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+      type: object
+      required:
+      - id
+      - expected
+      - source
+      title: GroundTruthCondition
+    GroundTruthResponse:
+      properties:
+        engagement:
+          type: string
+          title: Engagement
+        audit_period:
+          items:
+            type: string
+          type: array
+          title: Audit Period
+        seeded_conditions:
+          items:
+            $ref: '#/components/schemas/GroundTruthCondition'
+          type: array
+          title: Seeded Conditions
+      type: object
+      required:
+      - engagement
+      - audit_period
+      - seeded_conditions
+      title: GroundTruthResponse
     HTTPValidationError:
       properties:
         detail:
@@ -5115,6 +5939,53 @@ components:
       - defer
       - accept_risk
       title: HumanDecision
+    IdempotencyProofResponse:
+      properties:
+        tenant_id:
+          type: string
+          title: Tenant Id
+        engagement_id:
+          type: string
+          title: Engagement Id
+        finding_id:
+          type: string
+          title: Finding Id
+        remediation_action_id:
+          type: string
+          title: Remediation Action Id
+        remediation_opened_once:
+          type: boolean
+          title: Remediation Opened Once
+        external_correlation_key:
+          type: string
+          title: External Correlation Key
+        external_ticket_ref:
+          type: string
+          title: External Ticket Ref
+        external_ticket_filed_once:
+          type: boolean
+          title: External Ticket Filed Once
+        final_status:
+          type: string
+          title: Final Status
+        ground_truth_match:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Ground Truth Match
+      type: object
+      required:
+      - tenant_id
+      - engagement_id
+      - finding_id
+      - remediation_action_id
+      - remediation_opened_once
+      - external_correlation_key
+      - external_ticket_ref
+      - external_ticket_filed_once
+      - final_status
+      - ground_truth_match
+      title: IdempotencyProofResponse
     IssueReportRequest:
       properties:
         reason:
@@ -5131,6 +6002,31 @@ components:
       required:
       - reason
       title: IssueReportRequest
+    JudgeOverviewResponse:
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+          title: Generated At
+        release:
+          $ref: '#/components/schemas/ReleaseProof'
+        deployment:
+          $ref: '#/components/schemas/DeploymentProof'
+        fleet:
+          $ref: '#/components/schemas/FleetProof'
+        components:
+          items:
+            $ref: '#/components/schemas/ComponentProof'
+          type: array
+          title: Components
+      type: object
+      required:
+      - generated_at
+      - release
+      - deployment
+      - fleet
+      - components
+      title: JudgeOverviewResponse
     LaunchMode:
       type: string
       enum:
@@ -5138,6 +6034,57 @@ components:
       - preflight_then_approval
       - automatic
       title: LaunchMode
+    ManagedFleetProof:
+      properties:
+        status:
+          type: string
+          enum:
+          - release_qualified
+          - cloud_verified
+          title: Status
+        cloud_verified:
+          type: boolean
+          title: Cloud Verified
+        source:
+          type: string
+          title: Source
+        deployed_count:
+          type: integer
+          title: Deployed Count
+        expected_count:
+          type: integer
+          title: Expected Count
+        agents:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Agents
+        memory_bank:
+          $ref: '#/components/schemas/MemoryBankProof'
+        verification_errors:
+          items:
+            type: string
+          type: array
+          title: Verification Errors
+        deployed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deployed At
+      type: object
+      required:
+      - status
+      - cloud_verified
+      - source
+      - deployed_count
+      - expected_count
+      - agents
+      - memory_bank
+      - verification_errors
+      - deployed_at
+      title: ManagedFleetProof
     MaterialityInputs:
       properties:
         population_size:
@@ -5227,6 +6174,36 @@ components:
         a score computed under an old policy stays interpretable after the policy
 
         changes.'
+    MemoryBankProof:
+      properties:
+        configured:
+          type: boolean
+          title: Configured
+        service:
+          type: string
+          title: Service
+        generation:
+          type: string
+          title: Generation
+        tenant_isolation:
+          type: string
+          title: Tenant Isolation
+        revision_history:
+          type: boolean
+          title: Revision History
+        configuration:
+          additionalProperties: true
+          type: object
+          title: Configuration
+      type: object
+      required:
+      - configured
+      - service
+      - generation
+      - tenant_isolation
+      - revision_history
+      - configuration
+      title: MemoryBankProof
     MissedOccurrencePolicy:
       type: string
       enum:
@@ -5234,6 +6211,116 @@ components:
       - launch_latest
       - skip
       title: MissedOccurrencePolicy
+    MonitorDefinitionInput:
+      properties:
+        monitor_key:
+          type: string
+          maxLength: 128
+          minLength: 3
+          title: Monitor Key
+        title:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Title
+        test_id:
+          type: string
+          maxLength: 128
+          minLength: 3
+          title: Test Id
+        test_version:
+          type: string
+          pattern: ^\d+\.\d+\.\d+$
+          title: Test Version
+        owner_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Owner Ref
+        reviewer_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Reviewer Ref
+        source_freshness_seconds:
+          type: integer
+          minimum: 60.0
+          title: Source Freshness Seconds
+        minimum_completeness:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Minimum Completeness
+        exception_threshold:
+          type: integer
+          minimum: 0.0
+          title: Exception Threshold
+          default: 0
+        deduplication_window_seconds:
+          type: integer
+          minimum: 60.0
+          title: Deduplication Window Seconds
+        alert_budget:
+          type: integer
+          minimum: 1.0
+          title: Alert Budget
+        response_sla_seconds:
+          type: integer
+          minimum: 60.0
+          title: Response Sla Seconds
+        independence_preserved:
+          type: boolean
+          title: Independence Preserved
+        approval_ref:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Approval Ref
+        approved_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Approved By
+        configuration:
+          additionalProperties: true
+          type: object
+          title: Configuration
+      type: object
+      required:
+      - monitor_key
+      - title
+      - test_id
+      - test_version
+      - owner_ref
+      - reviewer_ref
+      - source_freshness_seconds
+      - minimum_completeness
+      - deduplication_window_seconds
+      - alert_budget
+      - response_sla_seconds
+      - independence_preserved
+      - approval_ref
+      - approved_by
+      title: MonitorDefinitionInput
+    MonitorExecutionInput:
+      properties:
+        source_observed_at:
+          type: string
+          format: date-time
+          title: Source Observed At
+        source_completeness:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Source Completeness
+        test_request:
+          $ref: '#/components/schemas/ControlTestRunRequest'
+      type: object
+      required:
+      - source_observed_at
+      - source_completeness
+      - test_request
+      title: MonitorExecutionInput
     OccurrenceDecision:
       properties:
         actor_id:
@@ -5279,6 +6366,51 @@ components:
       - rating
       - reason
       title: OfficialRatingRequest
+    OnboardingApprovalRequest:
+      properties:
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Approved By
+      type: object
+      title: OnboardingApprovalRequest
+    OnboardingStartInput:
+      properties:
+        workflow_key:
+          type: string
+          maxLength: 128
+          minLength: 3
+          title: Workflow Key
+        company_name:
+          type: string
+          maxLength: 255
+          minLength: 2
+          title: Company Name
+        primary_domain:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Primary Domain
+        headquarters_country:
+          anyOf:
+          - type: string
+            maxLength: 2
+            minLength: 2
+          - type: 'null'
+          title: Headquarters Country
+        industry:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Industry
+      type: object
+      required:
+      - workflow_key
+      - company_name
+      title: OnboardingStartInput
     OpenRemediationRequest:
       properties:
         owner_ref:
@@ -5400,6 +6532,41 @@ components:
       required:
       - request
       title: PrepareReportRequest
+    PromptInjectionProofResponse:
+      properties:
+        source:
+          type: string
+          title: Source
+        verdict:
+          type: string
+          title: Verdict
+        tainted:
+          type: boolean
+          title: Tainted
+        instruction_neutralized:
+          type: boolean
+          title: Instruction Neutralized
+        canonical_state_mutated:
+          type: boolean
+          title: Canonical State Mutated
+        detectors:
+          items:
+            $ref: '#/components/schemas/ArmorDetectorProof'
+          type: array
+          title: Detectors
+        sanitized_sha256:
+          type: string
+          title: Sanitized Sha256
+      type: object
+      required:
+      - source
+      - verdict
+      - tainted
+      - instruction_neutralized
+      - canonical_state_mutated
+      - detectors
+      - sanitized_sha256
+      title: PromptInjectionProofResponse
     ProposeFindingRequest:
       properties:
         finding:
@@ -5576,6 +6743,67 @@ components:
         ``confidence`` is the agent''s, and it is never sufficient on its own: the
 
         human gate is a separate record, not a threshold on this number.'
+    PublicSourceInput:
+      properties:
+        source_url:
+          type: string
+          maxLength: 4000
+          minLength: 8
+          title: Source Url
+        publisher:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Publisher
+        source_quality:
+          type: string
+          enum:
+          - official
+          - authoritative
+          - reputable
+          title: Source Quality
+        content:
+          type: string
+          maxLength: 2000000
+          minLength: 1
+          title: Content
+        mime_type:
+          type: string
+          maxLength: 128
+          title: Mime Type
+          default: text/html
+        retrieved_at:
+          type: string
+          format: date-time
+          title: Retrieved At
+        effective_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective At
+        excerpt_locator:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Excerpt Locator
+        fetched_under_source_policy:
+          type: boolean
+          title: Fetched Under Source Policy
+        discovery_snippet:
+          type: boolean
+          title: Discovery Snippet
+          default: false
+      type: object
+      required:
+      - source_url
+      - publisher
+      - source_quality
+      - content
+      - retrieved_at
+      - fetched_under_source_policy
+      title: PublicSourceInput
     QualitativeFactor:
       type: string
       enum:
@@ -5782,6 +7010,33 @@ components:
       required:
       - standard
       title: RegisterStandardRequest
+    ReleaseProof:
+      properties:
+        version:
+          type: string
+          title: Version
+        environment:
+          type: string
+          title: Environment
+        commit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Commit
+        model_mode:
+          type: string
+          title: Model Mode
+        model:
+          type: string
+          title: Model
+      type: object
+      required:
+      - version
+      - environment
+      - commit
+      - model_mode
+      - model
+      title: ReleaseProof
     ReportRequest:
       properties:
         template:

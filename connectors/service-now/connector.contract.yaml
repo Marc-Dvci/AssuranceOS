@@ -1,6 +1,6 @@
 schema: assurance.connector_contract.v1
 connector_key: service-now
-status: contract_defined
+status: integration_ready
 read_only: true
 streams:
 - incidents

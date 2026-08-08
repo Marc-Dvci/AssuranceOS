@@ -6,6 +6,10 @@ output "evidence_bucket" {
   value = google_storage_bucket.evidence.name
 }
 
+output "agent_engine_staging_bucket" {
+  value = google_storage_bucket.agent_staging.url
+}
+
 output "cloud_sql_connection_name" {
   value = google_sql_database_instance.primary.connection_name
 }

@@ -151,7 +151,7 @@ def build_adk_agent(
     if package is None:
         raise ValueError(f"agent package was not found: {agent_dir}")
     instruction = (agent_dir / "system_prompt.md").read_text(encoding="utf-8")
-    gateway = PolicyGateway()
+    policy_gateway = PolicyGateway()
     if trusted_execution_keys is None:
         key_id, public_key = _default_execution_key(agent_dir)
         trusted_execution_keys = {key_id: public_key}
@@ -167,7 +167,7 @@ def build_adk_agent(
             maximum_ttl=maximum_envelope_ttl,
         )
         envelope = verifier.verify(signed_envelope_json)
-        decision = gateway.authorize(package, envelope)
+        decision = policy_gateway.authorize(package, envelope)
         if not decision.allowed:
             raise ValueError(decision.reason)
         return {

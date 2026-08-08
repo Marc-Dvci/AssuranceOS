@@ -1,6 +1,6 @@
 schema: assurance.connector_contract.v1
 connector_key: google-cloud
-status: contract_defined
+status: implemented
 read_only: true
 streams:
 - iam_policies

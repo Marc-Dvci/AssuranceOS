@@ -198,14 +198,17 @@ def _drive() -> GoogleDriveFileConnector:
 
 def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
     with database.transaction() as session:
-        if TenantRepository(session).get(TENANT_ID) is None:
-            TenantRepository(session).add(
-                Tenant(
-                    tenant_id=TENANT_ID,
-                    slug="asteria-connectors",
-                    name="Asteria Systems DemoCo Connector Tenant",
-                )
+        existing = TenantRepository(session).get(TENANT_ID)
+        if existing is not None:
+            session.delete(existing)
+            session.flush()
+        TenantRepository(session).add(
+            Tenant(
+                tenant_id=TENANT_ID,
+                slug="asteria-connectors",
+                name="Asteria Systems DemoCo Connector Tenant",
             )
+        )
 
     service = ConnectorService(database, vault)
     definitions = [

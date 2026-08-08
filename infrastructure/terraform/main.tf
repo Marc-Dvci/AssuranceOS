@@ -155,6 +155,27 @@ resource "google_storage_bucket" "evidence" {
   depends_on = [google_project_service.required]
 }
 
+resource "google_storage_bucket" "agent_staging" {
+  name                        = "${var.project_id}-${local.prefix}-agent-staging"
+  location                    = var.region
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+
+  lifecycle_rule {
+    condition {
+      age = 14
+    }
+
+    action {
+      type = "Delete"
+    }
+  }
+
+  depends_on = [google_project_service.required]
+}
+
 resource "google_pubsub_topic" "outbox" {
   name                       = "${local.prefix}-outbox"
   message_retention_duration = "604800s"
@@ -188,6 +209,18 @@ resource "google_project_iam_member" "runtime_sql" {
   project = var.project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
+resource "google_project_iam_member" "runtime_agent_platform" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
+resource "google_storage_bucket_iam_member" "runtime_agent_staging" {
+  bucket = google_storage_bucket.agent_staging.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.runtime.email}"
 }
 
 resource "google_storage_bucket_iam_member" "runtime_evidence" {
@@ -325,6 +358,16 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
+        name  = "ASSURANCEOS_GEMINI_MODEL"
+        value = "gemini-3.6-flash"
+      }
+
+      env {
+        name  = "ASSURANCEOS_AGENT_ENGINE_STAGING_BUCKET"
+        value = "gs://${google_storage_bucket.agent_staging.name}"
+      }
+
+      env {
         name  = "ASSURANCEOS_AUTH_MODE"
         value = "jwt"
       }
@@ -438,10 +481,12 @@ resource "google_cloud_run_v2_service" "api" {
   depends_on = [
     google_project_service.required,
     google_project_iam_member.runtime_sql,
+    google_project_iam_member.runtime_agent_platform,
     google_secret_manager_secret_iam_member.runtime_database,
     google_secret_manager_secret_iam_member.runtime_export_signing,
     google_secret_manager_secret_iam_member.runtime_execution_signing,
     google_storage_bucket_iam_member.runtime_evidence,
+    google_storage_bucket_iam_member.runtime_agent_staging,
   ]
 }
 

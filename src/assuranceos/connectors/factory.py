@@ -5,9 +5,12 @@ from typing import Callable
 
 from .adapters import (
     ConfluencePageConnector,
+    EntraDirectoryConnector,
     GitHubPullRequestConnector,
     GoogleDriveFileConnector,
+    GoogleCloudIamConnector,
     JiraIssueConnector,
+    OktaDirectoryConnector,
 )
 from .credentials import CredentialResolver
 from .definitions import ConnectorInstanceView
@@ -42,6 +45,9 @@ class ConnectorFactory:
             "jira": JiraIssueConnector,
             "confluence": ConfluencePageConnector,
             "google_drive": GoogleDriveFileConnector,
+            "okta": OktaDirectoryConnector,
+            "entra": EntraDirectoryConnector,
+            "gcp_iam": GoogleCloudIamConnector,
         }
         builder = builders.get(instance.connector_type)
         if builder is None:

@@ -56,7 +56,7 @@ def test_execution_authority_binds_signed_scope_to_claimed_lease():
     assert envelope.lease_owner == "worker_1"
     assert envelope.attempt_count == 2
     assert envelope.agent_role == "skeptic"
-    assert envelope.agent_version == "0.7.0"
+    assert envelope.agent_version == "0.8.0"
     assert envelope.deadline == now + timedelta(minutes=5)
     assert envelope.allowed_tools == ["evidence.query", "contradictions.search"]
     assert envelope.token_budget == 12_000

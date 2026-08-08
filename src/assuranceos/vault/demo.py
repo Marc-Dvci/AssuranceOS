@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import shutil
+import stat
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -121,7 +123,16 @@ def _reset_demo(database: Database, object_root: Path) -> None:
             session.delete(tenant)
     tenant_root = object_root / EVIDENCE_DEMO_TENANT_ID
     if tenant_root.exists():
-        shutil.rmtree(tenant_root)
+        resolved_root = object_root.resolve()
+        resolved_tenant = tenant_root.resolve()
+        if resolved_tenant.parent != resolved_root:
+            raise RuntimeError("demo evidence reset escaped the configured object root")
+
+        def remove_readonly(function, path, _error):
+            os.chmod(path, stat.S_IWRITE)
+            function(path)
+
+        shutil.rmtree(resolved_tenant, onexc=remove_readonly)
     with database.transaction() as session:
         TenantRepository(session).add(
             Tenant(

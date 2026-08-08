@@ -21,6 +21,7 @@ was withdrawn — is behaving correctly.
 from __future__ import annotations
 
 import hashlib
+from importlib.metadata import PackageNotFoundError, version
 import json
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
@@ -44,8 +45,19 @@ from .exceptions import (
 )
 from .packs import LoadedAuditPack
 
-#: The platform version a pack's ``min_platform_version`` is compared against.
-PLATFORM_VERSION = "0.8.0"
+
+def installed_platform_version() -> str:
+    """Return the version embedded in the installed AssuranceOS distribution."""
+    try:
+        return version("assuranceos")
+    except PackageNotFoundError as exc:  # pragma: no cover - invalid source-only runtime
+        raise RuntimeError(
+            "AssuranceOS must be installed as a distribution before packs can compile"
+        ) from exc
+
+
+#: Runtime package identity used for Audit Pack compatibility admission.
+PLATFORM_VERSION = installed_platform_version()
 
 
 def _version_tuple(value: str) -> tuple[int, ...]:

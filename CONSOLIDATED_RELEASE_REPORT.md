@@ -1,55 +1,31 @@
-# AssuranceOS v0.8 consolidated release report
+# AssuranceOS 0.8 consolidated release
 
-## Scope
+AssuranceOS is a governed AI-native internal-audit platform, packaged as a
+single coherent product rather than a collection of agent demonstrations.
 
-This release consolidates Components 1–5 from v0.7 and adds Component 6 without modifying the frontend:
+## Product capabilities
 
-1. canonical domain database;
-2. durable engagement orchestrator;
-3. recurring audit scheduler and automatic launcher;
-4. content-addressed evidence vault and provenance layer;
-5. connector SDK and GitHub, Jira, Confluence, and Google Drive adapters;
-6. deterministic control-test engine and signed versioned test registry.
+1. Durable organization onboarding and approved company context.
+2. Risk scoring, audit-universe coverage, and capacity-aware plan proposals.
+3. Signed standards and Audit Pack compilation.
+4. Durable scheduled engagements with leases, retries, gates, and replay.
+5. Content-addressed evidence, provenance, custody, retention, and signed export.
+6. Read-only connector grants, durable cursors, and provider adapters.
+7. Signed deterministic Python and SQL control tests.
+8. A 19-role governed ADK fleet on Gemini 3.6 Flash.
+9. Signed agent identity, default-deny Agent Gateway, Model Armor, and traces.
+10. Human-gated findings, materiality, dispute, remediation, and retest.
+11. Evidence-grounded reports with claim graph verification.
+12. Continuous monitors that create review cases without bypassing adjudication.
+13. Tenant-isolated, review-gated Vertex AI Memory Bank.
+14. Operator cockpit and live evaluator proof workspace.
 
-The original implementation plan remains authoritative. Later components remain represented by explicit contracts and are not falsely claimed as complete.
+## Reproducible assurance
 
-## Component 6 delivered
+Release artifacts are content-addressed and signed. Judge Mode reads the running
+registries and canonical database, validates managed Agent Engine resources
+against package digests, and executes prompt-injection and idempotency proofs
+through product code.
 
-- Signed semantic-versioned control-test packages with immutable release hashes.
-- Database-backed release registry and canonical run, dataset-binding, and exception history.
-- Fail-closed JSON Schema validation for package manifests, parameters, input rows, and outputs.
-- Required-dataset, evidence-binding, population-count, and duplicate-primary-key controls.
-- Full-population and deterministic hash sampling.
-- Bounded, network-denied Python subprocess execution with static import/call policy.
-- Read-only SQL execution over ephemeral normalized SQLite datasets.
-- Typed test outcomes and exception taxonomy; technical failures remain distinct from control failures.
-- Input, execution, code, package, and result SHA-256 identities.
-- Run idempotency, tenant/engagement/task boundaries, audit events, and transactional outbox emission.
-- Exact-release reproducibility verification using the recorded immutable inputs.
-- Durable-orchestrator handler and authenticated tenant-scoped HTTP contracts.
-- Asteria demonstration covering both SCM and IAM procedures.
-
-## Released procedures
-
-- `SCM-01@2.0.0` — approved change before merge, Python, complete population.
-- `IAM-01@1.0.0` — timely terminated-user deprovisioning, SQL, complete population.
-
-Both packages include manifests, code/query, schemas, golden cases, file manifests, release metadata, and Ed25519 signatures. Test code cannot be changed without producing a different release identity.
-
-## Release verification
-
-- 125 automated tests passed.
-- Statement coverage: 87.11%.
-- Canonical schema: 43 tables and 7 Alembic migrations.
-- Fresh and populated upgrade reached `0007_control_test_engine`.
-- Alembic reported no model/migration drift.
-- 19 agent release signatures, the Audit Pack signature, and 2 control-test signatures verified.
-- Generated OpenAPI contains 54 paths.
-- Golden, orchestration, scheduling, evidence, connector, and control-test demonstrations passed.
-- Python compilation and repository validation passed.
-- The source artifact manifest and extracted ZIP are independently verified before release.
-- Every file under `apps/` is compared byte-for-byte with the v0.7 source release.
-
-## External validation boundary
-
-The implementation includes production-shaped execution and deployment contracts, but this sandbox cannot prove Docker runtime hardening, Cloud Run Job isolation, Terraform provider validation, real Google Cloud deployment, PostgreSQL locking under production concurrency, OIDC issuer integration, live provider OAuth/app installations, or Vertex AI Agent Engine execution. Those remain deployment-environment proofs, not hidden placeholders or reduced scope.
+The canonical release commands are documented in README.md and enforced by the
+CI and security workflows.

@@ -1,0 +1,123 @@
+name: assuranceos-local-privacy
+
+x-runtime-environment: &runtime-environment
+  ASSURANCEOS_ENV: local-privacy
+  ASSURANCEOS_DATABASE_URL: postgresql+psycopg://assuranceos:${ASSURANCEOS_DATABASE_PASSWORD:?Set ASSURANCEOS_DATABASE_PASSWORD}@postgres:5432/assuranceos
+  ASSURANCEOS_AUTO_CREATE_SCHEMA: "false"
+  ASSURANCEOS_AGENT_ROOT: /app/agents
+  ASSURANCEOS_DEMO_ROOT: /app/demo/asteria
+  ASSURANCEOS_CONTROL_TEST_ROOT: /app/tests-library
+  ASSURANCEOS_CONTROL_TEST_PUBLIC_KEY: /app/security/release-keys/control-test-release-public.pem
+  ASSURANCEOS_AUDIT_PACK_ROOT: /app/audit-packs
+  ASSURANCEOS_AUDIT_PACK_PUBLIC_KEY: /app/security/release-keys/audit-pack-release-public.pem
+  ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX: "false"
+  ASSURANCEOS_MODEL_MODE: local
+  ASSURANCEOS_LOCAL_PRIVACY_MODE: "true"
+  ASSURANCEOS_LOCAL_MODEL_URL: http://model:8080/v1
+  ASSURANCEOS_LOCAL_MODEL_ALLOWED_HOSTS: model
+  ASSURANCEOS_LOCAL_MODEL_NAME: ${ASSURANCEOS_LOCAL_MODEL_NAME:?Set ASSURANCEOS_LOCAL_MODEL_NAME}
+  ASSURANCEOS_EVIDENCE_STORAGE: local
+  ASSURANCEOS_EVIDENCE_ROOT: /app/var/evidence
+  ASSURANCEOS_EVIDENCE_EXPORT_ROOT: /app/var/evidence-exports
+  ASSURANCEOS_AUTH_MODE: jwt
+  ASSURANCEOS_AUTH_JWT_ISSUER: urn:assuranceos:local-privacy
+  ASSURANCEOS_AUTH_JWT_AUDIENCE: assuranceos-local
+  ASSURANCEOS_AUTH_JWT_SECRET: ${ASSURANCEOS_AUTH_JWT_SECRET:?Set a 32-byte ASSURANCEOS_AUTH_JWT_SECRET}
+  ASSURANCEOS_AUTH_JWT_ALGORITHMS: HS256
+  ASSURANCEOS_TRUSTED_HOSTS: localhost,127.0.0.1,api
+  ASSURANCEOS_EXPORT_SIGNING_PRIVATE_KEY: /run/secrets/export-signing-private.pem
+  ASSURANCEOS_EXPORT_SIGNING_KEY_ID: ${ASSURANCEOS_EXPORT_SIGNING_KEY_ID:-local-privacy-export-v1}
+  ASSURANCEOS_EXECUTION_SIGNING_PRIVATE_KEY: /run/secrets/execution-signing-private.pem
+  ASSURANCEOS_EXECUTION_ENVELOPE_PUBLIC_KEY: /app/security/release-keys/execution-envelope-public.pem
+  ASSURANCEOS_EXECUTION_SIGNING_KEY_ID: assuranceos-execution-v1
+
+x-runtime-volumes: &runtime-volumes
+  - assuranceos-evidence:/app/var/evidence
+  - assuranceos-evidence-exports:/app/var/evidence-exports
+  - ${ASSURANCEOS_EXPORT_SIGNING_PRIVATE_KEY_HOST:?Set ASSURANCEOS_EXPORT_SIGNING_PRIVATE_KEY_HOST}:/run/secrets/export-signing-private.pem:ro
+  - ${ASSURANCEOS_EXECUTION_SIGNING_PRIVATE_KEY_HOST:?Set ASSURANCEOS_EXECUTION_SIGNING_PRIVATE_KEY_HOST}:/run/secrets/execution-signing-private.pem:ro
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777
+    environment:
+      POSTGRES_DB: assuranceos
+      POSTGRES_USER: assuranceos
+      POSTGRES_PASSWORD: ${ASSURANCEOS_DATABASE_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assuranceos -d assuranceos"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - assuranceos-postgres:/var/lib/postgresql/data
+    networks: [private]
+    restart: unless-stopped
+
+  model:
+    image: ${ASSURANCEOS_LLAMA_IMAGE:?Set an immutable llama.cpp image reference by digest}
+    command:
+      - --model
+      - /models/${ASSURANCEOS_MODEL_FILE:?Set ASSURANCEOS_MODEL_FILE}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --ctx-size
+      - ${ASSURANCEOS_MODEL_CONTEXT_SIZE:-16384}
+      - --parallel
+      - "1"
+      - --jinja
+    volumes:
+      - ${ASSURANCEOS_MODEL_DIR:?Set ASSURANCEOS_MODEL_DIR}:/models:ro
+    ports:
+      - 127.0.0.1:5000:8080
+    networks: [private]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: ../..
+    command: ["sh", "-c", "python scripts/migrate.py && python scripts/sync_control_test_registry.py"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: *runtime-environment
+    volumes: *runtime-volumes
+    networks: [private]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  api:
+    build:
+      context: ../..
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      model:
+        condition: service_started
+    environment: *runtime-environment
+    volumes: *runtime-volumes
+    ports:
+      - 127.0.0.1:8080:8080
+    networks: [private]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+networks:
+  private:
+    internal: true
+
+volumes:
+  assuranceos-postgres:
+  assuranceos-evidence:
+  assuranceos-evidence-exports:

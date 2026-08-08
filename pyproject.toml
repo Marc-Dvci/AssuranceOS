@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
+  "starlette>=1.3.1,<2",
   "uvicorn[standard]>=0.32,<1",
   "pydantic>=2.9,<3",
   "PyYAML>=6.0,<7",
@@ -19,7 +20,8 @@ dependencies = [
   "python-dateutil>=2.9,<3",
   "httpx>=0.27,<1",
   "PyJWT[crypto]>=2.9,<3",
-  "cryptography>=43,<47",
+  "cryptography>=50,<51",
+  "python-dotenv>=1.1,<2",
   # Windows ships no system IANA database; the recurring audit scheduler resolves
   # IANA zone names through zoneinfo and fails closed without it.
   "tzdata>=2024.1; sys_platform == 'win32'",
@@ -35,9 +37,12 @@ otel = [
   "opentelemetry-exporter-otlp-proto-http>=1.27,<2",
 ]
 dev = [
-  "pytest>=8.3,<9",
+  "pytest>=9.0.3,<10",
   "pytest-cov>=6,<8",
   "ruff>=0.7,<1",
+  "httpx2>=2.7,<3",
+  "pip-audit>=2.9,<3",
+  "bandit>=1.8,<2",
   # The OpenTelemetry bridge is exercised for real in the test suite rather than
   # assumed to work when the optional extra is present.
   "opentelemetry-api>=1.27,<2",
@@ -51,6 +56,7 @@ gcp-runtime = [
 ]
 agent-cloud = [
   "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+  "google-genai>=2.9,<3",
 ]
 cloud = [
   "google-cloud-storage>=2.18,<4",
@@ -58,6 +64,7 @@ cloud = [
   "google-cloud-pubsub>=2.27,<3",
   "google-cloud-logging>=3.11,<4",
   "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+  "google-genai>=2.9,<3",
 ]
 
 [tool.setuptools.packages.find]
@@ -67,6 +74,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
 
 [tool.ruff]
 line-length = 100

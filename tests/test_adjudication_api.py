@@ -14,7 +14,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 import assuranceos.api as api
-from assuranceos.db.models import Engagement, Tenant
+from assuranceos.adjudication import TicketRef
+from assuranceos.db.models import ConnectorInstance, Engagement, Tenant
 from assuranceos.db.repositories import TenantRepository
 from assuranceos.db.session import Database
 from assuranceos.security import Permission, ROLE_PERMISSIONS
@@ -540,4 +541,71 @@ def test_filing_a_ticket_without_a_configured_writer_is_a_bad_gateway(client):
         f"/api/v1/tenants/{TENANT}/remediation-actions/{action_id}/ticket"
     )
     assert refused.status_code == 502
-    assert "files into 'none'" in refused.json()["detail"]
+    assert "exactly one active jira connector; found 0" in refused.json()["detail"]
+
+
+def test_filing_a_ticket_resolves_the_tenant_connector(client, monkeypatch):
+    finding_id = client.post(
+        f"/api/v1/tenants/{TENANT}/engagements/{ENGAGEMENT}/findings", json=proposal()
+    ).json()["finding_id"]
+    clear_gates(client, finding_id)
+    client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/decisions",
+        json={
+            "decision": "approve",
+            "reason": "Confirmed against the change register.",
+            "idempotency_key": "approve-writer",
+            "actor_id": "alice.auditor@asteria.example",
+        },
+    )
+    action_id = client.post(
+        f"/api/v1/tenants/{TENANT}/findings/{finding_id}/remediation",
+        json={
+            "owner_ref": "platform-team@asteria.example",
+            "due_date": "2026-10-31",
+            "action_plan": "Enforce the ticket in the merge gate.",
+            "idempotency_key": "rem-writer",
+            "external_system": "jira",
+            "external_target": "AUD",
+        },
+    ).json()["action_id"]
+    with api.database.transaction() as session:
+        session.add(
+            ConnectorInstance(
+                connector_instance_id="con_jira",
+                tenant_id=TENANT,
+                connector_key="jira-remediation",
+                connector_type="jira",
+                display_name="Jira remediation",
+                base_url="https://jira.example",
+                status="active",
+                credential_ref="env://JIRA_HEADERS",
+                config_json={"issue_type": "Audit Finding"},
+                last_health_details_json={},
+            )
+        )
+
+    selected = []
+
+    class StubWriter:
+        system = "jira"
+
+        def create_or_get(self, request):
+            return TicketRef(
+                system="jira",
+                external_ref="AUD-41",
+                url="https://jira.example/browse/AUD-41",
+                created=True,
+            )
+
+    def build(instance):
+        selected.append(instance)
+        return StubWriter()
+
+    monkeypatch.setattr(api, "writer_from_connector", build)
+    response = client.post(
+        f"/api/v1/tenants/{TENANT}/remediation-actions/{action_id}/ticket"
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["external_ref"] == "AUD-41"
+    assert selected[0].connector_key == "jira-remediation"

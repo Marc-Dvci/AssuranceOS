@@ -171,6 +171,12 @@ def run_golden_engagement(demo_root: Path, ledger: AuditLedger) -> dict:
                     "population": test_result["population_count"],
                     "exceptions": test_result["exception_count"],
                 },
+                evidence_ids_json=finding_payload["evidence_ids"],
+                exception_keys_json=[
+                    str(item.get("pull_request_id") or item.get("subject_ref") or "")
+                    for item in exceptions
+                    if item.get("pull_request_id") or item.get("subject_ref")
+                ],
             )
         )
         AuditEventRepository(session).append_many(events)

@@ -37,6 +37,8 @@ from .findings import (
     Retest,
 )
 from .governance import AgentRelease, AuditEventRow, ExecutionTrace, IdempotencyRecord, OutboxEvent
+from .monitoring import ContinuousMonitor, MonitorAlert, MonitorRun
+from .onboarding import OnboardingWorkflow, OrganizationFactDecision, PublicSourceSnapshot
 from .organization import (
     AuditUniverseEntity,
     Control,
@@ -87,6 +89,7 @@ __all__ = [
     "ControlTestException",
     "ControlTestRelease",
     "ControlTestRun",
+    "ContinuousMonitor",
     "CriteriaCrosswalk",
     "CriteriaMapping",
     "Criterion",
@@ -105,12 +108,17 @@ __all__ = [
     "IdempotencyRecord",
     "ManagementResponse",
     "MaterialityAssessment",
+    "MonitorAlert",
+    "MonitorRun",
     "OrganizationFact",
+    "OrganizationFactDecision",
     "OrganizationProfile",
+    "OnboardingWorkflow",
     "OutboxEvent",
     "PackCompilation",
     "PlanProposal",
     "QualityReview",
+    "PublicSourceSnapshot",
     "ReasoningSpanRecord",
     "ReportVersion",
     "RemediationAction",
