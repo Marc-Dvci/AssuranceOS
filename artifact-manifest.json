@@ -106,8 +106,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 32529,
-      "sha256": "655dcf786c34f102fa52f8ca15c46331ada3063154a89c514ad8d693c65626e5"
+      "size_bytes": 32582,
+      "sha256": "79b8ce5aac2e2cf96f3910972f948e6958edad5047f0a0f2b202c41016115701"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -2511,8 +2511,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 18966,
-      "sha256": "a5bed3dd6b8df7029f70dcf29d03f5ab5300c5ba035c69beacfc54b40bd309b8"
+      "size_bytes": 19465,
+      "sha256": "4d824d9f5b612c308f19b5046cfe9e2046b595c15f166261f4824e3064cfba25"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",

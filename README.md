@@ -90,11 +90,11 @@ independent of both the agent that raised the finding and the team that fixed it
 
 The corpus it runs on is a synthetic company, not a fixture: 56 files across ten
 source systems, with seventeen deliberate conditions in it. Eight must be
-reported, four must be suppressed with a stated reason, two controls must be
-reported as working, and one is an attack that must be contained without
-changing the audit result. Raising all seventeen is as wrong as raising none, so
-the run reports itself against that ground truth rather than against its own
-execution.
+reported, five must be suppressed with a stated reason, two controls must be
+reported as working, one is an observation rather than a population test, and
+one is an attack that must be contained without changing the audit result.
+Raising all seventeen is as wrong as raising none, so the run reports itself
+against that ground truth rather than against its own execution.
 
 The hardest of them needs three systems at once. A customer contract amendment
 tightened a P1 response commitment from 8 hours to 4; the incident response plan
