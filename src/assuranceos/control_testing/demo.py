@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from datetime import date
+
 from pathlib import Path
 
+from assuranceos.corpus import PERIOD_END, PERIOD_START, AsteriaCorpus
 from assuranceos.db.models import Tenant
 from assuranceos.db.repositories import TenantRepository
 from assuranceos.db.session import Database
 
-from .definitions import ControlTestDataset, ControlTestRunRequest
+from .definitions import ControlTestRunRequest
 from .registry import ControlTestRegistry
 from .service import ControlTestService
 
@@ -24,96 +25,102 @@ def build_service(database: Database, root: Path) -> ControlTestService:
     return service
 
 
-def run_control_test_demo(database: Database, root: Path) -> dict:
+def run_control_test_demo(
+    database: Database, root: Path, tenant_id: str | None = None
+) -> dict:
+    """Run every released control test over the collected Asteria corpus.
+
+    The populations are read from the corpus rather than written here. That is
+    the point of the exercise: the same signed test, in the same sandbox, over
+    the volume a real engagement produces — forty-four merges across six
+    repositories and eighteen leavers across two workforce feeds — rather than a
+    hand-picked trio that can only produce the answer the demonstration wanted.
+
+    SLA-01 is the case that needs three systems at once. Nothing inside the
+    incident process can answer it, because the obligation is written in a
+    contract and the incident process has never read one.
+    """
+    tenant = tenant_id or DEMO_TENANT
     with database.transaction() as session:
-        if TenantRepository(session).get(DEMO_TENANT) is None:
+        if TenantRepository(session).get(tenant) is None:
             TenantRepository(session).add(
-                Tenant(tenant_id=DEMO_TENANT, slug="asteria", name="Asteria Systems DemoCo")
+                Tenant(tenant_id=tenant, slug="asteria", name="Asteria Systems DemoCo")
             )
     service = build_service(database, root)
+    corpus = AsteriaCorpus(root / "demo/asteria")
+
+    scm_datasets = corpus.scm_datasets()
+    scm_population = next(item for item in scm_datasets if item.name == "pull_requests")
     scm = service.run(
-        DEMO_TENANT,
+        tenant,
         ControlTestRunRequest(
             test_id="SCM-01",
             version="2.0.0",
-            purpose="Golden SCM operating-effectiveness test",
-            period_start=date(2026, 7, 1),
-            period_end=date(2026, 7, 31),
+            purpose="Operating effectiveness of SCM-01 over the July 2026 change population",
+            period_start=PERIOD_START,
+            period_end=PERIOD_END,
             requested_by="usr_demo_auditor",
             idempotency_key="demo:scm-01:2026-07",
-            parameters={"expected_population_count": 3, "required_approvals": 1},
-            datasets=[
-                ControlTestDataset(
-                    name="pull_requests",
-                    expected_count=3,
-                    evidence_ids=["ev_demo_github_population"],
-                    records=[
-                        {"pull_request_id":"PR-1001","repository":"asteria/api","merged_at":"2026-07-04T10:00:00Z","approvals":1,"change_ticket":"CHG-1","exception_key":None,"evidence_id":"ev_pr_1001"},
-                        {"pull_request_id":"PR-1002","repository":"asteria/api","merged_at":"2026-07-11T10:00:00Z","approvals":0,"change_ticket":"CHG-2","exception_key":None,"evidence_id":"ev_pr_1002"},
-                        {"pull_request_id":"PR-1003","repository":"asteria/api","merged_at":"2026-07-18T10:00:00Z","approvals":0,"change_ticket":None,"exception_key":"EX-SVC","evidence_id":"ev_pr_1003"},
-                    ],
-                ),
-                ControlTestDataset(
-                    name="change_tickets",
-                    evidence_ids=["ev_demo_jira_population"],
-                    records=[
-                        {"ticket_id":"CHG-1","status":"Approved","evidence_id":"ev_chg_1"},
-                        {"ticket_id":"CHG-2","status":"Approved","evidence_id":"ev_chg_2"},
-                    ],
-                ),
-                ControlTestDataset(
-                    name="approved_exceptions",
-                    evidence_ids=["ev_demo_exception_register"],
-                    records=[{"exception_key":"EX-SVC","active":True,"evidence_id":"ev_ex_svc"}],
-                ),
-            ],
+            parameters={
+                "expected_population_count": len(scm_population.records),
+                "required_approvals": 1,
+            },
+            datasets=scm_datasets,
         ),
     )
+
+    iam_datasets = corpus.iam_datasets()
+    iam_population = next(item for item in iam_datasets if item.name == "terminated_users")
     iam = service.run(
-        DEMO_TENANT,
+        tenant,
         ControlTestRunRequest(
             test_id="IAM-01",
             version="1.0.0",
-            purpose="Golden terminated-user deprovisioning test",
-            period_start=date(2026, 7, 1),
-            period_end=date(2026, 7, 31),
+            purpose="Operating effectiveness of IAM-01 over the FY2026 leaver population",
+            period_start=PERIOD_START,
+            period_end=PERIOD_END,
             requested_by="usr_demo_auditor",
             idempotency_key="demo:iam-01:2026-07",
-            parameters={"expected_population_count": 3},
-            datasets=[
-                ControlTestDataset(
-                    name="terminated_users",
-                    expected_count=3,
-                    evidence_ids=["ev_demo_hr_terminations"],
-                    records=[
-                        {"user_id":"u-001","terminated_at":"2026-07-01T10:00:00Z","disable_due_at":"2026-07-01T14:00:00Z","evidence_id":"ev_term_1"},
-                        {"user_id":"u-002","terminated_at":"2026-07-02T10:00:00Z","disable_due_at":"2026-07-02T14:00:00Z","evidence_id":"ev_term_2"},
-                        {"user_id":"u-003","terminated_at":"2026-07-03T10:00:00Z","disable_due_at":"2026-07-03T14:00:00Z","evidence_id":"ev_term_3"},
-                    ],
-                ),
-                ControlTestDataset(
-                    name="directory_accounts",
-                    evidence_ids=["ev_demo_directory_accounts"],
-                    records=[
-                        {"user_id":"u-001","enabled":False,"disabled_at":"2026-07-01T12:00:00Z","exception_key":None,"evidence_id":"ev_acc_1"},
-                        {"user_id":"u-002","enabled":True,"disabled_at":None,"exception_key":None,"evidence_id":"ev_acc_2"},
-                        {"user_id":"u-003","enabled":True,"disabled_at":None,"exception_key":"EX-IAM","evidence_id":"ev_acc_3"},
-                    ],
-                ),
-                ControlTestDataset(
-                    name="approved_exceptions",
-                    evidence_ids=["ev_demo_iam_exceptions"],
-                    records=[{"exception_key":"EX-IAM","active":True,"evidence_id":"ev_iam_ex"}],
-                ),
-            ],
+            parameters={"expected_population_count": len(iam_population.records)},
+            datasets=iam_datasets,
         ),
     )
+    sla_datasets = corpus.sla_datasets()
+    sla_population = next(item for item in sla_datasets if item.name == "incidents")
+    sla = service.run(
+        tenant,
+        ControlTestRunRequest(
+            test_id="SLA-01",
+            version="1.0.0",
+            purpose=(
+                "Contractual incident response commitments over the July 2026 "
+                "P1 incident population"
+            ),
+            period_start=PERIOD_START,
+            period_end=PERIOD_END,
+            requested_by="usr_demo_auditor",
+            idempotency_key="demo:sla-01:2026-07",
+            parameters={
+                "expected_population_count": len(sla_population.records),
+                "in_scope_priorities": ["P1"],
+            },
+            datasets=sla_datasets,
+        ),
+    )
+
     return {
-        "tenant_id": DEMO_TENANT,
+        "tenant_id": tenant,
         "released_tests": service.list_releases(),
-        "runs": [scm.model_dump(mode="json"), iam.model_dump(mode="json")],
+        "corpus": corpus.collection_summary(),
+        "runs": [
+            scm.model_dump(mode="json"),
+            iam.model_dump(mode="json"),
+            sla.model_dump(mode="json"),
+        ],
+        "access_review_observation": corpus.access_review_status(),
         "expected": {
-            "SCM-01": {"conclusion": "ineffective", "exception_count": 1},
+            "SCM-01": {"conclusion": "ineffective", "exception_count": 3},
             "IAM-01": {"conclusion": "ineffective", "exception_count": 1},
+            "SLA-01": {"conclusion": "ineffective", "exception_count": 4},
         },
     }

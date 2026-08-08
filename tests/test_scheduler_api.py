@@ -29,7 +29,7 @@ def test_scheduler_http_contracts(tmp_path, monkeypatch):
     )
     database = Database.from_sqlite_path(tmp_path / "api-scheduler.db")
     database.create_schema()
-    _reset_and_seed(database, workflow)
+    _reset_and_seed(database, workflow, SCHEDULER_DEMO_TENANT_ID)
 
     def clock() -> datetime:
         return SCHEDULER_DEMO_NOW

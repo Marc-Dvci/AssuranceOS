@@ -2,6 +2,6 @@
   "schema": "assurance.control_test_release_signature.v1",
   "algorithm": "Ed25519",
   "key_id": "assuranceos-control-tests-2026-08",
-  "public_key_sha256": "ac7c9085eadb73624837e2b42468ac538b3d8adb3a07ce151cb15f5d09997b3f",
-  "signature_base64": "UQ7lmVO3HKOz3uopowuTB9XyyWIF+yUa2XB27bq5XtZu/hqVDdSmNB+Enx+WTnSfCIITdk2xhUphOpBf4cZGDA=="
+  "public_key_sha256": "a97a3ef2389786a2b67499b846aea64182e04dc6675b5e08cf41d4352b58befa",
+  "signature_base64": "CDQf+hSQAn5IG1vsXKe5KgR7K+mMi7oGK4JQ6RrTfz2SWqApjLYpGiH/6yAih63hSskSzrjLuSusqCfxES98CQ=="
 }

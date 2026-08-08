@@ -1,0 +1,100 @@
+[
+  {
+    "repository": "asteria/payments-api",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "product-engineering"
+  },
+  {
+    "repository": "asteria/identity-service",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "product-engineering"
+  },
+  {
+    "repository": "asteria/ops-automation",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "platform"
+  },
+  {
+    "repository": "asteria/reporting-ui",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "product-engineering"
+  },
+  {
+    "repository": "asteria/invoice-ingest",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "product-engineering"
+  },
+  {
+    "repository": "asteria/ledger-core",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": true,
+    "owning_team": "platform"
+  },
+  {
+    "repository": "asteria/internal-tool-01",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-02",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-03",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-04",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-05",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-06",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-07",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  },
+  {
+    "repository": "asteria/internal-tool-08",
+    "visibility": "private",
+    "default_branch": "main",
+    "in_audit_scope": false,
+    "owning_team": "internal-tools"
+  }
+]

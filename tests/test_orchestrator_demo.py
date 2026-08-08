@@ -19,7 +19,8 @@ def test_orchestrator_demo_reaches_approved_report(tmp_path):
 
     assert result["engagement_status"] == "completed"
     assert result["replay_matches_canonical"] is True
-    assert result["test_result"]["exception_count"] == 1
+    assert result["test_result"]["population_count"] == 43
+    assert result["test_result"]["exception_count"] == 3
     assert [item["gate"] for item in result["approvals"]] == [
         "finding_approval",
         "report_issuance",

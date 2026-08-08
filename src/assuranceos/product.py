@@ -18,6 +18,10 @@ from sqlalchemy import desc, select
 
 from .db.models import (
     AgentIdentityRecord,
+    ApprovalDecision,
+    ControlTestDatasetBinding,
+    ControlTestException,
+    ControlTestRun,
     AssuranceCoverage,
     AuditEventRow,
     AuditSchedule,
@@ -428,7 +432,16 @@ def tenant_cockpit(database: Database, tenant_id: str) -> dict[str, Any]:
         }
 
 
-def _finding_blockers(finding: Finding) -> list[str]:
+def _finding_blockers(finding: Finding, gates: Iterable[str] = ()) -> list[str]:
+    """Why this finding cannot be approved yet.
+
+    The gates that actually refuse an approval live in the adjudication service,
+    and a second, weaker list here told operators the only thing outstanding was
+    a signature while the service was refusing for two other reasons. So the
+    canonical computation is passed in as ``gates`` and the cheap checks are
+    added to it rather than standing in for it. The register omits them because
+    computing them per row costs a query each; the detail view supplies them.
+    """
     blockers: list[str] = []
     if finding.requires_human_approval and finding.status == "proposed":
         blockers.append("human approval required")
@@ -436,6 +449,7 @@ def _finding_blockers(finding: Finding) -> list[str]:
         blockers.append("skeptic review pending")
     if not finding.evidence_ids_json:
         blockers.append("supporting evidence required")
+    blockers.extend(gates)
     return blockers
 
 
@@ -509,6 +523,11 @@ def evaluator_overview(
         model=model_name,
     )
     deployment_target = "Google Cloud" if project or revision else "local workstation"
+    if deployment_target == "local workstation":
+        # A configured default region is not a deployment. Reporting one when
+        # nothing is deployed puts a location on screen that no service is
+        # running in, which is worse than reporting nothing.
+        region = None
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "release": {
@@ -645,18 +664,19 @@ def trace_detail(database: Database, tenant_id: str, trace_id: str) -> dict[str,
         )
         if trace is None and not spans and not decisions:
             return None
-        decision_ids = [item.decision_id for item in decisions]
-        findings = (
-            list(
-                session.scalars(
-                    select(GuardrailFindingRecord).where(
-                        GuardrailFindingRecord.tenant_id == tenant_id,
-                        GuardrailFindingRecord.decision_id.in_(decision_ids),
-                    )
+        # Correlate on the trace rather than on the decisions it produced.
+        # Guardrail findings raised while inspecting inbound context carry no
+        # decision id, and those are precisely the prompt-injection detections
+        # the trace exists to show.
+        findings = list(
+            session.scalars(
+                select(GuardrailFindingRecord)
+                .where(
+                    GuardrailFindingRecord.tenant_id == tenant_id,
+                    GuardrailFindingRecord.trace_id == trace_id,
                 )
+                .order_by(GuardrailFindingRecord.occurred_at)
             )
-            if decision_ids
-            else []
         )
         return {
             "tenant_id": tenant_id,
@@ -675,7 +695,13 @@ def trace_detail(database: Database, tenant_id: str, trace_id: str) -> dict[str,
                     "status": item.status,
                     "started_at": _iso(item.started_at),
                     "ended_at": _iso(item.ended_at),
+                    "duration_ms": item.duration_ms,
+                    "status_message": item.status_message,
                     "attributes": item.attributes_json,
+                    # The guardrail detectors that fired are recorded as span
+                    # events, so a projection that drops events cannot show why
+                    # a passage was neutralised.
+                    "events": item.events_json,
                 }
                 for item in spans
             ],
@@ -693,11 +719,17 @@ def trace_detail(database: Database, tenant_id: str, trace_id: str) -> dict[str,
             ],
             "guardrail_findings": [
                 {
-                    "finding_id": item.finding_id,
+                    "finding_id": item.finding_row_id,
+                    "decision_id": item.decision_id,
+                    "direction": item.direction,
                     "detector": item.detector,
                     "category": item.category,
+                    "severity": item.severity,
                     "verdict": item.verdict,
+                    "match_count": item.match_count,
+                    "excerpt_digest": item.excerpt_digest,
                     "detail": item.detail,
+                    "occurred_at": _iso(item.occurred_at),
                 }
                 for item in findings
             ],
@@ -713,3 +745,200 @@ def _git_commit(repository_root: Path) -> str | None:
         return value
     except OSError:
         return None
+
+
+def finding_detail(database: Database, tenant_id: str, finding_id: str) -> dict[str, Any] | None:
+    """Everything behind one finding: the sources, the test, and the decisions.
+
+    The register answers *what* was concluded. This answers *how*, which is the
+    question anyone who has to act on a finding asks first: which systems were
+    read, what each one said, what the signed procedure did with them, what was
+    considered and rejected, and who is still owed a decision. It is assembled
+    from canonical state rather than narrated at proposal time, so it stays true
+    as the finding moves.
+    """
+
+    from .adjudication.service import AdjudicationService
+
+    gates = AdjudicationService(database).approval_blockers(
+        tenant_id=tenant_id, finding_id=finding_id
+    )
+
+    with database.read_session() as session:
+        finding = session.scalar(
+            select(Finding).where(
+                Finding.tenant_id == tenant_id, Finding.finding_id == finding_id
+            )
+        )
+        if finding is None:
+            return None
+        engagement = session.get(Engagement, finding.engagement_id)
+        cited = finding.evidence_ids_json or []
+        evidence = (
+            list(
+                session.scalars(
+                    select(EvidenceRecord).where(
+                        EvidenceRecord.tenant_id == tenant_id,
+                        EvidenceRecord.evidence_id.in_(cited),
+                    )
+                )
+            )
+            if cited
+            else []
+        )
+        run = (
+            session.scalar(
+                select(ControlTestRun).where(
+                    ControlTestRun.tenant_id == tenant_id,
+                    ControlTestRun.run_id == finding.source_run_id,
+                )
+            )
+            if finding.source_run_id
+            else None
+        )
+        bindings = (
+            list(
+                session.scalars(
+                    select(ControlTestDatasetBinding)
+                    .where(ControlTestDatasetBinding.run_id == run.run_id)
+                    .order_by(ControlTestDatasetBinding.dataset_name)
+                )
+            )
+            if run
+            else []
+        )
+        exceptions = (
+            list(
+                session.scalars(
+                    select(ControlTestException)
+                    .where(ControlTestException.run_id == run.run_id)
+                    .order_by(ControlTestException.exception_key)
+                )
+            )
+            if run
+            else []
+        )
+        decisions = list(
+            session.scalars(
+                select(ApprovalDecision)
+                .where(
+                    ApprovalDecision.tenant_id == tenant_id,
+                    ApprovalDecision.finding_id == finding_id,
+                )
+                .order_by(ApprovalDecision.decided_at)
+            )
+        )
+        remediation = session.scalar(
+            select(RemediationAction).where(
+                RemediationAction.tenant_id == tenant_id,
+                RemediationAction.finding_id == finding_id,
+            )
+        )
+        by_id = {item.evidence_id: item for item in evidence}
+        result = (run.result_json or {}) if run else {}
+
+        return {
+            "finding": {
+                "finding_id": finding.finding_id,
+                "engagement_id": finding.engagement_id,
+                "code": finding.code,
+                "version": finding.version,
+                "title": finding.title,
+                "status": finding.status,
+                "severity": finding.severity,
+                "confidence": finding.confidence,
+                "criteria": finding.criteria,
+                "risk_statement": finding.risk_statement,
+                "observed_condition": finding.observed_condition,
+                "cause": finding.cause,
+                "consequence": finding.consequence,
+                "affected_population": finding.affected_population_json,
+                "limitations": finding.limitations_json,
+                "exception_keys": finding.exception_keys_json,
+                "contradictions": finding.contradictions_json,
+                "requires_human_approval": finding.requires_human_approval,
+                "approval_blockers": _finding_blockers(finding, gates),
+                "skeptic_reviewed_at": _iso(finding.skeptic_reviewed_at),
+                "skeptic_rationale": finding.skeptic_rationale,
+                "authored_by": finding.authored_by,
+            },
+            "engagement": {
+                "engagement_id": engagement.engagement_id,
+                "code": engagement.code,
+                "title": engagement.title,
+                "status": engagement.status,
+                "audit_pack_ref": engagement.audit_pack_ref,
+                "period": [_iso(engagement.period_start), _iso(engagement.period_end)],
+            }
+            if engagement
+            else None,
+            # Ordered as the finding cites them rather than as the database
+            # returned them, because the citation order is the argument.
+            "evidence": [
+                {
+                    "evidence_id": item.evidence_id,
+                    "source_type": item.source_type,
+                    "source_locator": item.source_locator,
+                    "sha256": item.content_sha256,
+                    "classification": item.classification,
+                    "integrity_status": item.integrity_status,
+                    "tainted": item.tainted,
+                    "collected_at": _iso(item.collected_at),
+                    "size_bytes": item.size_bytes,
+                }
+                for item in (by_id[key] for key in cited if key in by_id)
+            ],
+            "test_run": {
+                "run_id": run.run_id,
+                "test_id": run.test_id,
+                "version": run.test_version,
+                "purpose": run.purpose,
+                "status": run.status,
+                "conclusion": run.conclusion,
+                "period": [_iso(run.period_start), _iso(run.period_end)],
+                "population_count": run.population_count,
+                "reconciled_count": run.reconciled_count,
+                "exception_count": run.exception_count,
+                "population_complete": run.population_complete,
+                "input_manifest_hash": run.input_manifest_hash,
+                "result_manifest_hash": run.result_manifest_hash,
+                "datasets": [
+                    {
+                        "name": item.dataset_name,
+                        "role": item.dataset_role,
+                        "row_count": item.row_count,
+                        "content_hash": item.content_hash,
+                        "evidence_ids": item.evidence_ids_json,
+                    }
+                    for item in bindings
+                ],
+                "rows": result.get("rows") or [],
+                "metrics": result.get("metrics") or {},
+                "limitations": result.get("limitations") or [],
+            }
+            if run
+            else None,
+            "exceptions": [
+                {
+                    "exception_key": item.exception_key,
+                    "subject_ref": item.subject_ref,
+                    "classification": item.classification,
+                    "severity": item.severity,
+                    "status": item.status,
+                    "reason": item.reason,
+                    "attributes": item.attributes_json,
+                    "evidence_ids": item.evidence_ids_json,
+                }
+                for item in exceptions
+            ],
+            "decisions": [
+                {
+                    "decision_type": item.decision_type,
+                    "actor_id": item.actor_id,
+                    "reason": item.reason,
+                    "decided_at": _iso(item.decided_at),
+                }
+                for item in decisions
+            ],
+            "remediation": _remediation_card(remediation),
+        }

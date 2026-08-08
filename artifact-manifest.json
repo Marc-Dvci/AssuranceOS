@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 803,
+  "file_count": 871,
   "files": [
     {
       "path": ".dockerignore",
@@ -16,8 +16,8 @@
     },
     {
       "path": ".gitattributes",
-      "size_bytes": 116,
-      "sha256": "bde2069ca714d5502c34dfe3304edc74843a6a50d2618ffd0aa3b71eb3ea10cb"
+      "size_bytes": 130,
+      "sha256": "84bff9da160d2f1955f5f1d8fba6bedec8658eb3668f404a8d8accc6f6c6fa5d"
     },
     {
       "path": ".github/dependabot.yml",
@@ -91,8 +91,8 @@
     },
     {
       "path": "Makefile",
-      "size_bytes": 1994,
-      "sha256": "d6123076aef3a0c7fc7821a8c06488b06e09c1dd95495f5e42949941b0e28a28"
+      "size_bytes": 2105,
+      "sha256": "b48377ea2b245e0f9ed01895ff0c2a6d78307c37928b7ea69beb96ff9fa2ae5a"
     },
     {
       "path": "NOTICE.md",
@@ -106,8 +106,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 22815,
-      "sha256": "3f107da9dca0ffb0413573614a520290e8242f120ac1ccd5613c3c932055e770"
+      "size_bytes": 28054,
+      "sha256": "a6ca1e7401c6959cbcda10ef8af53041ad4acf7ea83b530bb70897796a3f4ddc"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -1946,8 +1946,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 220849,
-      "sha256": "5aab69bcd45d6d4b358c9449896c5c66082bf230c0b6b30288298d151061ae17"
+      "size_bytes": 222830,
+      "sha256": "a00a1bd9750bcc99e2699be57a6a727e7e19d8635588540211ec3ecc33a6c285"
     },
     {
       "path": "api/protobuf/README.md",
@@ -1966,8 +1966,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 49083,
-      "sha256": "63dfdae7fe55a2d24c372e81ede25cfb0b606ef33f29572b6c0225a8e3baae0b"
+      "size_bytes": 62353,
+      "sha256": "9069be2bcdbb9a239da2ee7d764951577b87c17028325e441691a0a28b51717a"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2200,14 +2200,54 @@
       "sha256": "429db13605e0045c9c13a41f0869635d9ec0b8dd0b575d93236570c6a1122ab1"
     },
     {
+      "path": "demo/asteria/CORPUS.md",
+      "size_bytes": 12190,
+      "sha256": "a474dd5e4e8147da9d3052d24dbe48080da42c0b0aacc4c19125c705397dcf5c"
+    },
+    {
       "path": "demo/asteria/company.yaml",
-      "size_bytes": 407,
-      "sha256": "ca113476aadfa91b673ad9c523d23b02ef9afb7e8326a570145ff2ba003f11db"
+      "size_bytes": 1728,
+      "sha256": "3610aa6d620e0db66e68c360d97f488e1ce1701023fae8eeca79587336e76ea5"
     },
     {
       "path": "demo/asteria/ground_truth.yaml",
-      "size_bytes": 615,
-      "sha256": "900c7b8826f7427f12797a5437693bac2c77e85fc088f799ce7f4f70c2c5c32e"
+      "size_bytes": 5724,
+      "sha256": "21b082dc9e427f4453be9d3e1f650692050de542f87f103c99cad8afe4ae454c"
+    },
+    {
+      "path": "demo/asteria/sources/cloud/admin_activity_audit_log.csv",
+      "size_bytes": 6292,
+      "sha256": "ce595a134cc2f42e487d37954a15debd6989eaad052f5102bb6de508e7e7d054"
+    },
+    {
+      "path": "demo/asteria/sources/cloud/cloud_run_services.json",
+      "size_bytes": 4349,
+      "sha256": "6427267352e27636b1e432741d8897b65147b6ae5f40dc79ade99ed83d3025da"
+    },
+    {
+      "path": "demo/asteria/sources/cloud/iam_policy_bindings.json",
+      "size_bytes": 935,
+      "sha256": "3d1741580497e3785b5894c9d95ac57e8c7dc847391786c0aeb6711c935ebfad"
+    },
+    {
+      "path": "demo/asteria/sources/cloud/service_criticality_register.csv",
+      "size_bytes": 1556,
+      "sha256": "c231bd5468fdccac4252529edbc5121ce4b307759ff2fb9f4b8438268b4b07a5"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/access_control_policy.md",
+      "size_bytes": 1621,
+      "sha256": "d13b8a279adbc6651cffb733851159e7129e6c5dff47d443dde4576fa7c94ea7"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/access_review_procedure.md",
+      "size_bytes": 1260,
+      "sha256": "a520e9f0c65b431ff7da0536e3be27f7f2fe223fd1b58c13b098ed77cc934b15"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/cab_meeting_notes_2026-07.md",
+      "size_bytes": 1070,
+      "sha256": "87debc8caa6b764bbf8490e9b55d8ae4c3eae0b45de4435e97179557011e8e58"
     },
     {
       "path": "demo/asteria/sources/confluence/change_management_policy.md",
@@ -2215,19 +2255,244 @@
       "sha256": "e97ab60e8ecdb40d68fe27c1ca1bf0878cfb3147bd0a7460c346467a07345998"
     },
     {
+      "path": "demo/asteria/sources/confluence/exception_management_procedure.md",
+      "size_bytes": 1026,
+      "sha256": "a8560b9a9a8d5ce8927002fc8254cb40fa52730df0cfc2d18bad5d4df7af30d7"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/incident_response_plan.md",
+      "size_bytes": 1649,
+      "sha256": "80a4b6f33ccb8a66b714a9812fc58498e70509ef51a10ec01a37d55127a622c4"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/information_security_policy.md",
+      "size_bytes": 1016,
+      "sha256": "15ede6dbe27b843cad613fbab701d6ca3fc1012f89734abc9b30db1b36dd4780"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/offboarding_checklist.md",
+      "size_bytes": 1154,
+      "sha256": "7d0d6175a4c122d3bc5bb5cc4eb18d278f47050acb17e9ea1d5764e2c5ab9c27"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/privileged_access_standard.md",
+      "size_bytes": 1146,
+      "sha256": "72ce35a29d14864468d7224b11edfdd0242949fa09dbdb3338f861c774224bcb"
+    },
+    {
+      "path": "demo/asteria/sources/confluence/segregation_of_duties_matrix.md",
+      "size_bytes": 986,
+      "sha256": "3a9b8091bb8f42f1714737287b11886acd2f87d4d74818dcdcc1e62be8b15b66"
+    },
+    {
+      "path": "demo/asteria/sources/finance/expense_and_procurement_policy.md",
+      "size_bytes": 812,
+      "sha256": "c6ece684b28b4e9770ce0562ae924eb838102e82023383970c468bfc963b4f14"
+    },
+    {
+      "path": "demo/asteria/sources/finance/invoices.csv",
+      "size_bytes": 2505,
+      "sha256": "55ea2a480415e803d8ea54cb147b53c0e0f93946dffd8620f2aba06d8f177cd7"
+    },
+    {
+      "path": "demo/asteria/sources/finance/payment_runs.xlsx",
+      "size_bytes": 1857,
+      "sha256": "617fc6e5a214ab9a2af265de255c753373d81f5d450d455e97d884cc2813e7ee"
+    },
+    {
+      "path": "demo/asteria/sources/finance/purchase_orders.csv",
+      "size_bytes": 4047,
+      "sha256": "1e24cb81308d32e7dcc67886d2e25bac8d45f3b110deab9b22c7feee34c17009"
+    },
+    {
+      "path": "demo/asteria/sources/finance/vendor_master.csv",
+      "size_bytes": 822,
+      "sha256": "d79afc96f95ea513f0f75c551f885f52cd21ea295be1854c301ffeef1aef9072"
+    },
+    {
+      "path": "demo/asteria/sources/github/CODEOWNERS.md",
+      "size_bytes": 1077,
+      "sha256": "9ba3ecdb4ced895eb0349b81342791395964df7e07f3a003a3d565afd520de78"
+    },
+    {
+      "path": "demo/asteria/sources/github/branch_protection.json",
+      "size_bytes": 1678,
+      "sha256": "a0fd4d291622f32bce70196d793b6486608474bcc79f468df961ec8d33add076"
+    },
+    {
+      "path": "demo/asteria/sources/github/deployment_events.csv",
+      "size_bytes": 6218,
+      "sha256": "dfe0d4b6ae92fec0c39c0e44b5f5a1bb1898ece1a50ad92f6c5d506c633571ee"
+    },
+    {
       "path": "demo/asteria/sources/github/pull_requests.json",
-      "size_bytes": 875,
-      "sha256": "0c03f2ed331f629ce9733b3fc5beb8e573d4391df8d71411456ee95bbb587503"
+      "size_bytes": 14404,
+      "sha256": "7740daebd2f04a27b0b42d9a7637252aeb6dd736299878931bc339aa7076e642"
+    },
+    {
+      "path": "demo/asteria/sources/github/repositories.json",
+      "size_bytes": 2494,
+      "sha256": "9ed20d98462bbab8f486ce53fe67d55ff25f94f2f8e151f2ed8199ebca2021ce"
+    },
+    {
+      "path": "demo/asteria/sources/governance/approved_audit_plan_2026.xlsx",
+      "size_bytes": 2461,
+      "sha256": "74d277f31afe36674a5dbbd968d369b665ff30f4e96ed4ed91bbc187c13e6810"
     },
     {
       "path": "demo/asteria/sources/governance/approved_exceptions.json",
-      "size_bytes": 200,
-      "sha256": "a838a76bc5bd3c9937e94c0d5a71b1b914440d56b659d47a9d918d75f8eb6a2e"
+      "size_bytes": 1458,
+      "sha256": "4e69c0692de6b47d99bd465b19187471b2d9df14208b1f4c2e51c50a5aa3967f"
+    },
+    {
+      "path": "demo/asteria/sources/governance/audit_committee_charter.md",
+      "size_bytes": 1271,
+      "sha256": "6084434da6f9c1e1741c70113498c52dd4dc66ca565e11247b6f5f3baba835f1"
+    },
+    {
+      "path": "demo/asteria/sources/governance/control_library.xlsx",
+      "size_bytes": 2270,
+      "sha256": "f6d8ef2fa727ecdd230c62a647bde50128752c0990dabaf931294fcaa677ec84"
+    },
+    {
+      "path": "demo/asteria/sources/governance/prior_year_findings.csv",
+      "size_bytes": 495,
+      "sha256": "192f2491d444406c1a6b75cd85b70afa1dee91e1802c3e2a171c2ed8b7dd572a"
+    },
+    {
+      "path": "demo/asteria/sources/governance/risk_register.xlsx",
+      "size_bytes": 2321,
+      "sha256": "6c74d973162a657e63475e74f192ed2abf4f774d53c2b9928b774449b19cb382"
+    },
+    {
+      "path": "demo/asteria/sources/hr/contractor_register.csv",
+      "size_bytes": 2268,
+      "sha256": "39c9fa2f1be058e26daa74417434fe18021b414bdda7a53d5b5f8b8f942acc05"
+    },
+    {
+      "path": "demo/asteria/sources/hr/offboarding_task_log.json",
+      "size_bytes": 8917,
+      "sha256": "7d5fabe1c5082711f09fc288edb9e8c23056665c3ac29163b009f231c9700b11"
+    },
+    {
+      "path": "demo/asteria/sources/hr/terminations.csv",
+      "size_bytes": 1953,
+      "sha256": "33346c827aa269bf4933d811142db6b657708f82f2469d34053fd4432b345c0b"
+    },
+    {
+      "path": "demo/asteria/sources/hr/workforce_roster.csv",
+      "size_bytes": 32468,
+      "sha256": "251805ad622969a9d5e1321e4966067a94edd42827878582395dc4c11b6051e8"
+    },
+    {
+      "path": "demo/asteria/sources/identity/access_review_campaigns.xlsx",
+      "size_bytes": 2487,
+      "sha256": "f72ec184dd6a28fc7dfee06ed49c852dc56d745593cc0edca79abb871d8e66e0"
+    },
+    {
+      "path": "demo/asteria/sources/identity/directory_accounts.csv",
+      "size_bytes": 19148,
+      "sha256": "1e9c7dcfd44d510e0b24d67980d8698da18e56f5e98bd461a46b33a57b20e869"
+    },
+    {
+      "path": "demo/asteria/sources/identity/group_memberships.csv",
+      "size_bytes": 5135,
+      "sha256": "9faf348d960b4c67c942cacd2f97c70ae44aa9b113862ac1638be8a41028f555"
+    },
+    {
+      "path": "demo/asteria/sources/identity/mfa_enrollment_report.csv",
+      "size_bytes": 13826,
+      "sha256": "5570e1175094338759aba2a8f4f5099cedb63e119417904c371bcef5333edaa7"
+    },
+    {
+      "path": "demo/asteria/sources/identity/privileged_role_assignments.csv",
+      "size_bytes": 3238,
+      "sha256": "6fb2053b523e931cd47cf367f72729a784f9a81478d39c2b4c6ba7b2e58b9a12"
+    },
+    {
+      "path": "demo/asteria/sources/identity/service_accounts.csv",
+      "size_bytes": 811,
+      "sha256": "2bb542734839943c117f603e1e7a612503bdd170ce3f171099f4839234160de7"
     },
     {
       "path": "demo/asteria/sources/jira/change_tickets.json",
-      "size_bytes": 509,
-      "sha256": "d44d267db1439d634e40834c3b7a6bebee9d576828fab0a33b86870e754f0108"
+      "size_bytes": 11464,
+      "sha256": "68bda64d805ec44b57d0ef2886d328e9e34f1c5707ca373f4062591469c5f5bc"
+    },
+    {
+      "path": "demo/asteria/sources/jira/change_workflow_transitions.csv",
+      "size_bytes": 5244,
+      "sha256": "dfa08a2c78cfbc4ae35868fff9614df50c70712f02389f88b0e3bf7a85eb7490"
+    },
+    {
+      "path": "demo/asteria/sources/jira/incident_tickets.json",
+      "size_bytes": 4745,
+      "sha256": "a961a9eb8edde719d995ae24ef2ab85226e6b6acb64f6287bea80afe437e6b3f"
+    },
+    {
+      "path": "demo/asteria/sources/jira/permission_scheme.md",
+      "size_bytes": 951,
+      "sha256": "e299a45c3f364713ebb0c7204766960f3f6a01f039e0efec1a539eea1782a54e"
+    },
+    {
+      "path": "demo/asteria/sources/jira/remediation_tickets.json",
+      "size_bytes": 893,
+      "sha256": "c6d501f7d17f08b3a1ea3dcfc5a8dccbc070d2b072eb6db4955bf4c0d5ed5a85"
+    },
+    {
+      "path": "demo/asteria/sources/jira/sla_configuration.json",
+      "size_bytes": 584,
+      "sha256": "c2d61a0fe2c91708339ae3ef5d9a51364b8215ba6dd6ba239829d3b4a0b3fceb"
+    },
+    {
+      "path": "demo/asteria/sources/legal/amendment_02_northwind_2026.md",
+      "size_bytes": 1196,
+      "sha256": "f604e86dde02db269a9da5dc812db857d3103058909acbd05020c200f75c3e49"
+    },
+    {
+      "path": "demo/asteria/sources/legal/contract_commitment_register.csv",
+      "size_bytes": 710,
+      "sha256": "eaa5538b73435e7fc0bed1a9ac88939ed4c60ac4c93231017f4d1154cd6e3d75"
+    },
+    {
+      "path": "demo/asteria/sources/legal/msa_contoso_2025.md",
+      "size_bytes": 677,
+      "sha256": "4587b37590d515515f6fef9c05c45b6dcc4c8a31f37d25275b8c65b913bf26ab"
+    },
+    {
+      "path": "demo/asteria/sources/legal/msa_northwind_2024.md",
+      "size_bytes": 1233,
+      "sha256": "dd3c3fca6aeb2a4c8839b2af027c5946564c4c1f5721f26b9e5eb19ce8dc1972"
+    },
+    {
+      "path": "demo/asteria/sources/public/careers_engineering.md",
+      "size_bytes": 766,
+      "sha256": "4b0ee06fd09045d615297411407490f2600a2ae3ad8349591abbc766b922e3ce"
+    },
+    {
+      "path": "demo/asteria/sources/public/corporate_overview.md",
+      "size_bytes": 978,
+      "sha256": "7b29def783443dd13468caccdecc9f0092d197e81b32cc369e2af5354a35bf5c"
+    },
+    {
+      "path": "demo/asteria/sources/public/press_legal_entity.md",
+      "size_bytes": 726,
+      "sha256": "c62b52bd4869319b3af1f0840f9725932d313dfc9c433630f1aa1a684441c7b8"
+    },
+    {
+      "path": "demo/asteria/sources/public/status_page_incidents.json",
+      "size_bytes": 822,
+      "sha256": "5f79c9c008e0b22894379c397235aa6c5d7c099e7ea4637a576b94abf7ebedb4"
+    },
+    {
+      "path": "demo/asteria/sources/public/sub_processors.md",
+      "size_bytes": 619,
+      "sha256": "c1bd83becea11f7997c4b9749309393b57eee1d44ff0c84477956fc1582c4ac8"
+    },
+    {
+      "path": "demo/asteria/sources/public/trust_center.md",
+      "size_bytes": 831,
+      "sha256": "146e1e77c83685849d04dc3facbc04c23e60229205d408cb943ba3c69a7d6f95"
     },
     {
       "path": "docker-compose.yml",
@@ -2246,8 +2511,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 6684,
-      "sha256": "4bea956813df3b1bf60d7e80ee37b762ed1b8c306d3ae3ec0d24b6ab57e35e08"
+      "size_bytes": 8989,
+      "sha256": "822f8c766655547e57772ef49a46d6c23d7345369818f79973bb8f6dab4704cd"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2341,8 +2606,8 @@
     },
     {
       "path": "docs/runbooks/local-demo.md",
-      "size_bytes": 641,
-      "sha256": "169b12c46d05da7c6b44d7cb89b809fafa031642175af3fead86025e3dbbcdba"
+      "size_bytes": 4060,
+      "sha256": "9a4b4039f73b87226534b56d395d3ed5dda1616943160322a1566934aa41a4d9"
     },
     {
       "path": "docs/source/assuranceos_hackathon_implementation_plan.md",
@@ -2615,6 +2880,11 @@
       "sha256": "3180b38828e5ecd9e5bfd202754e1752dfe4d35b0c558028c4b43c88133b24a4"
     },
     {
+      "path": "scripts/build_demo_corpus.py",
+      "size_bytes": 82989,
+      "sha256": "739a09239f088d57b797a10ac2087a544d215f82b45abb75bdfe8829d5d85baf"
+    },
+    {
       "path": "scripts/build_release_archive.py",
       "size_bytes": 3048,
       "sha256": "5d5ea0e1234db92b3692de9584b3fedc353b61b5365aaa9c14461be7adfb31ef"
@@ -2671,8 +2941,8 @@
     },
     {
       "path": "scripts/release_control_tests.py",
-      "size_bytes": 1849,
-      "sha256": "336c8af45637762ff0f9fe76b30697ec3ff86d79dedfb71b10c6a5d2842b4cc8"
+      "size_bytes": 2103,
+      "sha256": "e5e332bfdf6fd2ff0488fac031f1430d654d2293125457df899c0e3737bab402"
     },
     {
       "path": "scripts/run_agent_evaluations.py",
@@ -2750,6 +3020,11 @@
       "sha256": "5b9ae767a75f2ce6d4de2ff9ea4ed7056649279e60aa23596716e671f9a6b853"
     },
     {
+      "path": "scripts/seed_demo_tenant.py",
+      "size_bytes": 7840,
+      "sha256": "b2178919504bdf92d19fa7ec1aeea76c30f54eee45ada381475a9981f1661b42"
+    },
+    {
       "path": "scripts/sign_execution_envelope.py",
       "size_bytes": 1412,
       "sha256": "c05325b9546db6d95dccd3148ff29313e5e8bff5de0a5fb1dada9108b6c23435"
@@ -2761,8 +3036,8 @@
     },
     {
       "path": "scripts/validate_repo.py",
-      "size_bytes": 9393,
-      "sha256": "f04d0f8c3dac45136b443495704df66afea2500a57a95da86ae160b848298612"
+      "size_bytes": 9430,
+      "sha256": "0daf56b38954a28898bbbdc741f02bd5b41cf01de8c05c83e07c8a9e47b2fbcf"
     },
     {
       "path": "scripts/verify_evidence_export.py",
@@ -2802,7 +3077,7 @@
     {
       "path": "security/release-keys/control-test-release-public.pem",
       "size_bytes": 113,
-      "sha256": "be219361df0b54f223009339b7bc6f980d79a11f683d12ace1e72f08e2d42d52"
+      "sha256": "72aaf1302b08c66a936e483a5e07ab49ee904befad522378e2f71b27ca9c1664"
     },
     {
       "path": "security/release-keys/execution-envelope-public.pem",
@@ -2941,8 +3216,8 @@
     },
     {
       "path": "src/assuranceos/adjudication/demo.py",
-      "size_bytes": 27558,
-      "sha256": "6fe7619468ff888f385234026213c3cb8bbc6beaff25efcc1b0b1e4919efac33"
+      "size_bytes": 28653,
+      "sha256": "c638fe569d5df1dd225e4548b97ded73d2718f6f8ad1a2f29d7a4e6def5d8720"
     },
     {
       "path": "src/assuranceos/adjudication/exceptions.py",
@@ -2966,8 +3241,8 @@
     },
     {
       "path": "src/assuranceos/adjudication/service.py",
-      "size_bytes": 68840,
-      "sha256": "38bb5a7cd54c087c1c03f25088a4a1a416ffab567416f4d489cc126d11c55180"
+      "size_bytes": 69585,
+      "sha256": "a20aebc1d46523f373fe3f4ead101cf1816e28cfb022f917e165a3ae442c85f9"
     },
     {
       "path": "src/assuranceos/adjudication/skeptic.py",
@@ -2991,8 +3266,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 107385,
-      "sha256": "66e58964a8338e9147fa110581ea050efda3e828a6bbd90840691f5a2b087103"
+      "size_bytes": 108816,
+      "sha256": "874700157c0dfb926a7f4e531651dfbe64eb8fd60b842fcb59af2df7f8b8edc9"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3066,8 +3341,8 @@
     },
     {
       "path": "src/assuranceos/connectors/demo.py",
-      "size_bytes": 11747,
-      "sha256": "1fca76c08c9c65046ab78094de73644069851ac10905d5996c5a05a270523161"
+      "size_bytes": 12223,
+      "sha256": "54346818ef2162f6da16fb510367845f95e7eb3137ae57fdf9a3ee5a6f809162"
     },
     {
       "path": "src/assuranceos/connectors/exceptions.py",
@@ -3121,8 +3396,8 @@
     },
     {
       "path": "src/assuranceos/control_testing/demo.py",
-      "size_bytes": 5662,
-      "sha256": "f366e144f40fffae4e431888770f4898e656546f0e9871aa7d3560d67101fe34"
+      "size_bytes": 4823,
+      "sha256": "2a68af6e9bcb0749f2ef5f29e4cdabe52c07e05e5a4b3c5b51d5f863e8642da5"
     },
     {
       "path": "src/assuranceos/control_testing/exceptions.py",
@@ -3163,6 +3438,11 @@
       "path": "src/assuranceos/control_testing/worker.py",
       "size_bytes": 1107,
       "sha256": "43558009067ee5c63044fd9194298bddae9b025d804012d1b03f1a41322179cd"
+    },
+    {
+      "path": "src/assuranceos/corpus.py",
+      "size_bytes": 16978,
+      "sha256": "8f3261515ff5ad8162710fc70c5920ac27955c168bc839a36c1fd6d5fe603403"
     },
     {
       "path": "src/assuranceos/db/__init__.py",
@@ -3266,13 +3546,13 @@
     },
     {
       "path": "src/assuranceos/demo.py",
-      "size_bytes": 7402,
-      "sha256": "313f972052301e70c2094badc594565fc6f0e03cb6c10f9313faf2b6c1fb7d61"
+      "size_bytes": 12442,
+      "sha256": "182249ac782f405bfb334c838ad6adf2f356d5449f22a25857fd3356c986634b"
     },
     {
       "path": "src/assuranceos/deterministic.py",
-      "size_bytes": 2598,
-      "sha256": "374889aac51252141adadd6e78789605f6ba77f264ec926d948bd84926e573e0"
+      "size_bytes": 3445,
+      "sha256": "7df78f1aee68b0a8a7a5429df68a963fc5cde28ff471917d391cf217c970d4cf"
     },
     {
       "path": "src/assuranceos/evaluation.py",
@@ -3306,8 +3586,8 @@
     },
     {
       "path": "src/assuranceos/governance/demo.py",
-      "size_bytes": 11259,
-      "sha256": "9ee51b077bc3aeea80284b64d154f4c269b6af92bbec9655bc59a614b91de942"
+      "size_bytes": 11867,
+      "sha256": "5438fe8cd90da2b0bd109ca7818ad78b14214fee67d9e2e59e33c4f4239b248a"
     },
     {
       "path": "src/assuranceos/governance/gateway.py",
@@ -3326,8 +3606,8 @@
     },
     {
       "path": "src/assuranceos/governance/persistence.py",
-      "size_bytes": 10629,
-      "sha256": "0b068f4335f5bca35a3b421a478c23fe12e8b719f83f1598e971a120e8305dab"
+      "size_bytes": 13720,
+      "sha256": "19f2db41c4d8984e01c95ec34aefc99332f7b54c6e6bcb0c1aafc878328392d0"
     },
     {
       "path": "src/assuranceos/governance/runtime.py",
@@ -3386,8 +3666,8 @@
     },
     {
       "path": "src/assuranceos/orchestration/demo.py",
-      "size_bytes": 7193,
-      "sha256": "e0d9be82533092c2391c9426af8b8475bd57b4ed29d491d8300e5f36464cb6a8"
+      "size_bytes": 7719,
+      "sha256": "ce40f4cecd5e21378b14fe537ae662404e0ea5ef6c9e7a7134971e8e229c95b2"
     },
     {
       "path": "src/assuranceos/orchestration/exceptions.py",
@@ -3431,8 +3711,8 @@
     },
     {
       "path": "src/assuranceos/portfolio/demo.py",
-      "size_bytes": 16322,
-      "sha256": "6885898ac500563c0e7bfa6edd6a9dd9bbc10006821c76e9af46712eb70c5d6d"
+      "size_bytes": 16795,
+      "sha256": "532a7662338de3bddb29b112e36d74873c4f6f339998c056d15df8c322d27056"
     },
     {
       "path": "src/assuranceos/portfolio/exceptions.py",
@@ -3461,8 +3741,8 @@
     },
     {
       "path": "src/assuranceos/product.py",
-      "size_bytes": 28529,
-      "sha256": "eb04ced0a51254e6e9d2ac26c08286b1ebf0609018adead2c97fe6b77822d522"
+      "size_bytes": 38369,
+      "sha256": "a4ada6daaa9bda66841b6b11fb83637c5cafc9caf81aa8b32a6266f717c0b8b0"
     },
     {
       "path": "src/assuranceos/product_schemas.py",
@@ -3486,8 +3766,8 @@
     },
     {
       "path": "src/assuranceos/reporting/demo.py",
-      "size_bytes": 17283,
-      "sha256": "2c19afa6607812cf3065776cebe3eae6f0e805f048afceb6ba00b1aa0a398b8c"
+      "size_bytes": 17753,
+      "sha256": "1b16328c2fff67f667b96d478b4fcaeb2966cf8e70e826157f501e2a576cd301"
     },
     {
       "path": "src/assuranceos/reporting/exceptions.py",
@@ -3526,8 +3806,8 @@
     },
     {
       "path": "src/assuranceos/scheduling/demo.py",
-      "size_bytes": 5509,
-      "sha256": "96bee01858c2a6b331ac4b9614053f7533927615bb895b648d9d3bb786712804"
+      "size_bytes": 6181,
+      "sha256": "bd109fad398a89d8cc7eabe3d1e30a976076481fda280b92216fd6dcb03ed70b"
     },
     {
       "path": "src/assuranceos/scheduling/exceptions.py",
@@ -3565,6 +3845,16 @@
       "sha256": "1b5f2c3f236e33bfb7cc4674fe96988bfeedb31fa18e13bda34cc3a7e674708d"
     },
     {
+      "path": "src/assuranceos/service_delivery_demo.py",
+      "size_bytes": 11769,
+      "sha256": "ca339b0c49c32c9b8afc2325b9054a7111c7d3e21fef66d0d7071f56b4bcd38e"
+    },
+    {
+      "path": "src/assuranceos/spreadsheet.py",
+      "size_bytes": 12559,
+      "sha256": "09d03c702e3fb083ab07735ff7cb6d8a961172df12892f2fef97ae9e59936a22"
+    },
+    {
       "path": "src/assuranceos/standards/__init__.py",
       "size_bytes": 2172,
       "sha256": "d35697e43c7b21d7969bcb7f761625c9d12991af8a522ca46a23042eff20efb2"
@@ -3581,8 +3871,8 @@
     },
     {
       "path": "src/assuranceos/standards/demo.py",
-      "size_bytes": 11552,
-      "sha256": "e9a726e42aa956a4166a8d6c35b24c43e27b71243ae89367154b51a10aa95a67"
+      "size_bytes": 12255,
+      "sha256": "4a677240f4ab5b31577a24c2ac5df97ee36733d2b6fc379b60f6c791b18d6070"
     },
     {
       "path": "src/assuranceos/standards/exceptions.py",
@@ -3626,8 +3916,8 @@
     },
     {
       "path": "src/assuranceos/vault/demo.py",
-      "size_bytes": 5669,
-      "sha256": "3aa70c8fafdda594aa2076ea2d85f5e0f6e35c85a1e5dae7a468d55da0b7960a"
+      "size_bytes": 5990,
+      "sha256": "39edd6b16190d9bffeb563f0e061a09193c3e9b3ef08b16535a6fba07a3fd79c"
     },
     {
       "path": "src/assuranceos/vault/exceptions.py",
@@ -3712,12 +4002,12 @@
     {
       "path": "tests-library/iam/terminated-user-deprovisioning/release.json",
       "size_bytes": 812,
-      "sha256": "54de829ab2dcb5684d7d434a63570e155f2e6222cd6278a9abd81ba23685ad24"
+      "sha256": "916d4fa27415e27ae2ab70d723edeb6c517e2cf4f4262648c4e36f8150890233"
     },
     {
       "path": "tests-library/iam/terminated-user-deprovisioning/release.signature.json",
       "size_bytes": 342,
-      "sha256": "c7539d6332c0498f7c03cb3c6477004eaae325c64c2ca1210f37927c48f80b97"
+      "sha256": "185ae784774e5f0a804b8b19f459690edf5fed9b4575594ba35d93a7b3ed4ba1"
     },
     {
       "path": "tests-library/iam/terminated-user-deprovisioning/test.sql",
@@ -3752,17 +4042,57 @@
     {
       "path": "tests-library/scm/approved-change-before-merge/release.json",
       "size_bytes": 811,
-      "sha256": "08b7ea138dddf18345bb24a14150f6b25a2f97eee60898365dd83c43b94f27b8"
+      "sha256": "539bae45cefc4bd55be1442fbd0e5c9642a771538025bc95971a6ba05602fa44"
     },
     {
       "path": "tests-library/scm/approved-change-before-merge/release.signature.json",
       "size_bytes": 342,
-      "sha256": "eff70f7e5d5be83823370841d3dd40c52c4864262241ccc634c1db037153c9ab"
+      "sha256": "2f6a028cdf7bcc3f8dc8d625285db900bff0704696ca7cf64e039e6cdac927cf"
     },
     {
       "path": "tests-library/scm/approved-change-before-merge/test.py",
       "size_bytes": 3084,
       "sha256": "12b2f153ce67dd7a9e69a748bc2d59e5659423ebdb110246a24defaed1d3c1f9"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/golden_cases/basic.json",
+      "size_bytes": 181,
+      "sha256": "4871522894fb33e80f927f139f48e39f81c2f0f6e33cf8c3d5d77f76737d7c96"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/input.schema.json",
+      "size_bytes": 553,
+      "sha256": "492b67b2c06ef21b8ba2e837040e7f46b59b97afaacc1ee6e0e098e68b4a5da3"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/manifest.yaml",
+      "size_bytes": 3307,
+      "sha256": "b8bd632dc6c689f11abdd42f9c03f02a5b8d0a2391739acc0909d8b696e2b28a"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/output.schema.json",
+      "size_bytes": 2081,
+      "sha256": "9eedd14505a455ed0790c0cb4d4a31e42bac81e5186edf987e6a8275a415bc8f"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/parameters.schema.json",
+      "size_bytes": 412,
+      "sha256": "ef26e42141e2b57111fc24d0d33b19686380b1c7720b86aaf92157ca85e1f7d6"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/release.json",
+      "size_bytes": 811,
+      "sha256": "39204bd0251f61922db7d9ba90ab280af8f5867c20318ce04204f25e8cb50cb4"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/release.signature.json",
+      "size_bytes": 342,
+      "sha256": "f069f305f6d40e24fa2fc7ee4a73382df05223fc2a2e8111563974a46972c287"
+    },
+    {
+      "path": "tests-library/service-delivery/contractual-response-commitments/test.py",
+      "size_bytes": 9596,
+      "sha256": "a5f650d3a4ffb053092145c11dc722199f963d30e8fafc91af1d34390ac6a06c"
     },
     {
       "path": "tests/conftest.py",
@@ -3816,13 +4146,13 @@
     },
     {
       "path": "tests/test_control_test_api.py",
-      "size_bytes": 3742,
-      "sha256": "5106e3f237c8593f4c93f43ed88567540faeb75ba91d14ca988c72452270be65"
+      "size_bytes": 3752,
+      "sha256": "2febb4a82aa25269e79f1815faad3d77f17b7565a77175c7f9653c1b42ce5f2c"
     },
     {
       "path": "tests/test_control_test_demo.py",
-      "size_bytes": 660,
-      "sha256": "74933ea57cc9b01654380591cd7b645c35e9f116a2aa47124aa2418469e7d7c0"
+      "size_bytes": 3473,
+      "sha256": "bee754eba018b3adffcfaa7d79d0fba4c018f7525ef497ac9da5dcb097c3fdc6"
     },
     {
       "path": "tests/test_control_test_release.py",
@@ -3831,8 +4161,13 @@
     },
     {
       "path": "tests/test_control_testing.py",
-      "size_bytes": 14607,
-      "sha256": "8e9a4b77b37ce026ebbed92da0db3304a31f6cb00bbb79199a6d17fd55a732c9"
+      "size_bytes": 14637,
+      "sha256": "429a81df8c3d8b140e2cd87b6fd48ea826012938a9197f4a475d4655e715911c"
+    },
+    {
+      "path": "tests/test_corpus.py",
+      "size_bytes": 9142,
+      "sha256": "f3b205378d428c89097908d38eff1f3a5761c59fa394ef708acdc02a107797b9"
     },
     {
       "path": "tests/test_database.py",
@@ -3841,13 +4176,13 @@
     },
     {
       "path": "tests/test_demo.py",
-      "size_bytes": 522,
-      "sha256": "394bf577729fcf54c85f21391cb7bead51c1acc5128e7d6d34660ef137f5a366"
+      "size_bytes": 3090,
+      "sha256": "3fcd0ae83e26a84d494cb197dca6acb448cf39dc7490fe5b614db44828b1758f"
     },
     {
       "path": "tests/test_deterministic.py",
-      "size_bytes": 635,
-      "sha256": "4ca8506ade647708c7acf44b1bca18327b02c416128094d647e3ac08b6401aff"
+      "size_bytes": 1464,
+      "sha256": "0f586c1c07e3b89b71c65e412ab1ef3b7c72f6017c98f68f067b96a9aa7e676a"
     },
     {
       "path": "tests/test_evaluation.py",
@@ -3866,8 +4201,8 @@
     },
     {
       "path": "tests/test_governance_demo.py",
-      "size_bytes": 3099,
-      "sha256": "5f3e8756994237b52138d98ee961564d790ab27f352a9ee56c88964955a680fa"
+      "size_bytes": 6400,
+      "sha256": "00dc17ee1b31b1154f278d2f9de634bc58bf2aebdf3bd42105f907df3c7c0db4"
     },
     {
       "path": "tests/test_governed_runtime.py",
@@ -3916,8 +4251,8 @@
     },
     {
       "path": "tests/test_orchestrator_demo.py",
-      "size_bytes": 882,
-      "sha256": "645f8e48b9d7d45bbc9067899f2bc7bcf5df86c82bb92910cf94a2241d63bbad"
+      "size_bytes": 941,
+      "sha256": "67472b6423d1b714d4adb9f6947b2bc70a6e61a9cdb8c8f281cdd27aa8b94853"
     },
     {
       "path": "tests/test_pack_compiler_demo.py",
@@ -3976,8 +4311,8 @@
     },
     {
       "path": "tests/test_scheduler_api.py",
-      "size_bytes": 3144,
-      "sha256": "936335dd8f6263f101b52a16cbf3dd06ff55cd6f3096bccef261003ae7abe301"
+      "size_bytes": 3170,
+      "sha256": "3cd0b26450c3a04ca3d846f0dd14e957a4d11d03a9689031af1b867880db0165"
     },
     {
       "path": "tests/test_scheduler_demo.py",
@@ -3988,6 +4323,11 @@
       "path": "tests/test_scheduling.py",
       "size_bytes": 14856,
       "sha256": "2a8a6b4cfaf47952261f6b7cbaa0dfbe9b1a5ae1099943ae359fdc597f0055ce"
+    },
+    {
+      "path": "tests/test_service_delivery_demo.py",
+      "size_bytes": 6248,
+      "sha256": "d2bff5b90b6e3072702e03c6380da4407f871bcc2798b2210b1d6900d20ea1e4"
     },
     {
       "path": "tests/test_standards.py",

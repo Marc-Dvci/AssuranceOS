@@ -1,26 +1,432 @@
 [
   {
     "ticket_id": "CHG-2001",
+    "summary": "Payments API settlement retry",
     "status": "Approved",
     "approved_by": "change.manager",
-    "approved_at": "2026-07-03T08:00:00Z"
+    "approved_at": "2026-07-03T08:00:00Z",
+    "type": "Standard",
+    "requested_by": "marc.bernard",
+    "risk": "medium"
   },
   {
     "ticket_id": "CHG-2002",
+    "summary": "Identity session lifetime change",
     "status": "Draft",
     "approved_by": null,
-    "approved_at": null
+    "approved_at": null,
+    "type": "Normal",
+    "requested_by": "sofia.weber",
+    "risk": "high"
   },
   {
     "ticket_id": "CHG-2003",
+    "summary": "Automated dependency maintenance",
     "status": "Approved",
     "approved_by": "change.manager",
-    "approved_at": "2026-07-10T18:00:00Z"
+    "approved_at": "2026-07-10T18:00:00Z",
+    "type": "Standard",
+    "requested_by": "svc-release-bot",
+    "risk": "low"
   },
   {
     "ticket_id": "CHG-2004",
+    "summary": "Reporting UI label correction",
     "status": "Draft",
     "approved_by": null,
-    "approved_at": null
+    "approved_at": null,
+    "type": "Normal",
+    "requested_by": "grace.hartley",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2021",
+    "summary": "Emergency ledger settlement hotfix (INC-4407)",
+    "status": "Emergency-Pending-Retrospective",
+    "approved_by": null,
+    "approved_at": null,
+    "type": "Emergency",
+    "requested_by": "omar.haddad",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2101",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-22T07:16:00Z",
+    "type": "Normal",
+    "requested_by": "lena.schulz",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2102",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-05T04:17:00Z",
+    "type": "Standard",
+    "requested_by": "sofia.weber",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2103",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-23T08:03:00Z",
+    "type": "Standard",
+    "requested_by": "grace.hartley",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2104",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-24T00:23:00Z",
+    "type": "Normal",
+    "requested_by": "sofia.weber",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2105",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-16T10:51:00Z",
+    "type": "Normal",
+    "requested_by": "lena.schulz",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2106",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-02T01:19:00Z",
+    "type": "Standard",
+    "requested_by": "lena.schulz",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2107",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-29T05:53:00Z",
+    "type": "Normal",
+    "requested_by": "alice.reviewer",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2108",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-19T18:41:00Z",
+    "type": "Standard",
+    "requested_by": "sofia.weber",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2109",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-06-30T00:56:00Z",
+    "type": "Normal",
+    "requested_by": "sofia.weber",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2110",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-06T02:15:00Z",
+    "type": "Standard",
+    "requested_by": "sofia.weber",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2111",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-06-30T13:29:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2112",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-06T14:20:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2113",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-01T12:13:00Z",
+    "type": "Normal",
+    "requested_by": "alice.reviewer",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2114",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-01T04:25:00Z",
+    "type": "Normal",
+    "requested_by": "noah.larsen",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2115",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-02T17:44:00Z",
+    "type": "Normal",
+    "requested_by": "grace.hartley",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2116",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-04T16:12:00Z",
+    "type": "Standard",
+    "requested_by": "grace.hartley",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2117",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-05T02:57:00Z",
+    "type": "Standard",
+    "requested_by": "alice.reviewer",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2118",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-12T09:29:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2119",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-15T09:41:00Z",
+    "type": "Normal",
+    "requested_by": "grace.hartley",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2120",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-05T20:39:00Z",
+    "type": "Normal",
+    "requested_by": "kenji.nakamura",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2121",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-28T03:19:00Z",
+    "type": "Normal",
+    "requested_by": "marc.bernard",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2122",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-21T05:34:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2123",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-09T00:41:00Z",
+    "type": "Standard",
+    "requested_by": "alice.reviewer",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2124",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-06T19:45:00Z",
+    "type": "Normal",
+    "requested_by": "marc.bernard",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2125",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-13T16:46:00Z",
+    "type": "Normal",
+    "requested_by": "noah.larsen",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2126",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-12T03:52:00Z",
+    "type": "Normal",
+    "requested_by": "kenji.nakamura",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2127",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-13T09:41:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2128",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-12T13:48:00Z",
+    "type": "Normal",
+    "requested_by": "grace.hartley",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2129",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-07T10:51:00Z",
+    "type": "Normal",
+    "requested_by": "grace.hartley",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2130",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-24T02:41:00Z",
+    "type": "Normal",
+    "requested_by": "omar.haddad",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2131",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-29T21:44:00Z",
+    "type": "Standard",
+    "requested_by": "sofia.weber",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2132",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-19T09:27:00Z",
+    "type": "Standard",
+    "requested_by": "noah.larsen",
+    "risk": "high"
+  },
+  {
+    "ticket_id": "CHG-2133",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-03T01:18:00Z",
+    "type": "Standard",
+    "requested_by": "kenji.nakamura",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2134",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-02T15:35:00Z",
+    "type": "Normal",
+    "requested_by": "lena.schulz",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2135",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-30T01:16:00Z",
+    "type": "Standard",
+    "requested_by": "kenji.nakamura",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2136",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-28T02:11:00Z",
+    "type": "Standard",
+    "requested_by": "alice.reviewer",
+    "risk": "medium"
+  },
+  {
+    "ticket_id": "CHG-2137",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-17T08:29:00Z",
+    "type": "Normal",
+    "requested_by": "marc.bernard",
+    "risk": "low"
+  },
+  {
+    "ticket_id": "CHG-2138",
+    "summary": "Planned engineering change",
+    "status": "Approved",
+    "approved_by": "change.manager",
+    "approved_at": "2026-07-24T09:44:00Z",
+    "type": "Normal",
+    "requested_by": "kenji.nakamura",
+    "risk": "high"
   }
 ]

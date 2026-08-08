@@ -70,15 +70,23 @@ TEMPLATE = ReportTemplate(
 )
 
 
-def run_reporting_demo(*, database: Database) -> dict[str, Any]:
-    """Try to publish six unsupportable reports, then publish a supportable one."""
-    _reset_and_seed(database)
+def run_reporting_demo(
+    *, database: Database, tenant_id: str | None = None, reset: bool = True
+) -> dict[str, Any]:
+    """Try to publish six unsupportable reports, then publish a supportable one.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or DEMO_TENANT
+    _reset_and_seed(database, tenant, reset=reset)
     service = ReportingService(database)
 
     def attempt(claim: ClaimInput, **overrides: Any) -> str:
         request = _request([_scope_claim(), claim, _limitation_claim()], **overrides)
         issues = service.dry_run(
-            tenant_id=DEMO_TENANT, engagement_id=ENGAGEMENT, request=request
+            tenant_id=tenant, engagement_id=ENGAGEMENT, request=request
         )
         return sorted({item.code for item in issues})
 
@@ -166,18 +174,18 @@ def run_reporting_demo(*, database: Database) -> dict[str, Any]:
         ],
     )
     remaining = service.dry_run(
-        tenant_id=DEMO_TENANT, engagement_id=ENGAGEMENT, request=request
+        tenant_id=tenant, engagement_id=ENGAGEMENT, request=request
     )
     service.record_claims(
-        tenant_id=DEMO_TENANT, engagement_id=ENGAGEMENT, claims=good_claims
+        tenant_id=tenant, engagement_id=ENGAGEMENT, claims=good_claims
     )
     prepared = service.prepare(
-        tenant_id=DEMO_TENANT, engagement_id=ENGAGEMENT, request=request
+        tenant_id=tenant, engagement_id=ENGAGEMENT, request=request
     )
 
     agent_issuance = _refusal(
         lambda: service.issue(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             report_id=prepared["report_id"],
             issued_by="agent:engagement-director",
             reason="Issued automatically.",
@@ -185,21 +193,21 @@ def run_reporting_demo(*, database: Database) -> dict[str, Any]:
         ReportingError,
     )
     issued = service.issue(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         report_id=prepared["report_id"],
         issued_by="dana.director@asteria.example",
         reason="Reviewed against the engagement file and issued to the audit committee.",
     )
-    verification = service.verify(tenant_id=DEMO_TENANT, report_id=prepared["report_id"])
-    tampered = _tamper_and_verify(service, database, prepared["report_id"])
+    verification = service.verify(tenant_id=tenant, report_id=prepared["report_id"])
+    tampered = _tamper_and_verify(service, database, tenant, prepared["report_id"])
 
-    usage = service.evidence_usage(tenant_id=DEMO_TENANT, evidence_id="ev_pr_1002")
+    usage = service.evidence_usage(tenant_id=tenant, evidence_id="ev_pr_1002")
     with database.read_session() as session:
-        events = AuditEventRepository(session).list(DEMO_TENANT, ENGAGEMENT)
+        events = AuditEventRepository(session).list(tenant, ENGAGEMENT)
 
     document = prepared["document"]
     return {
-        "tenant_id": DEMO_TENANT,
+        "tenant_id": tenant,
         "engagement_id": ENGAGEMENT,
         "refusals": refusals,
         # Every defect above produced at least one code of its own. A gate that
@@ -294,7 +302,9 @@ def _refusal(action: Any, expected: Any) -> str:
     return ""
 
 
-def _tamper_and_verify(service: ReportingService, database: Database, report_id: str) -> str:
+def _tamper_and_verify(
+    service: ReportingService, database: Database, tenant: str, report_id: str
+) -> str:
     """Edit a stored report and show verification catch it.
 
     The case an export's promise rests on. A digest nobody recomputes is a
@@ -311,7 +321,7 @@ def _tamper_and_verify(service: ReportingService, database: Database, report_id:
         document["claims"] = claims
         record.document_json = document
 
-    result = service.verify(tenant_id=DEMO_TENANT, report_id=report_id)
+    result = service.verify(tenant_id=tenant, report_id=report_id)
     outcome = (
         "digest mismatch detected" if not result["digest_matches"] else "NOT DETECTED"
     )
@@ -332,7 +342,7 @@ def _tamper_and_verify(service: ReportingService, database: Database, report_id:
     return outcome
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant_id: str, *, reset: bool = True) -> None:
     def evidence(
         evidence_id: str,
         *,
@@ -345,7 +355,7 @@ def _reset_and_seed(database: Database) -> None:
     ) -> EvidenceRecord:
         return EvidenceRecord(
             evidence_id=evidence_id,
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant_id,
             engagement_id=engagement_id,
             source_type="github" if "pr" in evidence_id else "confluence",
             source_locator=locator,
@@ -358,29 +368,32 @@ def _reset_and_seed(database: Database) -> None:
             classification="internal",
         )
 
+    if reset:
+        with database.transaction() as session:
+            tenant = TenantRepository(session).get(tenant_id)
+            if tenant is not None:
+                session.delete(tenant)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(DEMO_TENANT)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=DEMO_TENANT,
-                slug="asteria",
-                name="Asteria Systems DemoCo",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant_id) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant_id,
+                    slug="asteria",
+                    name="Asteria Systems DemoCo",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
         session.flush()
         for engagement_id, code, period in (
-            (ENGAGEMENT, "SCM-2026-07", PERIOD),
-            (OTHER_ENGAGEMENT, "SCM-2025-07", (date(2025, 7, 1), date(2025, 7, 31))),
+            (ENGAGEMENT, "SCM-2026-07-RPT", PERIOD),
+            (OTHER_ENGAGEMENT, "SCM-2025-07-RPT", (date(2025, 7, 1), date(2025, 7, 31))),
         ):
             session.add(
                 Engagement(
                     engagement_id=engagement_id,
-                    tenant_id=DEMO_TENANT,
+                    tenant_id=tenant_id,
                     code=code,
                     title="Software change management",
                     status="reporting",

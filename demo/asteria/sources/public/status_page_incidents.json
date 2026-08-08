@@ -1,0 +1,35 @@
+[
+  {
+    "id": "st-2026-07-14",
+    "title": "Delayed EUR settlement processing",
+    "impact": "major",
+    "started_at": "2026-07-14T01:12:00Z",
+    "resolved_at": "2026-07-14T03:40:00Z",
+    "components": [
+      "Payments"
+    ],
+    "postmortem_published": true
+  },
+  {
+    "id": "st-2026-07-06",
+    "title": "Elevated error rate on the customer portal",
+    "impact": "minor",
+    "started_at": "2026-07-06T18:02:00Z",
+    "resolved_at": "2026-07-06T19:25:00Z",
+    "components": [
+      "Customer portal"
+    ],
+    "postmortem_published": true
+  },
+  {
+    "id": "st-2026-05-19",
+    "title": "Scheduled maintenance",
+    "impact": "maintenance",
+    "started_at": "2026-05-19T22:00:00Z",
+    "resolved_at": "2026-05-19T23:30:00Z",
+    "components": [
+      "All"
+    ],
+    "postmortem_published": false
+  }
+]

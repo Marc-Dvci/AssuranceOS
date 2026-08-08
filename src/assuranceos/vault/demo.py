@@ -24,8 +24,17 @@ def run_evidence_vault_demo(
     object_root: Path,
     demo_root: Path,
     export_path: Path,
+    tenant_id: str | None = None,
+    reset: bool = True,
 ) -> dict[str, Any]:
-    _reset_demo(database, object_root)
+    """Store, verify, transform, and export evidence under one custody chain.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or EVIDENCE_DEMO_TENANT_ID
+    _reset_demo(database, object_root, tenant, reset=reset)
 
     def clock() -> datetime:
         return EVIDENCE_DEMO_NOW
@@ -43,7 +52,7 @@ def run_evidence_vault_demo(
         acquired.append(
             vault.ingest_file(
                 path,
-                tenant_id=EVIDENCE_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 source_type=source_type,
                 source_locator=f"synthetic://asteria/{path.relative_to(demo_root).as_posix()}",
                 actor_id=f"connector:{source_type}",
@@ -71,7 +80,7 @@ def run_evidence_vault_demo(
         b"[REDACTED: synthetic prompt-injection payload]",
     )
     redacted = vault.create_derivative(
-        tenant_id=EVIDENCE_DEMO_TENANT_ID,
+        tenant_id=tenant,
         source_evidence_ids=[policy.evidence_id],
         payload=redacted_payload,
         operation="security_redaction",
@@ -86,21 +95,21 @@ def run_evidence_vault_demo(
     )
 
     integrity = [
-        vault.verify_integrity(EVIDENCE_DEMO_TENANT_ID, item.evidence_id)
+        vault.verify_integrity(tenant, item.evidence_id)
         for item in [*acquired, redacted]
     ]
     export_path.parent.mkdir(parents=True, exist_ok=True)
     export_verification = vault.create_export(
-        tenant_id=EVIDENCE_DEMO_TENANT_ID,
+        tenant_id=tenant,
         evidence_ids=[redacted.evidence_id],
         destination=export_path,
         actor_id="auditor:demo",
         purpose="judge-visible evidence provenance demonstration",
     )
-    lineage = vault.lineage(EVIDENCE_DEMO_TENANT_ID, redacted.evidence_id)
-    custody = vault.verify_custody_chain(EVIDENCE_DEMO_TENANT_ID, redacted.evidence_id)
+    lineage = vault.lineage(tenant, redacted.evidence_id)
+    custody = vault.verify_custody_chain(tenant, redacted.evidence_id)
     return {
-        "tenant_id": EVIDENCE_DEMO_TENANT_ID,
+        "tenant_id": tenant,
         "acquired_count": len(acquired),
         "derived_evidence_id": redacted.evidence_id,
         "tainted_source_id": policy.evidence_id,
@@ -116,12 +125,16 @@ def run_evidence_vault_demo(
     }
 
 
-def _reset_demo(database: Database, object_root: Path) -> None:
+def _reset_demo(
+    database: Database, object_root: Path, tenant: str, *, reset: bool = True
+) -> None:
+    if not reset:
+        return
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(EVIDENCE_DEMO_TENANT_ID)
-        if tenant is not None:
-            session.delete(tenant)
-    tenant_root = object_root / EVIDENCE_DEMO_TENANT_ID
+        existing = TenantRepository(session).get(tenant)
+        if existing is not None:
+            session.delete(existing)
+    tenant_root = object_root / tenant
     if tenant_root.exists():
         resolved_root = object_root.resolve()
         resolved_tenant = tenant_root.resolve()
@@ -136,7 +149,7 @@ def _reset_demo(database: Database, object_root: Path) -> None:
     with database.transaction() as session:
         TenantRepository(session).add(
             Tenant(
-                tenant_id=EVIDENCE_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 slug="asteria-evidence-demo",
                 name="Asteria Systems DemoCo — Evidence Vault",
                 status="active",

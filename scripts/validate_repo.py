@@ -199,8 +199,9 @@ def main() -> None:
     if {(item.manifest.test_id, item.manifest.version) for item in control_tests} != {
         ("SCM-01", "2.0.0"),
         ("IAM-01", "1.0.0"),
+        ("SLA-01", "1.0.0"),
     }:
-        fail("expected released SCM-01 and IAM-01 control tests")
+        fail("expected released SCM-01, IAM-01 and SLA-01 control tests")
 
     print(
         f"Validated {len(agent_dirs)} signed agent packages, common schemas, "

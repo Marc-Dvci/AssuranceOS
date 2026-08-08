@@ -89,6 +89,16 @@ paths:
   /api/v1/demo/run:
     post:
       summary: Run Demo
+      description: 'Re-run the golden audit in place.
+
+
+        Only this engagement is replaced. The tenant also holds the approved plan,
+
+        the issued report, and the recorded traces that ``seed_demo_tenant`` put
+
+        there, and deleting an evaluator''s whole workspace to re-run one audit would
+
+        make the button destructive rather than repeatable.'
       operationId: run_demo_api_v1_demo_run_post
       responses:
         '200':
@@ -4317,8 +4327,15 @@ paths:
   /api/v1/judge/proofs/idempotency:
     post:
       summary: Replay Idempotent Remediation
-      description: Replay the canonical assurance loop and expose its duplicate-action
+      description: 'Replay the canonical assurance loop and expose its duplicate-action
         proofs.
+
+
+        The replay runs in the tenant the product routes read, so the finding it
+
+        drives to verified closure is the one an evaluator then sees in the register
+
+        rather than a record in a tenant no screen displays.'
       operationId: replay_idempotent_remediation_api_v1_judge_proofs_idempotency_post
       responses:
         '200':
@@ -4329,6 +4346,51 @@ paths:
                 $ref: '#/components/schemas/IdempotencyProofResponse'
       security:
       - HTTPBearer: []
+  /api/v1/tenants/{tenant_id}/findings/{finding_id}/detail:
+    get:
+      summary: Get Finding Detail
+      description: 'How the finding was reached: sources, the signed test, and the
+        decisions.
+
+
+        Separate from the adjudication view, which answers what state the finding
+        is
+
+        in. This one answers why anyone should believe it, and it is the view a
+
+        reviewer needs before deciding.'
+      operationId: get_finding_detail_api_v1_tenants__tenant_id__findings__finding_id__detail_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: finding_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Finding Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Finding Detail Api V1 Tenants  Tenant Id  Findings  Finding
+                  Id  Detail Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/tenants/{tenant_id}/traces/{trace_id}:
     get:
       summary: Get Correlated Trace

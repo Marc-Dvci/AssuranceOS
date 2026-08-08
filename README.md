@@ -20,10 +20,24 @@ A human approves what survives. A remediation obligation opens exactly once, is
 replayed to prove it, collects closure evidence, and is verified by a retester
 independent of both the agent that raised the finding and the team that fixed it.
 
-The seeded data carries three deliberate conditions: one real defect, one change
-covered by a live waiver, and one falling outside the audit period. Raising all
-three is as wrong as raising none, so the run reports itself against that ground
-truth rather than against its own execution.
+The corpus it runs on is a synthetic company, not a fixture: 56 files across ten
+source systems, with seventeen deliberate conditions in it. Eight must be
+reported, four must be suppressed with a stated reason, two controls must be
+reported as working, and one is an attack that must be contained without
+changing the audit result. Raising all seventeen is as wrong as raising none, so
+the run reports itself against that ground truth rather than against its own
+execution.
+
+The hardest of them needs three systems at once. A customer contract amendment
+tightened a P1 response commitment from 8 hours to 4; the incident response plan
+and the Jira SLA configuration were never updated. Every internal system agrees
+with every other internal system and all of them disagree with the contract, so
+three breaches were recorded as met and EUR 7,200 of service credits accrued
+unnoticed. `SLA-01` is the signed procedure that reconciles them.
+
+See [`demo/asteria/CORPUS.md`](demo/asteria/CORPUS.md) for the full map and
+[`demo/asteria/ground_truth.yaml`](demo/asteria/ground_truth.yaml) for the
+answer key.
 
 Verified against `gemma-4-12b-it-IQ4_XS` on a local llama.cpp server:
 
@@ -220,7 +234,7 @@ The Google ADK adapter binds each declared package tool as a shim that routes
 through the same gateway, so the ADK path and the in-process runtime share one
 enforcement point rather than two implementations kept in agreement by hand.
 
-### Components 9, 11â€“15 â€” company intelligence, reporting, continuous assurance, and product
+### Components 9, 11–15 — company intelligence, reporting, continuous assurance, and product
 
 - resumable onboarding from minimal company input to a versioned canonical profile;
 - immutable public-source snapshots, typed company claims, and explicit accept,
@@ -243,6 +257,68 @@ enforcement point rather than two implementations kept in agreement by hand.
 
 See [`docs/architecture/evidence-grounded-reporting.md`](docs/architecture/evidence-grounded-reporting.md).
 
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Control["Control plane"]
+    API["Cloud Run API + Judge Mode"]
+    Orchestrator["Durable engagement orchestrator"]
+    Registry["Signed agent package registry"]
+  end
+
+  subgraph Enforcement["Agent Gateway — the single enforcement point"]
+    Identity["Agent Identity<br/>Ed25519, task-bound, short-lived"]
+    Policy["Released package policy<br/>default deny"]
+    Armor["Model Armor<br/>context, arguments, output, reasoning"]
+    Budget["Token, cost, and call budgets"]
+  end
+
+  subgraph Agents["Governed agents"]
+    Runtime["In-process governed runtime"]
+    ADK["Google ADK / Agent Engine"]
+    Model["Gemini 3.5 / local Gemma"]
+  end
+
+  subgraph Work["Bounded work"]
+    Tests["Deterministic control tests<br/>sandboxed Cloud Run Jobs"]
+    Evidence["Content-addressed evidence vault"]
+    Connectors["GitHub, Jira, Confluence, Drive"]
+  end
+
+  subgraph Loop["Assurance loop"]
+    Skeptic["Skeptic contradiction search"]
+    Human{{"Human gate<br/>an agent cannot approve"}}
+    Remediation["Remediation, opened once"]
+    Retest["Independent retest"]
+  end
+
+  Judge[Judge / Auditor] --> API
+  API --> Orchestrator
+  Orchestrator -->|"execution envelope<br/>derived from the lease"| Enforcement
+  Registry --> Enforcement
+  Enforcement --> Runtime
+  Enforcement --> ADK
+  Runtime --> Model
+  ADK --> Model
+  Model -.->|"proposes only"| Enforcement
+  Enforcement --> Tests
+  Enforcement --> Evidence
+  Enforcement --> Connectors
+  Connectors --> Evidence
+  Tests -->|exceptions| Skeptic
+  Skeptic --> Human
+  Human -->|approved| Remediation
+  Remediation -->|closure evidence| Retest
+  Retest -->|"closed_verified or reopened"| Ledger
+  Enforcement --> Ledger[("Cloud SQL / SQLite<br/>canonical state, audit events,<br/>reasoning chains, outbox")]
+```
+
+Every arrow into a source system passes through the gateway, and nothing reaches
+canonical state without going through the ledger. The model appears once, as a
+proposer: it can suggest work and it can be denied, but no edge runs from it to
+canonical state.
+
 ## Local SQLite workflow
 
 ```bash
@@ -259,11 +335,20 @@ python scripts/run_orchestrator_demo.py
 python scripts/run_scheduler_demo.py
 python scripts/run_evidence_vault_demo.py
 python scripts/run_connector_demo.py
+python scripts/run_control_test_demo.py
 python scripts/run_governance_demo.py --render-chain
 python scripts/run_assurance_loop_demo.py
 python scripts/run_agent_evaluations.py --mode contract
+python scripts/seed_demo_tenant.py
 uvicorn assuranceos.api:app --reload --port 8080
 ```
+
+The demonstrations above each prove one component in a tenant of its own.
+`scripts/seed_demo_tenant.py` runs all of them into the single tenant the product
+routes read, so `/` and `/judge` show one complete audit — the approved plan,
+signed packs, 69 evidence records, deterministic tests, a governed agent trace,
+both findings, the remediation, and the issued report — rather than a set of
+mostly empty screens. Run it before opening the interface.
 
 To drive the governed path with a real model instead of scripted replies, point
 either demo at an OpenAI-compatible endpoint:
@@ -285,6 +370,41 @@ The SQLite fallback is controlled by `ASSURANCEOS_DATABASE_PATH`. Set
 `ASSURANCEOS_DATABASE_URL` to use PostgreSQL or Cloud SQL. Evidence objects and temporary exports
 are controlled by `ASSURANCEOS_EVIDENCE_ROOT` and `ASSURANCEOS_EVIDENCE_EXPORT_ROOT`; raw API
 uploads are bounded by `ASSURANCEOS_MAX_EVIDENCE_UPLOAD_BYTES`.
+
+## The demonstration corpus
+
+The engagement runs on Asteria Systems DemoCo, a synthetic company with a
+complete evidence corpus rather than a handful of fixtures.
+
+```bash
+make corpus                              # regenerate; seeded, so hashes are stable
+python scripts/run_control_test_demo.py  # both signed tests, over the real populations
+```
+
+| | |
+|---|---|
+| Files | 51 across cloud, Confluence, finance, GitHub, governance, HR, identity, Jira, and public sources |
+| Formats | JSON API exports, CSV extracts, Markdown wiki pages, `.xlsx` registers |
+| SCM-01 population | 44 merges across 6 repositories, reconciled to 43 change tickets |
+| IAM-01 population | 18 leavers from two workforce feeds, joined to 254 directory accounts |
+| Workforce | 240 employees and 14 contractors across 4 countries |
+
+Every file is hashed and captured as evidence before anything parses it. The
+populations are then *projected* from those files into the row shapes the signed
+test manifests declare — only the declared columns, each row carrying the
+evidence identifier of the export it came from, so a single exception in a
+result traces back to the file it was read out of.
+
+The `.xlsx` registers are read, not skipped. `assuranceos.spreadsheet` is a
+dependency-free reader for the workbook subset audit evidence actually uses, and
+it refuses a formula cell rather than trusting a cached result some other program
+computed. The access-review campaign register is the artefact the CISO maintains
+by hand, and the platform reads that artefact.
+
+Regeneration is deterministic: a rebuild that changed no data produces
+byte-identical files, so the hashes cited in the demonstration stay valid. One
+page is protected — `confluence/change_management_policy.md` carries the
+prompt-injection payload, and `--force` is required to rewrite it.
 
 ## Local PostgreSQL workflow
 

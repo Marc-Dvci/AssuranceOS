@@ -18,11 +18,24 @@ SCHEDULER_DEMO_SCHEDULE_ID = "sch_asteria_scm_semiannual"
 SCHEDULER_DEMO_NOW = datetime(2026, 8, 6, 8, 0, tzinfo=timezone.utc)
 
 
-def run_scheduler_demo(*, database: Database, workflow_path: Path) -> dict[str, Any]:
+def run_scheduler_demo(
+    *,
+    database: Database,
+    workflow_path: Path,
+    tenant_id: str | None = None,
+    reset: bool = True,
+) -> dict[str, Any]:
+    """Launch a recurring occurrence through the durable engagement contract.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or SCHEDULER_DEMO_TENANT_ID
     workflow = WorkflowDefinition.model_validate(
         json.loads(workflow_path.read_text(encoding="utf-8"))
     )
-    _reset_and_seed(database, workflow)
+    _reset_and_seed(database, workflow, tenant, reset=reset)
 
     def clock() -> datetime:
         return SCHEDULER_DEMO_NOW
@@ -31,13 +44,13 @@ def run_scheduler_demo(*, database: Database, workflow_path: Path) -> dict[str, 
     scheduler = AuditScheduler(database, clock=clock, orchestrator=orchestrator)
 
     simulation = scheduler.simulate(
-        tenant_id=SCHEDULER_DEMO_TENANT_ID,
+        tenant_id=tenant,
         schedule_id=SCHEDULER_DEMO_SCHEDULE_ID,
         window_start=SCHEDULER_DEMO_NOW - timedelta(days=1),
         window_end=SCHEDULER_DEMO_NOW + timedelta(days=550),
     )
     summary = scheduler.evaluate_due(
-        tenant_id=SCHEDULER_DEMO_TENANT_ID,
+        tenant_id=tenant,
         schedule_id=SCHEDULER_DEMO_SCHEDULE_ID,
         context=PreflightContext(
             connector_health={"github": "healthy", "jira": "healthy"},
@@ -46,15 +59,15 @@ def run_scheduler_demo(*, database: Database, workflow_path: Path) -> dict[str, 
         ),
     )
     occurrence = scheduler.list_occurrences(
-        tenant_id=SCHEDULER_DEMO_TENANT_ID,
+        tenant_id=tenant,
         schedule_id=SCHEDULER_DEMO_SCHEDULE_ID,
     )[0]
     orchestration = orchestrator.snapshot(
-        tenant_id=SCHEDULER_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=occurrence.engagement_id or "",
     )
     return {
-        "tenant_id": SCHEDULER_DEMO_TENANT_ID,
+        "tenant_id": tenant,
         "schedule_id": SCHEDULER_DEMO_SCHEDULE_ID,
         "evaluation": summary.model_dump(mode="json"),
         "occurrence": occurrence.model_dump(mode="json"),
@@ -66,25 +79,35 @@ def run_scheduler_demo(*, database: Database, workflow_path: Path) -> dict[str, 
     }
 
 
-def _reset_and_seed(database: Database, workflow: WorkflowDefinition) -> None:
+def _reset_and_seed(
+    database: Database, workflow: WorkflowDefinition, tenant: str, *, reset: bool = True
+) -> None:
+    if reset:
+        with database.transaction() as session:
+            existing = TenantRepository(session).get(tenant)
+            if existing is not None:
+                session.delete(existing)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(SCHEDULER_DEMO_TENANT_ID)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=SCHEDULER_DEMO_TENANT_ID,
-                slug="asteria-scheduler-demo",
-                name="Asteria Systems DemoCo — Scheduler",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria-scheduler-demo",
+                    name="Asteria Systems DemoCo — Scheduler",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
+            session.flush()
+        # Composing onto a tenant another demonstration populated must not
+        # duplicate the records this one owns.
+        if session.get(AuditPlan, "plan_asteria_2026") is not None:
+            return
         session.add(
             AuditPlan(
                 plan_id="plan_asteria_2026",
-                tenant_id=SCHEDULER_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 name="Asteria 2026 rolling audit plan",
                 version=1,
                 status="approved",
@@ -95,7 +118,7 @@ def _reset_and_seed(database: Database, workflow: WorkflowDefinition) -> None:
         session.add(
             EngagementTemplate(
                 template_id="tpl_asteria_scm",
-                tenant_id=SCHEDULER_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 name="Software Change Management Audit",
                 version=1,
                 status="released",
@@ -109,7 +132,7 @@ def _reset_and_seed(database: Database, workflow: WorkflowDefinition) -> None:
         session.add(
             AuditSchedule(
                 schedule_id=SCHEDULER_DEMO_SCHEDULE_ID,
-                tenant_id=SCHEDULER_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 plan_id="plan_asteria_2026",
                 template_id="tpl_asteria_scm",
                 name="Asteria SCM semiannual schedule",

@@ -1,0 +1,64 @@
+[
+  {
+    "repository": "asteria/payments-api",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": true,
+    "bypass_allowances": []
+  },
+  {
+    "repository": "asteria/identity-service",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": true,
+    "bypass_allowances": []
+  },
+  {
+    "repository": "asteria/ops-automation",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": false,
+    "bypass_allowances": [
+      "svc-release-bot"
+    ]
+  },
+  {
+    "repository": "asteria/reporting-ui",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": true,
+    "bypass_allowances": []
+  },
+  {
+    "repository": "asteria/invoice-ingest",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": true,
+    "bypass_allowances": []
+  },
+  {
+    "repository": "asteria/ledger-core",
+    "branch": "main",
+    "required_approving_review_count": 1,
+    "dismiss_stale_reviews": true,
+    "require_linear_history": true,
+    "allow_force_push": false,
+    "enforce_admins": true,
+    "bypass_allowances": []
+  }
+]

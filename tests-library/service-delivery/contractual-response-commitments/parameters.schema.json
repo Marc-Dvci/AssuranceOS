@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["expected_population_count", "in_scope_priorities"],
+  "properties": {
+    "expected_population_count": {"type": "integer", "minimum": 0},
+    "in_scope_priorities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "pattern": "^P[1-4]$"}
+    }
+  },
+  "additionalProperties": false
+}

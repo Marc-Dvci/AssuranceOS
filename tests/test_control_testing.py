@@ -37,7 +37,7 @@ def service(tmp_path: Path):
     with database.transaction() as session:
         TenantRepository(session).add(Tenant(tenant_id="tnt_test", slug="test", name="Test"))
     result = ControlTestService(database, registry())
-    assert result.synchronize_registry() == 2
+    assert result.synchronize_registry() == 3
     try:
         yield result, database
     finally:
@@ -126,6 +126,7 @@ def test_registry_loads_signed_python_and_sql_releases():
     assert [(r.manifest.test_id, r.manifest.engine) for r in releases] == [
         ("IAM-01", "sql"),
         ("SCM-01", "python"),
+        ("SLA-01", "python"),
     ]
     assert all(r.release_document["package_sha256"] for r in releases)
 

@@ -2,7 +2,7 @@
   "schema": "assurance.control_test_release.v1",
   "test_id": "SCM-01",
   "version": "2.0.0",
-  "released_at": "2026-08-06T20:04:54.940470+00:00",
+  "released_at": "2026-08-08T20:25:29.966086+00:00",
   "files": {
     "golden_cases/basic.json": "4938d421fcb686ca295a2da18ce33430c07d22cb895548482908218adc6bf3f4",
     "input.schema.json": "510f5a2df7ed191ff42fca5f3a337f28a5b6a734cfd4a220139f249f48c3e0ed",

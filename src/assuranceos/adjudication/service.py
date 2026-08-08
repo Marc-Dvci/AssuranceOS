@@ -1348,6 +1348,20 @@ class AdjudicationService:
             exception_keys=list(finding.exception_keys_json or []),
         )
 
+    def approval_blockers(self, *, tenant_id: str, finding_id: str) -> list[str]:
+        """The approval gates currently open on a finding, for display.
+
+        Public because read models need it. A projection that recomputes the
+        gates itself will drift from the ones that actually refuse the approval,
+        and the version that drifts is the one the operator is looking at.
+        """
+        with self.database.read_session() as session:
+            repository = AdjudicationRepository(session)
+            finding = repository.get_finding(tenant_id, finding_id)
+            if finding is None or finding.status != "proposed":
+                return []
+            return self._approval_blockers(repository, tenant_id, finding)
+
     def _approval_blockers(
         self, repository: AdjudicationRepository, tenant_id: str, finding: Finding
     ) -> list[str]:

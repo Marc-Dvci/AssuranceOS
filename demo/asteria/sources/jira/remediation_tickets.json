@@ -1,0 +1,29 @@
+[
+  {
+    "ticket_id": "AUD-118",
+    "summary": "Prior-year finding: formalise emergency change retrospective",
+    "status": "Closed",
+    "opened_at": "2025-09-02T10:00:00Z",
+    "closed_at": "2025-11-28T16:00:00Z",
+    "source_finding": "PY-2025-003",
+    "owner": "cto@asteria.invalid"
+  },
+  {
+    "ticket_id": "AUD-124",
+    "summary": "Prior-year finding: quarterly access review evidence retention",
+    "status": "Closed",
+    "opened_at": "2025-10-14T10:00:00Z",
+    "closed_at": "2026-01-20T16:00:00Z",
+    "source_finding": "PY-2025-007",
+    "owner": "ciso@asteria.invalid"
+  },
+  {
+    "ticket_id": "AUD-131",
+    "summary": "Prior-year finding: contractor identities absent from the offboarding feed",
+    "status": "Reopened",
+    "opened_at": "2026-02-03T10:00:00Z",
+    "closed_at": null,
+    "source_finding": "PY-2025-011",
+    "owner": "people-ops@asteria.invalid"
+  }
+]

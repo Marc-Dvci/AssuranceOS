@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["conclusion", "rows", "exceptions"],
+  "properties": {
+    "conclusion": {
+      "enum": ["effective", "partially_effective", "ineffective", "not_applicable", "not_tested", "insufficient_evidence", "population_incomplete", "source_unreliable", "test_failed_technically", "scope_limitation"]
+    },
+    "rows": {"type": "array", "items": {"type": "object"}},
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["exception_key", "subject_ref", "classification", "reason"],
+        "properties": {
+          "exception_key": {"type": "string", "minLength": 1},
+          "subject_ref": {"type": "string", "minLength": 1},
+          "classification": {"enum": ["sla_breach", "control_design_gap"]},
+          "severity": {"type": "string"},
+          "status": {"enum": ["open", "approved_exception", "false_positive", "resolved"]},
+          "reason": {"type": "string", "minLength": 1},
+          "attributes": {"type": "object"},
+          "evidence_ids": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "service_credit_exposure": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["customer", "breaches", "credit_pct_applied", "credit_value_eur"],
+            "properties": {
+              "customer": {"type": "string"},
+              "breaches": {"type": "integer", "minimum": 0},
+              "credit_pct_before_cap": {"type": "number"},
+              "credit_pct_applied": {"type": "number"},
+              "monthly_fee_eur": {"type": "number"},
+              "credit_value_eur": {"type": "number"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

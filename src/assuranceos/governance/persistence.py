@@ -16,6 +16,7 @@ from sqlalchemy import select
 
 from ..db.models import (
     AgentIdentityRecord,
+    ExecutionTrace,
     GatewayDecisionRecord,
     GuardrailFindingRecord,
     ReasoningSpanRecord,
@@ -158,6 +159,17 @@ class GovernanceRecorder:
         agent_role: str | None = None,
     ) -> int:
         with self.database.transaction() as session:
+            # The spans alone are not discoverable: every list view of the
+            # fleet's activity reads the trace header, so writing spans without
+            # one hides the whole chain behind a trace id nobody can obtain.
+            self._upsert_trace_header(
+                session,
+                chain,
+                tenant_id=tenant_id,
+                engagement_id=engagement_id,
+                task_id=task_id,
+                agent_role=agent_role,
+            )
             for span in chain.spans:
                 session.add(
                     ReasoningSpanRecord(
@@ -182,6 +194,68 @@ class GovernanceRecorder:
                     )
                 )
         return len(chain.spans)
+
+    @staticmethod
+    def _upsert_trace_header(
+        session,
+        chain: ReasoningChain,
+        *,
+        tenant_id: str,
+        engagement_id: str | None,
+        task_id: str | None,
+        agent_role: str | None,
+    ) -> None:
+        """Write the discoverable header the span rows hang off.
+
+        The header carries only what can be derived from the chain itself: when
+        it ran, how the task it belongs to ended, and the role it ran as.
+
+        Status follows the *root* span rather than any span. A governed run that
+        contains denied tool calls contains error spans by design — the denial is
+        the control working — and reporting that whole trace as failed would
+        label every successful containment a failure.
+        """
+        if not chain.spans:
+            return
+        existing = session.scalar(
+            select(ExecutionTrace).where(
+                ExecutionTrace.tenant_id == tenant_id,
+                ExecutionTrace.trace_id == chain.trace_id,
+            )
+        )
+        started_at = min(span.started_at for span in chain.spans)
+        ended = [span.ended_at for span in chain.spans if span.ended_at is not None]
+        completed_at = max(ended) if ended else None
+        roots = [span for span in chain.spans if span.parent_span_id is None]
+        root = min(roots, key=lambda span: span.sequence) if roots else None
+        status = "failed" if root is not None and root.status == "error" else "completed"
+        attributes = {
+            "span_count": len(chain.spans),
+            "agent_role": agent_role,
+            "otel_exported": any("otel.span_id" in span.attributes for span in chain.spans),
+            # Denials are the point of a governed run, so they are counted
+            # rather than folded into the status.
+            "denied_span_count": sum(1 for span in chain.spans if span.status == "error"),
+        }
+        if existing is not None:
+            existing.status = status
+            existing.started_at = started_at
+            existing.completed_at = completed_at
+            existing.attributes_json = attributes
+            return
+        session.add(
+            ExecutionTrace(
+                trace_row_id=f"trc_{uuid4().hex[:16]}",
+                tenant_id=tenant_id,
+                trace_id=chain.trace_id,
+                engagement_id=engagement_id,
+                task_id=task_id,
+                status=status,
+                started_at=started_at,
+                completed_at=completed_at,
+                attributes_json=attributes,
+            )
+        )
 
     def load_chain(self, tenant_id: str, trace_id: str) -> ReasoningChain:
         """Rebuild a reasoning chain from canonical state alone."""

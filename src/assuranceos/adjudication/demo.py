@@ -133,9 +133,17 @@ def run_assurance_loop_demo(
     database: Database,
     repository_root: Path,
     model_client: ModelClient | None = None,
+    tenant_id: str | None = None,
+    reset: bool = True,
 ) -> dict[str, Any]:
-    """Run the full loop and report what canonical state says happened."""
-    _reset_and_seed(database)
+    """Run the full loop and report what canonical state says happened.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or DEMO_TENANT
+    _reset_and_seed(database, tenant, reset=reset)
 
     packages = AgentRegistry(repository_root / "agents").load()
     package = packages[AGENT_ROLE]
@@ -147,6 +155,7 @@ def run_assurance_loop_demo(
         repository_root=repository_root,
         package=package,
         model_client=model_client,
+        tenant=tenant,
     )
 
     # -- 2. the skeptic searches for reasons the finding should not stand -----
@@ -178,7 +187,7 @@ def run_assurance_loop_demo(
         ],
     )
     finding_id, verdict = service.propose(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         engagement_id=LOOP_ENGAGEMENT_ID,
         finding=proposed,
         authored_by=f"agent:{AGENT_ROLE}",
@@ -189,11 +198,11 @@ def run_assurance_loop_demo(
     # -- 3. approval is refused before the gates in front of it are cleared ----
     # Attempted first, and reported. A gate that is never tried is a gate nobody
     # has evidence works.
-    premature_approval = _attempt_premature_approval(service, finding_id)
+    premature_approval = _attempt_premature_approval(service, tenant, finding_id)
 
     # -- 4. materiality is computed, not asserted -----------------------------
     assessment = service.assess_materiality(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=MaterialityRequest(
             finding_id=finding_id,
             inputs=MaterialityInputs(
@@ -217,7 +226,7 @@ def run_assurance_loop_demo(
 
     # -- 5. the methodology gate, held by someone other than the author -------
     quality = service.review_quality(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=QualityReviewRequest(
             finding_id=finding_id,
             reviewer_id="carol.qa@asteria.example",
@@ -226,11 +235,11 @@ def run_assurance_loop_demo(
     )
 
     # -- 6. the reviewer cannot also be the approver --------------------------
-    reviewer_as_approver = _attempt_reviewer_approval(service, finding_id)
+    reviewer_as_approver = _attempt_reviewer_approval(service, tenant, finding_id)
 
     # -- 7. the human gate ----------------------------------------------------
     approved_status = service.adjudicate(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=AdjudicationRequest(
             finding_id=finding_id,
             decision=HumanDecision.APPROVE,
@@ -245,7 +254,7 @@ def run_assurance_loop_demo(
 
     # -- 8. management disputes the severity, and the dispute is adjudicated --
     dispute_id = service.raise_dispute(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=DisputeRequest(
             finding_id=finding_id,
             ground=DisputeGround.SEVERITY_OVERSTATED,
@@ -257,10 +266,10 @@ def run_assurance_loop_demo(
             evidence_ids=["ev_oncall_log"],
         ),
     )
-    disputed_status = service.view(tenant_id=DEMO_TENANT, finding_id=finding_id).status
-    dispute_blocks_remediation = _attempt_remediation_under_dispute(service, finding_id)
+    disputed_status = service.view(tenant_id=tenant, finding_id=finding_id).status
+    dispute_blocks_remediation = _attempt_remediation_under_dispute(service, tenant, finding_id)
     dispute_status = service.resolve_dispute(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=DisputeResolutionRequest(
             dispute_id=dispute_id,
             resolution=DisputeResolution.UPHELD,
@@ -274,20 +283,20 @@ def run_assurance_loop_demo(
 
     # -- 9. remediation opens once, proven by replay --------------------------
     action_id, created_first = service.open_remediation(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=_remediation(finding_id),
     )
     replay_action_id, created_again = service.open_remediation(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=_remediation(finding_id),
     )
 
     # -- 10. the ticket is filed once in Jira, proven by a second sync --------
-    ticket_first, ticket_replay = _file_remediation_ticket(service, action_id)
+    ticket_first, ticket_replay = _file_remediation_ticket(service, tenant, action_id)
 
     # -- 11. management submits closure evidence ------------------------------
     service.submit_closure(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         submission=ClosureSubmission(
             action_id=action_id,
             response_text=(
@@ -300,9 +309,9 @@ def run_assurance_loop_demo(
     )
 
     # -- 12. an independent retest verifies it --------------------------------
-    non_independent = _attempt_non_independent_retest(service, action_id)
+    non_independent = _attempt_non_independent_retest(service, tenant, action_id)
     retest_id, final_status = service.retest(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         request=RetestRequest(
             action_id=action_id,
             procedure_ref="SCM-01@2.0.0",
@@ -316,12 +325,12 @@ def run_assurance_loop_demo(
     )
 
     # -- report from canonical state -----------------------------------------
-    view = service.view(tenant_id=DEMO_TENANT, finding_id=finding_id)
+    view = service.view(tenant_id=tenant, finding_id=finding_id)
     with database.read_session() as session:
-        events = AuditEventRepository(session).list(DEMO_TENANT, LOOP_ENGAGEMENT_ID)
+        events = AuditEventRepository(session).list(tenant, LOOP_ENGAGEMENT_ID)
 
     return {
-        "tenant_id": DEMO_TENANT,
+        "tenant_id": tenant,
         "engagement_id": LOOP_ENGAGEMENT_ID,
         "model": agent["model"],
         "agent_status": agent["status"],
@@ -388,11 +397,13 @@ def _remediation(finding_id: str) -> RemediationRequest:
     )
 
 
-def _attempt_premature_approval(service: AdjudicationService, finding_id: str) -> str:
+def _attempt_premature_approval(
+    service: AdjudicationService, tenant: str, finding_id: str
+) -> str:
     """Show that approval is refused before materiality and quality review."""
     try:
         service.adjudicate(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             request=AdjudicationRequest(
                 finding_id=finding_id,
                 decision=HumanDecision.APPROVE,
@@ -406,11 +417,13 @@ def _attempt_premature_approval(service: AdjudicationService, finding_id: str) -
     return ""
 
 
-def _attempt_reviewer_approval(service: AdjudicationService, finding_id: str) -> str:
+def _attempt_reviewer_approval(
+    service: AdjudicationService, tenant: str, finding_id: str
+) -> str:
     """Show that the quality reviewer cannot also sign the approval."""
     try:
         service.adjudicate(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             request=AdjudicationRequest(
                 finding_id=finding_id,
                 decision=HumanDecision.APPROVE,
@@ -425,7 +438,7 @@ def _attempt_reviewer_approval(service: AdjudicationService, finding_id: str) ->
 
 
 def _attempt_remediation_under_dispute(
-    service: AdjudicationService, finding_id: str
+    service: AdjudicationService, tenant: str, finding_id: str
 ) -> str:
     """Show that a disputed finding cannot be sent to remediation.
 
@@ -436,14 +449,14 @@ def _attempt_remediation_under_dispute(
     from .exceptions import InvalidTransitionError
 
     try:
-        service.open_remediation(tenant_id=DEMO_TENANT, request=_remediation(finding_id))
+        service.open_remediation(tenant_id=tenant, request=_remediation(finding_id))
     except InvalidTransitionError as exc:
         return str(exc)
     return ""
 
 
 def _file_remediation_ticket(
-    service: AdjudicationService, action_id: str
+    service: AdjudicationService, tenant: str, action_id: str
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """File the remediation in Jira through the real adapter, twice.
 
@@ -476,37 +489,39 @@ def _file_remediation_ticket(
     )
     writer = JiraTicketWriter(base_url=JIRA_BASE_URL, transport=transport)
     first = service.sync_remediation_ticket(
-        tenant_id=DEMO_TENANT, action_id=action_id, writer=writer
+        tenant_id=tenant, action_id=action_id, writer=writer
     )
     # Clear the local shortcut so the second sync has to reach the provider. This
     # reproduces the failure that matters: a crash after the provider created the
     # ticket but before the local commit.
-    _forget_external_ref(service, action_id)
+    _forget_external_ref(service, tenant, action_id)
     second = service.sync_remediation_ticket(
-        tenant_id=DEMO_TENANT, action_id=action_id, writer=writer
+        tenant_id=tenant, action_id=action_id, writer=writer
     )
     return first, second
 
 
-def _forget_external_ref(service: AdjudicationService, action_id: str) -> None:
+def _forget_external_ref(service: AdjudicationService, tenant: str, action_id: str) -> None:
     """Erase the local ticket reference, leaving the provider's copy in place."""
     from .repository import AdjudicationRepository
 
     with service.database.transaction() as session:
-        action = AdjudicationRepository(session).get_action(DEMO_TENANT, action_id)
+        action = AdjudicationRepository(session).get_action(tenant, action_id)
         assert action is not None
         action.external_ref = None
         action.external_url = None
         action.external_sync_state = "pending"
 
 
-def _attempt_non_independent_retest(service: AdjudicationService, action_id: str) -> str:
+def _attempt_non_independent_retest(
+    service: AdjudicationService, tenant: str, action_id: str
+) -> str:
     """Show the separation-of-duties refusal rather than asserting it holds."""
     from .exceptions import IndependenceError
 
     try:
         service.retest(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             request=RetestRequest(
                 action_id=action_id,
                 procedure_ref="SCM-01@2.0.0",
@@ -527,6 +542,7 @@ def _run_governed_agent(
     repository_root: Path,
     package: Any,
     model_client: ModelClient | None,
+    tenant: str,
 ) -> dict[str, Any]:
     """One governed agent task over the seeded evidence, injection included."""
     signing_key = Ed25519PrivateKey.generate()
@@ -567,7 +583,7 @@ def _run_governed_agent(
     envelope = ExecutionEnvelope(
         task_id=LOOP_TASK_ID,
         engagement_id=LOOP_ENGAGEMENT_ID,
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         agent_role=AGENT_ROLE,
         agent_version=str(package.manifest["version"]),
         purpose="assess operating effectiveness of SCM-01",
@@ -636,27 +652,39 @@ def _ground_truth(view: Any, verdict: Any) -> dict[str, bool]:
     }
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> None:
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(DEMO_TENANT)
-        if tenant is not None:
-            session.delete(tenant)
+        if reset:
+            existing = TenantRepository(session).get(tenant)
+            if existing is not None:
+                session.delete(existing)
+        else:
+            # Replaying the loop inside a tenant other demonstrations populated
+            # has to clear this engagement and nothing else. Leaving the previous
+            # run in place would stack a second finding and a second remediation
+            # obligation on every replay, which is the opposite of the property
+            # the replay exists to demonstrate.
+            engagement = session.get(Engagement, LOOP_ENGAGEMENT_ID)
+            if engagement is not None:
+                session.delete(engagement)
     with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=DEMO_TENANT,
-                slug="asteria",
-                name="Asteria Systems DemoCo",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria",
+                    name="Asteria Systems DemoCo",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
         session.flush()
         session.add(
             Engagement(
                 engagement_id=LOOP_ENGAGEMENT_ID,
-                tenant_id=DEMO_TENANT,
-                code="SCM-2026-07",
+                tenant_id=tenant,
+                code="SCM-2026-07-LOOP",
                 title="Software change management - full assurance loop",
                 status="in_progress",
                 audit_pack_ref="software-change-management@1.0.0",
@@ -668,7 +696,7 @@ def _reset_and_seed(database: Database) -> None:
         session.add(
             EngagementTask(
                 task_id=LOOP_TASK_ID,
-                tenant_id=DEMO_TENANT,
+                tenant_id=tenant,
                 engagement_id=LOOP_ENGAGEMENT_ID,
                 task_key="assess-operating-effectiveness",
                 task_type="agent",

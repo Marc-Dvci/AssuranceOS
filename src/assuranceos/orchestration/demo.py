@@ -27,18 +27,26 @@ def run_orchestrator_demo(
     database: Database,
     demo_root: Path,
     workflow_path: Path,
+    tenant_id: str | None = None,
+    reset: bool = True,
 ) -> dict[str, Any]:
-    """Run the SCM vertical slice through the durable orchestration contract."""
-    _reset_and_seed(database)
+    """Run the SCM vertical slice through the durable orchestration contract.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or ORCHESTRATION_DEMO_TENANT_ID
+    _reset_and_seed(database, tenant, reset=reset)
     orchestrator = Orchestrator(database)
     workflow = load_workflow(workflow_path)
     orchestrator.compile_workflow(
-        tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
         workflow=workflow,
     )
     orchestrator.start_engagement(
-        tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
     )
 
@@ -94,7 +102,7 @@ def run_orchestrator_demo(
 
     worker = LocalWorker(
         orchestrator=orchestrator,
-        tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+        tenant_id=tenant,
         worker_id="local-demo-worker",
         handlers={
             "evidence_collection": collect_evidence,
@@ -109,7 +117,7 @@ def run_orchestrator_demo(
     approvals: list[dict[str, str]] = []
     for _ in range(50):
         snapshot = orchestrator.snapshot(
-            tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+            tenant_id=tenant,
             engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
         )
         if snapshot.status == EngagementStatus.COMPLETED:
@@ -119,7 +127,7 @@ def run_orchestrator_demo(
             for task in waiting:
                 reason = f"Synthetic demo approval for {task.human_gate}."
                 orchestrator.approve_gate(
-                    tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+                    tenant_id=tenant,
                     task_id=task.task_id,
                     decision=GateDecision(actor_id="usr_demo_reviewer", reason=reason),
                 )
@@ -140,17 +148,17 @@ def run_orchestrator_demo(
         raise RuntimeError("orchestrator demo exceeded the execution safety limit")
 
     final = orchestrator.snapshot(
-        tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
     )
     replay = verify_replay(
         database,
         orchestrator,
-        tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
     )
     return {
-        "tenant_id": ORCHESTRATION_DEMO_TENANT_ID,
+        "tenant_id": tenant,
         "engagement_id": ORCHESTRATION_DEMO_ENGAGEMENT_ID,
         "engagement_status": final.status,
         "task_states": {task.task_key: task.status for task in final.tasks},
@@ -161,25 +169,33 @@ def run_orchestrator_demo(
     }
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> None:
+    if reset:
+        with database.transaction() as session:
+            existing = TenantRepository(session).get(tenant)
+            if existing is not None:
+                session.delete(existing)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(ORCHESTRATION_DEMO_TENANT_ID)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
-                slug="asteria-orchestration-demo",
-                name="Asteria Systems DemoCo — Orchestration",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria-orchestration-demo",
+                    name="Asteria Systems DemoCo — Orchestration",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
+            session.flush()
+        # Composing onto a tenant another demonstration populated must not
+        # duplicate the records this one owns.
+        if session.get(Engagement, ORCHESTRATION_DEMO_ENGAGEMENT_ID) is not None:
+            return
         session.add(
             Engagement(
                 engagement_id=ORCHESTRATION_DEMO_ENGAGEMENT_ID,
-                tenant_id=ORCHESTRATION_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 code="AST-SCM-ORCH-2026-H2",
                 title="Software Change Management Audit — Orchestrated",
                 status="planned",

@@ -125,7 +125,13 @@ from .portfolio import (
     RiskNotFoundError,
     ScoringPolicy,
 )
-from .product import evaluator_overview, ground_truth, tenant_cockpit, trace_detail
+from .product import (
+    evaluator_overview,
+    finding_detail,
+    ground_truth,
+    tenant_cockpit,
+    trace_detail,
+)
 from .product_schemas import (
     EvaluationSummaryResponse,
     GroundTruthResponse,
@@ -692,7 +698,14 @@ def reset_demo() -> dict:
 
 @app.post("/api/v1/demo/run", dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))])
 def run_demo() -> dict:
-    return run_golden_engagement(settings.demo_root, ledger)
+    """Re-run the golden audit in place.
+
+    Only this engagement is replaced. The tenant also holds the approved plan,
+    the issued report, and the recorded traces that ``seed_demo_tenant`` put
+    there, and deleting an evaluator's whole workspace to re-run one audit would
+    make the button destructive rather than repeatable.
+    """
+    return run_golden_engagement(settings.demo_root, ledger, reset=False)
 
 
 @app.get("/api/v1/demo/events", dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))])
@@ -3091,10 +3104,17 @@ def replay_prompt_injection() -> dict:
     dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
 )
 def replay_idempotent_remediation() -> dict:
-    """Replay the canonical assurance loop and expose its duplicate-action proofs."""
+    """Replay the canonical assurance loop and expose its duplicate-action proofs.
+
+    The replay runs in the tenant the product routes read, so the finding it
+    drives to verified closure is the one an evaluator then sees in the register
+    rather than a record in a tenant no screen displays.
+    """
     result = run_assurance_loop_demo(
         database=database,
         repository_root=Path(__file__).resolve().parents[2],
+        tenant_id=TENANT_ID,
+        reset=False,
     )
     return {
         "tenant_id": result["tenant_id"],
@@ -3108,6 +3128,23 @@ def replay_idempotent_remediation() -> dict:
         "final_status": result["final_status"],
         "ground_truth_match": result["ground_truth_match"],
     }
+
+
+@app.get(
+    "/api/v1/tenants/{tenant_id}/findings/{finding_id}/detail",
+    dependencies=[Depends(require_permission(Permission.FINDING_READ))],
+)
+def get_finding_detail(tenant_id: str, finding_id: str) -> dict:
+    """How the finding was reached: sources, the signed test, and the decisions.
+
+    Separate from the adjudication view, which answers what state the finding is
+    in. This one answers why anyone should believe it, and it is the view a
+    reviewer needs before deciding.
+    """
+    result = finding_detail(database, tenant_id, finding_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="finding not found")
+    return result
 
 
 @app.get(
@@ -3137,6 +3174,7 @@ def judge_mode() -> str:
 @app.get("/plan-proposals", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/audits", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/findings", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/findings/{finding_id}", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/evidence", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/standards", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/governance", response_class=HTMLResponse, include_in_schema=False)

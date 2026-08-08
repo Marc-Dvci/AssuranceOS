@@ -4,5 +4,6 @@
 *.jpeg binary
 *.gif binary
 *.zip binary
+*.xlsx binary
 *.pdf binary
 *.pem text eol=lf

@@ -1,13 +1,57 @@
 organization_id: org_asteria_demo
-legal_name: Asteria Systems DemoCo
+legal_name: Asteria Systems SAS
+trading_name: Asteria Systems DemoCo
 fictional: true
 primary_domain: asteria.invalid
 headquarters_country: France
 industry: B2B SaaS
-business_model: Subscription cloud software
+business_model: Subscription cloud software for invoice automation
+founded: 2019
+annual_recurring_revenue_eur: 38000000
+headcount:
+  employees: 240
+  contractors: 14
 operating_countries:
 - France
 - Germany
 - United Kingdom
 - United States
-notice: All names, systems, people, transactions, and findings are synthetic and exist only for the hackathon demonstration.
+legal_entities:
+- name: Asteria Systems SAS
+  country: France
+  role: Operating and contracting entity
+- name: Asteria Systems Inc.
+  country: United States
+  role: Wholly owned subsidiary
+- name: Asteria Systems Group Ltd
+  country: United Kingdom
+  role: Pre-2021 holding structure, no longer contracting
+  note: >-
+    Public press material still refers to this entity. The ambiguity is
+    deliberate: the onboarding flow must surface it and require a human to
+    resolve which entity is in scope.
+technology:
+  cloud: Google Cloud
+  region: europe-west1
+  cloud_run_services: 18
+  repositories: 82
+  repositories_in_audit_scope: 6
+  change_management: Jira
+  documentation: Confluence
+  identity_provider: Microsoft Entra ID
+  hr_system: Workday
+assurance:
+  internal_audit_department: none
+  model: Co-sourced provider under an audit-committee approved plan
+  executive_sponsor: Chief Financial Officer
+  principal_control_owners:
+  - Chief Technology Officer
+  - Chief Information Security Officer
+  commitments:
+  - ISO/IEC 27001
+  - SOC 2 Type II
+  - NIST CSF (mapping only)
+notice: >-
+  All names, systems, people, transactions, and findings are synthetic and exist
+  only for the hackathon demonstration. Employee addresses use the reserved
+  .invalid domain and never resolve.

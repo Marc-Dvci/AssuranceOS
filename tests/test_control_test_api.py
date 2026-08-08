@@ -74,7 +74,7 @@ def test_control_test_http_contracts(tmp_path, monkeypatch):
         client = TestClient(api.app)
         releases = client.get("/api/v1/control-tests")
         assert releases.status_code == 200
-        assert {item["test_id"] for item in releases.json()} == {"SCM-01", "IAM-01"}
+        assert {item["test_id"] for item in releases.json()} == {"SCM-01", "IAM-01", "SLA-01"}
 
         execution = client.post("/api/v1/tenants/tnt_api/control-test-runs", json=payload())
         assert execution.status_code == 200, execution.text

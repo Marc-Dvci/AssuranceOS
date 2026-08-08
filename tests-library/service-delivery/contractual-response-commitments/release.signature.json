@@ -1,0 +1,7 @@
+{
+  "schema": "assurance.control_test_release_signature.v1",
+  "algorithm": "Ed25519",
+  "key_id": "assuranceos-control-tests-2026-08",
+  "public_key_sha256": "a97a3ef2389786a2b67499b846aea64182e04dc6675b5e08cf41d4352b58befa",
+  "signature_base64": "RzbIjY5MCkqMIA008pLXQ07kmRhO35ZovF2n9GQujb9Gz8WCIX75YDqk/wE7Fbnq+tzEhTfzG0A/xgJUg8g+Aw=="
+}

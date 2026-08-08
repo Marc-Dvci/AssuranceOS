@@ -1,9 +1,38 @@
 [
   {
     "exception_key": "EXC-SVC-001",
-    "description": "Approved service-account automation exception",
+    "description": "Approved service-account automation exception for asteria/ops-automation dependency maintenance",
     "active": true,
     "expires_at": "2026-12-31",
-    "approved_by": "risk.owner"
+    "approved_by": "risk.owner",
+    "compensating_control": "Privileged-use alert alert:sa-deploy-privileged-use reviewed daily by the platform team",
+    "scope": "repository:asteria/ops-automation"
+  },
+  {
+    "exception_key": "EXC-IAM-004",
+    "description": "Retained directory account for post-termination knowledge transfer, read-only, no privileged roles",
+    "active": true,
+    "expires_at": "2026-09-30",
+    "approved_by": "ciso@asteria.invalid",
+    "compensating_control": "Sign-in alerting and weekly review of the retained account",
+    "scope": "identity"
+  },
+  {
+    "exception_key": "EXC-NET-002",
+    "description": "Sandbox runner permitted public ingress for partner integration testing",
+    "active": true,
+    "expires_at": "2026-10-31",
+    "approved_by": "ciso@asteria.invalid",
+    "compensating_control": "No production data in the sandbox project; weekly configuration diff",
+    "scope": "service:sandbox-runner"
+  },
+  {
+    "exception_key": "EXC-SVC-000",
+    "description": "Superseded automation exception for the retired build agent",
+    "active": false,
+    "expires_at": "2025-12-31",
+    "approved_by": "risk.owner",
+    "compensating_control": "",
+    "scope": "repository:asteria/legacy-build"
   }
 ]

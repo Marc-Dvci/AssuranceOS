@@ -70,10 +70,19 @@ def run_governance_demo(
     database: Database,
     repository_root: Path,
     model_client: ModelClient | None = None,
+    tenant_id: str | None = None,
+    reset: bool = True,
 ) -> dict[str, Any]:
+    """Run one governed agent task and rebuild its correlated chain.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or GOVERNANCE_DEMO_TENANT_ID
     packages = AgentRegistry(repository_root / "agents").load()
     package = packages[AGENT_ROLE]
-    _reset_and_seed(database)
+    _reset_and_seed(database, tenant, reset=reset)
 
     signing_key = Ed25519PrivateKey.generate()
     public_pem = signing_key.public_key().public_bytes(
@@ -84,7 +93,7 @@ def run_governance_demo(
     issuer = AgentIdentityIssuer(private_key=signing_key, key_id="assuranceos-identity-demo")
     verifier = AgentIdentityVerifier(
         {"assuranceos-identity-demo": public_pem},
-        revocations=DatabaseRevocationChecker(recorder, GOVERNANCE_DEMO_TENANT_ID),
+        revocations=DatabaseRevocationChecker(recorder, tenant),
     )
 
     armor = ModelArmor(egress_allowlist=frozenset({"api.github.com", "asteria.atlassian.net"}))
@@ -119,7 +128,7 @@ def run_governance_demo(
         telemetry=TelemetryConfig(environment="demo", cloud_region="europe-west1"),
     )
 
-    envelope = _envelope(package)
+    envelope = _envelope(package, tenant)
     tracer = AgentTracer(runtime.telemetry)
     result = runtime.run(
         package=package,
@@ -153,7 +162,7 @@ def run_governance_demo(
     # Revocation takes effect immediately, mid-engagement.
     recorder.record_identity(replay_identity)
     recorder.revoke_identity(
-        GOVERNANCE_DEMO_TENANT_ID,
+        tenant,
         replay_identity.identity.identity_id,
         reason="lease lost to another worker",
     )
@@ -177,23 +186,23 @@ def run_governance_demo(
     )
     recorder.record_chain(
         tracer.chain,
-        tenant_id=GOVERNANCE_DEMO_TENANT_ID,
+        tenant_id=tenant,
         engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
         task_id=GOVERNANCE_DEMO_TASK_ID,
         agent_role=AGENT_ROLE,
     )
 
-    rebuilt = recorder.load_chain(GOVERNANCE_DEMO_TENANT_ID, tracer.chain.trace_id)
+    rebuilt = recorder.load_chain(tenant, tracer.chain.trace_id)
     injection = [
         finding
         for result_ in result.armor_results
         for finding in result_.findings
         if finding.category == "prompt_injection"
     ]
-    blocked = recorder.list_guardrail_findings(GOVERNANCE_DEMO_TENANT_ID, verdict="block")
+    blocked = recorder.list_guardrail_findings(tenant, verdict="block")
 
     return {
-        "tenant_id": GOVERNANCE_DEMO_TENANT_ID,
+        "tenant_id": tenant,
         "engagement_id": GOVERNANCE_DEMO_ENGAGEMENT_ID,
         "trace_id": tracer.chain.trace_id,
         "model": result.model_name,
@@ -207,7 +216,7 @@ def run_governance_demo(
         "revocation_denial": revocation_denial,
         "gateway_allow_count": sum(1 for d in gateway.decisions if d.allowed),
         "gateway_deny_count": sum(1 for d in gateway.decisions if not d.allowed),
-        "persisted_decisions": len(recorder.list_decisions(GOVERNANCE_DEMO_TENANT_ID)),
+        "persisted_decisions": len(recorder.list_decisions(tenant)),
         "persisted_blocked_findings": sorted({f.detector for f in blocked}),
         "chain_spans": len(tracer.chain.spans),
         "chain_rebuilt_from_database": rebuilt.is_well_formed()
@@ -217,11 +226,11 @@ def run_governance_demo(
     }
 
 
-def _envelope(package) -> ExecutionEnvelope:
+def _envelope(package, tenant: str) -> ExecutionEnvelope:
     return ExecutionEnvelope(
         task_id=GOVERNANCE_DEMO_TASK_ID,
         engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-        tenant_id=GOVERNANCE_DEMO_TENANT_ID,
+        tenant_id=tenant,
         agent_role=AGENT_ROLE,
         agent_version=str(package.manifest["version"]),
         purpose="collect and preserve software change evidence for SCM-01",
@@ -233,26 +242,34 @@ def _envelope(package) -> ExecutionEnvelope:
     )
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> None:
+    if reset:
+        with database.transaction() as session:
+            existing = TenantRepository(session).get(tenant)
+            if existing is not None:
+                session.delete(existing)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(GOVERNANCE_DEMO_TENANT_ID)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=GOVERNANCE_DEMO_TENANT_ID,
-                slug="asteria-governance-demo",
-                name="Asteria Systems DemoCo - Governance",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria-governance-demo",
+                    name="Asteria Systems DemoCo - Governance",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
+            session.flush()
+        # Composing onto a tenant another demonstration populated must not
+        # duplicate the records this one owns.
+        if session.get(Engagement, GOVERNANCE_DEMO_ENGAGEMENT_ID) is not None:
+            return
         session.flush()
         session.add(
             Engagement(
                 engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-                tenant_id=GOVERNANCE_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 code="SCM-2026-GOV",
                 title="Software change management - governed agent path",
                 status="in_progress",
@@ -265,7 +282,7 @@ def _reset_and_seed(database: Database) -> None:
         session.add(
             EngagementTask(
                 task_id=GOVERNANCE_DEMO_TASK_ID,
-                tenant_id=GOVERNANCE_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
                 task_key="collect-change-evidence",
                 task_type="agent",
@@ -278,7 +295,7 @@ def _reset_and_seed(database: Database) -> None:
         session.add(
             EngagementTask(
                 task_id=GOVERNANCE_DEMO_OTHER_TASK_ID,
-                tenant_id=GOVERNANCE_DEMO_TENANT_ID,
+                tenant_id=tenant,
                 engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
                 task_key="select-change-sample",
                 task_type="agent",

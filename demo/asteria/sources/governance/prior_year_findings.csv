@@ -1,0 +1,5 @@
+finding_ref,year,title,severity,status,closed_on,remediation_ticket
+PY-2025-003,2025,Emergency change retrospective approval was undocumented,medium,Closed,2025-11-28,AUD-118
+PY-2025-007,2025,Access review evidence was not retained for the full period,low,Closed,2026-01-20,AUD-124
+PY-2025-011,2025,Contractor identities were absent from the offboarding feed,high,Reopened,,AUD-131
+PY-2024-002,2024,Production deployment approvals were not independently evidenced,high,Closed,2025-02-14,AUD-091

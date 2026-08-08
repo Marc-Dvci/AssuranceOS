@@ -1,0 +1,88 @@
+schema_version: assurance.control_test_manifest.v1
+test_id: SLA-01
+version: 1.0.0
+domain: service-delivery
+title: Contractual incident response commitments are met and correctly configured
+description: >-
+  Reconciles the response commitments in force under customer contracts against
+  the documented internal procedure, the target the ticketing system applied,
+  and the response times actually achieved. Reports breaches of the contractual
+  target and, separately, any target the organisation is operating to that the
+  contract does not support.
+engine: python
+entrypoint: test.py:execute
+input_schema: input.schema.json
+output_schema: output.schema.json
+parameter_schema: parameters.schema.json
+datasets:
+  - name: incidents
+    role: population
+    primary_key: [incident_id]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [incident_id, customer, priority, opened_at, operated_target_hours]
+      properties:
+        incident_id: {type: string}
+        customer: {type: string}
+        priority: {type: string}
+        opened_at: {type: string, format: date-time}
+        first_response_at: {type: [string, 'null'], format: date-time}
+        operated_target_hours: {type: integer, minimum: 0}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: contract_commitments
+    role: reference
+    primary_key: [contract_ref, priority, effective_from]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [contract_ref, customer, priority, response_hours, effective_from]
+      properties:
+        contract_ref: {type: string}
+        customer: {type: string}
+        priority: {type: string}
+        response_hours: {type: integer, minimum: 0}
+        coverage: {type: [string, 'null']}
+        effective_from: {type: string, format: date}
+        effective_to: {type: [string, 'null']}
+        credit_pct_per_breach: {type: [number, 'null']}
+        credit_cap_pct: {type: [number, 'null']}
+        monthly_fee_eur: {type: [number, 'null']}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: documented_targets
+    role: reference
+    primary_key: [priority, scope]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [priority, scope, response_hours, document_ref]
+      properties:
+        priority: {type: string}
+        scope: {type: string}
+        response_hours: {type: integer, minimum: 0}
+        document_ref: {type: string}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+reconciliation:
+  require_complete: true
+  expected_count_parameter: expected_population_count
+  reject_duplicate_primary_keys: true
+sampling:
+  method: full_population
+resources:
+  timeout_seconds: 30
+  memory_mb: 1024
+  cpu_seconds: 10
+  max_output_bytes: 2000000
+allowed_libraries: [datetime, typing]
+known_limitations:
+  - >-
+    Whether a recorded first response was substantive is a matter of judgement
+    and is outside this procedure; the test reads the timestamp the ticketing
+    system recorded.
+  - >-
+    Contractual coverage windows are reported but not applied. Applying a
+    business-hours window can only move a response later, never earlier, so a
+    breach reported here remains a breach under any window.

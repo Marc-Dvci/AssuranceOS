@@ -196,19 +196,34 @@ def _drive() -> GoogleDriveFileConnector:
     return GoogleDriveFileConnector(base, transport)
 
 
-def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
+def run_connector_demo(
+    database: Database,
+    vault: EvidenceVault,
+    tenant_id: str | None = None,
+    reset: bool = True,
+) -> dict:
+    """Collect from four read-only provider adapters under recorded transports.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or TENANT_ID
     with database.transaction() as session:
-        existing = TenantRepository(session).get(TENANT_ID)
-        if existing is not None:
+        repository = TenantRepository(session)
+        existing = repository.get(tenant)
+        if existing is not None and reset:
             session.delete(existing)
             session.flush()
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=TENANT_ID,
-                slug="asteria-connectors",
-                name="Asteria Systems DemoCo Connector Tenant",
+            existing = None
+        if existing is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria-connectors",
+                    name="Asteria Systems DemoCo Connector Tenant",
+                )
             )
-        )
 
     service = ConnectorService(database, vault)
     definitions = [
@@ -255,7 +270,7 @@ def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
     runs = []
     for key, connector_type, display_name, base_url, connector, request, selectors in definitions:
         instance = service.register_instance(
-            TENANT_ID,
+            tenant,
             ConnectorInstanceInput(
                 connector_key=key,
                 connector_type=connector_type,
@@ -266,7 +281,7 @@ def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
             ),
         )
         grant = service.create_grant(
-            TENANT_ID,
+            tenant,
             instance.connector_instance_id,
             CollectionGrantInput(
                 grant_key=f"{key}-scm-audit",
@@ -278,7 +293,7 @@ def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
         )
         runs.append(
             service.run(
-                tenant_id=TENANT_ID,
+                tenant_id=tenant,
                 connector_instance_id=instance.connector_instance_id,
                 grant_id=grant.grant_id,
                 connector=connector,
@@ -290,16 +305,16 @@ def run_connector_demo(database: Database, vault: EvidenceVault) -> dict:
     with database.read_session() as session:
         evidence_count = session.scalar(
             select(func.count(EvidenceRecord.evidence_id)).where(
-                EvidenceRecord.tenant_id == TENANT_ID
+                EvidenceRecord.tenant_id == tenant
             )
         )
         source_object_count = session.scalar(
             select(func.count(CollectedSourceObject.collected_object_id)).where(
-                CollectedSourceObject.tenant_id == TENANT_ID
+                CollectedSourceObject.tenant_id == tenant
             )
         )
     return {
-        "tenant_id": TENANT_ID,
+        "tenant_id": tenant,
         "runs": runs,
         "evidence_count": int(evidence_count or 0),
         "source_object_count": int(source_object_count or 0),

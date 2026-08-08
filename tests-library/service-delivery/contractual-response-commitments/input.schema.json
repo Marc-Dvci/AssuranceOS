@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["parameters", "datasets"],
+  "properties": {
+    "parameters": {"type": "object"},
+    "datasets": {
+      "type": "object",
+      "required": ["incidents", "contract_commitments", "documented_targets"],
+      "properties": {
+        "incidents": {"type": "array"},
+        "contract_commitments": {"type": "array"},
+        "documented_targets": {"type": "array"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

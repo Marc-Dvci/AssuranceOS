@@ -1,0 +1,164 @@
+[
+  {
+    "service": "payments-api",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "critical",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 1,
+    "processes_personal_data": true
+  },
+  {
+    "service": "identity-service",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "critical",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 1,
+    "processes_personal_data": true
+  },
+  {
+    "service": "ledger-core",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "critical",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 1,
+    "processes_personal_data": true
+  },
+  {
+    "service": "invoice-ingest",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "reporting-ui",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "ops-automation",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "notification-relay",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "document-render",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "webhook-gateway",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "search-index",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "tax-rules",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "fx-rates",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "customer-portal",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "admin-console",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "critical",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 1,
+    "processes_personal_data": true
+  },
+  {
+    "service": "export-service",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "audit-log-shipper",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "high",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": true
+  },
+  {
+    "service": "scheduler",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "medium",
+    "ingress": "internal-and-cloud-load-balancing",
+    "min_instances": 0,
+    "processes_personal_data": false
+  },
+  {
+    "service": "sandbox-runner",
+    "project": "asteria-prod",
+    "region": "europe-west1",
+    "criticality": "low",
+    "ingress": "all",
+    "min_instances": 0,
+    "processes_personal_data": false
+  }
+]

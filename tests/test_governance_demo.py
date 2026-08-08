@@ -13,6 +13,7 @@ from assuranceos.governance.demo import (
     run_governance_demo,
 )
 from assuranceos.governance.persistence import GovernanceRecorder
+from assuranceos.product import tenant_cockpit, trace_detail
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -82,3 +83,73 @@ def test_governance_demo_is_deterministic_and_repeatable(database: Database):
     # The reset is real: a repeat run does not accumulate rows.
     recorder = GovernanceRecorder(database)
     assert len(recorder.list_decisions(GOVERNANCE_DEMO_TENANT_ID)) == 5
+
+
+def test_the_recorded_chain_is_discoverable_from_the_trace_list(database: Database):
+    """Spans without a trace header are invisible to every list view.
+
+    ``trace_detail`` tolerates a missing header, so a chain could be persisted,
+    rebuilt, and still never reach the operator: the cockpit lists traces from
+    the header table, and an empty list offers no trace id to look one up with.
+    """
+    result = run_governance_demo(database=database, repository_root=ROOT)
+
+    cockpit = tenant_cockpit(database, GOVERNANCE_DEMO_TENANT_ID)
+    traces = cockpit["governance"]["traces"]
+    assert [item["trace_id"] for item in traces] == [result["trace_id"]]
+    assert traces[0]["engagement_id"] == GOVERNANCE_DEMO_ENGAGEMENT_ID
+    assert traces[0]["attributes"]["span_count"] == result["chain_spans"]
+
+    # And the id the list hands over resolves to the chain behind it.
+    detail = trace_detail(database, GOVERNANCE_DEMO_TENANT_ID, result["trace_id"])
+    assert detail is not None
+    assert len(detail["spans"]) == result["chain_spans"]
+
+
+def test_a_repeated_run_updates_the_trace_header_rather_than_duplicating_it(
+    database: Database,
+):
+    run_governance_demo(database=database, repository_root=ROOT)
+    second = run_governance_demo(database=database, repository_root=ROOT, reset=False)
+
+    traces = tenant_cockpit(database, GOVERNANCE_DEMO_TENANT_ID)["governance"]["traces"]
+    assert second["trace_id"] in {item["trace_id"] for item in traces}
+    assert len(traces) == len({item["trace_id"] for item in traces})
+
+
+def test_an_opened_trace_carries_the_injection_detection(database: Database):
+    """The detection has to survive into the projection an operator reads.
+
+    Which detectors fired is recorded as a span *event*, not as a span attribute
+    and not as a gateway decision — the neutralisation happens while inspecting
+    inbound context, before any tool is called. A trace projection that drops
+    events therefore shows an untroubled chain of allowed spans over a document
+    that was in fact rewritten.
+    """
+    result = run_governance_demo(database=database, repository_root=ROOT)
+    detail = trace_detail(database, GOVERNANCE_DEMO_TENANT_ID, result["trace_id"])
+
+    detectors = {
+        detector
+        for span in detail["spans"]
+        for event in span["events"]
+        if event["name"] == "armor.neutralised"
+        for detector in event["attributes"]["detectors"].split(",")
+    }
+    assert set(result["injection_detectors"]) == detectors
+
+    # And the tool-call denial reaches the same view through the gateway record.
+    assert "path_traversal" in {
+        item["detector"] for item in detail["guardrail_findings"]
+    }
+
+
+def test_a_contained_attack_is_not_reported_as_a_failed_trace(database: Database):
+    """Denied tool calls are the control working, not the run failing."""
+    result = run_governance_demo(database=database, repository_root=ROOT)
+    assert result["gateway_deny_count"] > 0
+
+    traces = tenant_cockpit(database, GOVERNANCE_DEMO_TENANT_ID)["governance"]["traces"]
+    header = next(item for item in traces if item["trace_id"] == result["trace_id"])
+    assert header["status"] == "completed"
+    assert header["attributes"]["denied_span_count"] > 0

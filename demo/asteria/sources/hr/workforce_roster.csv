@@ -1,0 +1,255 @@
+user_id,full_name,email,worker_type,department,job_title,location,country,hire_date,termination_date,status
+u-0001,Lucas Ashcroft,lucas.ashcroft@asteria.invalid,employee,Engineering,Senior software engineer,Berlin,Germany,2025-04-27,,active
+u-0002,Nathan Haddad,nathan.haddad@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2022-12-21,,active
+u-0003,Lucas Okafor,lucas.okafor@asteria.invalid,employee,Engineering,Senior software engineer,Berlin,Germany,2025-10-14,,active
+u-0004,Hugo Ellery,hugo.ellery@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2023-12-25,,active
+u-0005,Ruby Kaiser,ruby.kaiser@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2023-09-09,,active
+u-0006,Paul Weber,paul.weber@asteria.invalid,employee,Engineering,Senior software engineer,London,United Kingdom,2025-09-09,,active
+u-0007,Nathan Nakamura,nathan.nakamura@asteria.invalid,employee,Engineering,Site reliability engineer,Paris,France,2022-12-23,,active
+u-0008,Paul Novak,paul.novak@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2020-08-21,,active
+u-0009,Kenji Beaumont,kenji.beaumont@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2020-08-16,,active
+u-0010,Amelia Hartley,amelia.hartley@asteria.invalid,employee,Engineering,Software engineer,Berlin,Germany,2020-01-03,2026-06-05,terminated
+u-0011,Ethan Whitfield,ethan.whitfield@asteria.invalid,employee,Engineering,Senior software engineer,London,United Kingdom,2019-08-13,,active
+u-0012,Liam Haddad,liam.haddad@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2023-06-08,,active
+u-0013,Ines Robin,ines.robin@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2023-02-28,,active
+u-0014,Arjun Moreau,arjun.moreau@asteria.invalid,employee,Engineering,Software engineer,Paris,France,2023-02-05,,active
+u-0015,Paul Okafor,paul.okafor@asteria.invalid,employee,Engineering,Software engineer,Berlin,Germany,2020-09-22,,active
+u-0016,Gabriel Pemberton,gabriel.pemberton@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2020-05-13,,active
+u-0017,Chloe Fontaine,chloe.fontaine@asteria.invalid,employee,Engineering,Staff engineer,Berlin,Germany,2019-03-07,,active
+u-0018,Omar Kaiser,omar.kaiser@asteria.invalid,employee,Engineering,Site reliability engineer,Paris,France,2025-05-09,,active
+u-0019,Anna Ferreira,anna.ferreira@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2020-05-09,,active
+u-0020,Ethan Novak,ethan.novak@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2022-01-17,,active
+u-0021,Lena Bernard,lena.bernard@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2020-02-29,,active
+u-0022,Paul Lefevre,paul.lefevre@asteria.invalid,employee,Engineering,Software engineer,Paris,France,2024-06-06,,active
+u-0023,Emma Chevalier,emma.chevalier@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2019-01-06,,active
+u-0024,Hugo Ferreira,hugo.ferreira@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2022-04-09,,active
+u-0025,Grace Masson,grace.masson@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2021-04-07,2026-05-24,terminated
+u-0026,Marie Moreau,marie.moreau@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2019-10-19,,active
+u-0027,Omar Chevalier,omar.chevalier@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2025-03-15,,active
+u-0028,Emma Kowalski,emma.kowalski@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2019-12-02,,active
+u-0029,Anna Larkin,anna.larkin@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2020-06-11,,active
+u-0030,Ava Adeyemi,ava.adeyemi@asteria.invalid,employee,Engineering,Site reliability engineer,Paris,France,2019-12-31,,active
+u-0031,Sana Beaumont,sana.beaumont@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2021-07-22,2026-06-25,terminated
+u-0032,Isla Larsen,isla.larsen@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2021-03-06,,active
+u-0033,Elias Sommer,elias.sommer@asteria.invalid,employee,Engineering,Engineering manager,London,United Kingdom,2021-01-06,,active
+u-0034,Nathan Sato,nathan.sato@asteria.invalid,employee,Engineering,Staff engineer,Berlin,Germany,2019-12-26,,active
+u-0035,Nora Adeyemi,nora.adeyemi@asteria.invalid,employee,Engineering,Engineering manager,Austin,United States,2024-09-05,,active
+u-0036,Sofia Novak,sofia.novak@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2021-07-20,,active
+u-0037,Ethan Sato,ethan.sato@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2020-02-10,,active
+u-0038,Maya Bianchi,maya.bianchi@asteria.invalid,employee,Engineering,Staff engineer,Austin,United States,2021-03-20,,active
+u-0039,Grace Sommer,grace.sommer@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2022-09-24,,active
+u-0040,Omar Masson,omar.masson@asteria.invalid,employee,Engineering,Senior software engineer,Austin,United States,2019-10-18,,active
+u-0041,Noah Bernard,noah.bernard@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2020-03-22,,active
+u-0042,Lucas Nakamura,lucas.nakamura@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2020-02-10,,active
+u-0043,George Hoffmann,george.hoffmann@asteria.invalid,employee,Engineering,Staff engineer,Berlin,Germany,2025-04-26,,active
+u-0044,Kenji Moreau,kenji.moreau@asteria.invalid,employee,Engineering,Site reliability engineer,Paris,France,2020-04-15,,active
+u-0045,Emma Costa,emma.costa@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2019-01-17,,active
+u-0046,Aisha Bouchard,aisha.bouchard@asteria.invalid,employee,Engineering,Senior software engineer,Austin,United States,2022-02-09,,active
+u-0047,Oscar Bergman,oscar.bergman@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2022-03-17,,active
+u-0048,Marie Costa,marie.costa@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2021-02-07,,active
+u-0049,Ethan Ellery,ethan.ellery@asteria.invalid,employee,Engineering,Site reliability engineer,Paris,France,2023-09-09,,active
+u-0050,Arjun Masson,arjun.masson@asteria.invalid,employee,Engineering,Staff engineer,Austin,United States,2019-05-26,,active
+u-0051,Zoe Whitfield,zoe.whitfield@asteria.invalid,employee,Engineering,Staff engineer,Austin,United States,2026-01-28,,active
+u-0052,Ruby Weber,ruby.weber@asteria.invalid,employee,Engineering,Engineering manager,London,United Kingdom,2024-06-22,,active
+u-0053,Yuki Fontaine,yuki.fontaine@asteria.invalid,employee,Engineering,Staff engineer,Berlin,Germany,2019-10-16,,active
+u-0054,Chloe Ferreira,chloe.ferreira@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2019-03-13,2026-05-12,terminated
+u-0055,Felix Rossi,felix.rossi@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2019-07-17,,active
+u-0056,Nora Moreau,nora.moreau@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2023-07-07,,active
+u-0057,Felix Okafor,felix.okafor@asteria.invalid,employee,Engineering,Software engineer,Paris,France,2022-11-26,,active
+u-0058,Jonas Kaiser,jonas.kaiser@asteria.invalid,employee,Engineering,Senior software engineer,London,United Kingdom,2020-03-03,,active
+u-0059,Lena Weber,lena.weber@asteria.invalid,employee,Engineering,Engineering manager,Berlin,Germany,2024-02-29,,active
+u-0060,Lina Hartley,lina.hartley@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2023-05-03,,active
+u-0061,Zoe Chevalier,zoe.chevalier@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2025-01-19,,active
+u-0062,Elias Brandt,elias.brandt@asteria.invalid,employee,Engineering,Senior software engineer,Paris,France,2019-08-03,,active
+u-0063,Ethan Carlisle,ethan.carlisle@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2025-09-13,,active
+u-0064,Isla Weber,isla.weber@asteria.invalid,employee,Engineering,Software engineer,Paris,France,2025-10-06,,active
+u-0065,Lucas Hoffmann,lucas.hoffmann@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2019-02-03,,active
+u-0066,Sana Robin,sana.robin@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2020-12-03,,active
+u-0067,Ines Larkin,ines.larkin@asteria.invalid,employee,Engineering,Senior software engineer,London,United Kingdom,2019-02-23,,active
+u-0068,Gabriel Masson,gabriel.masson@asteria.invalid,employee,Engineering,Senior software engineer,Paris,France,2022-04-23,,active
+u-0069,Rohan Ashcroft,rohan.ashcroft@asteria.invalid,employee,Engineering,Engineering manager,Berlin,Germany,2024-09-25,,active
+u-0070,Hugo Fontaine,hugo.fontaine@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2019-07-19,,active
+u-0071,Nadia Bernard,nadia.bernard@asteria.invalid,employee,Engineering,Senior software engineer,Austin,United States,2023-04-17,,active
+u-0072,Mathis Kaiser,mathis.kaiser@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2020-08-10,,active
+u-0073,Leo Pemberton,leo.pemberton@asteria.invalid,employee,Engineering,Engineering manager,London,United Kingdom,2022-10-18,,active
+u-0074,Priya Bernard,priya.bernard@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2022-09-16,,active
+u-0075,Ines Kaiser,ines.kaiser@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2023-07-12,,active
+u-0076,Owen Hoffmann,owen.hoffmann@asteria.invalid,employee,Engineering,Engineering manager,Berlin,Germany,2025-07-24,,active
+u-0077,Omar Sommer,omar.sommer@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2021-05-01,2026-05-04,terminated
+u-0078,Rohan Kowalski,rohan.kowalski@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2025-09-26,,active
+u-0079,Caleb Bernard,caleb.bernard@asteria.invalid,employee,Engineering,Senior software engineer,Berlin,Germany,2023-11-08,,active
+u-0080,Anna Lefevre,anna.lefevre@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2022-08-09,,active
+u-0081,Ines Ferreira,ines.ferreira@asteria.invalid,employee,Engineering,Software engineer,Paris,France,2025-08-13,,active
+u-0082,Emma Nakamura,emma.nakamura@asteria.invalid,employee,Engineering,Staff engineer,Paris,France,2019-02-08,,active
+u-0083,Harry Costa,harry.costa@asteria.invalid,employee,Engineering,Engineering manager,Paris,France,2024-09-04,,active
+u-0084,Tariq Moreau,tariq.moreau@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2025-11-19,,active
+u-0085,Felix Ellery,felix.ellery@asteria.invalid,employee,Engineering,Software engineer,London,United Kingdom,2024-04-22,,active
+u-0086,Jade Masson,jade.masson@asteria.invalid,employee,Engineering,Software engineer,Berlin,Germany,2020-01-11,,active
+u-0087,Nathan Raman,nathan.raman@asteria.invalid,employee,Engineering,Site reliability engineer,Austin,United States,2020-12-16,,active
+u-0088,Isla Ellery,isla.ellery@asteria.invalid,employee,Engineering,Software engineer,Berlin,Germany,2023-03-21,,active
+u-0089,Jonas Larsen,jonas.larsen@asteria.invalid,employee,Engineering,Site reliability engineer,Berlin,Germany,2024-05-22,,active
+u-0090,Rohan Novak,rohan.novak@asteria.invalid,employee,Engineering,Site reliability engineer,London,United Kingdom,2025-03-05,,active
+u-0091,Harry Adeyemi,harry.adeyemi@asteria.invalid,employee,Engineering,Engineering manager,London,United Kingdom,2022-08-16,,active
+u-0092,Lucas Brandt,lucas.brandt@asteria.invalid,employee,Engineering,Staff engineer,Austin,United States,2019-01-06,,active
+u-0093,Jade Girard,jade.girard@asteria.invalid,employee,Engineering,Engineering manager,Austin,United States,2020-04-22,,active
+u-0094,Jade Bouchard,jade.bouchard@asteria.invalid,employee,Engineering,Senior software engineer,Austin,United States,2022-04-04,,active
+u-0095,Ruby Hoffmann,ruby.hoffmann@asteria.invalid,employee,Engineering,Staff engineer,Austin,United States,2025-04-13,,active
+u-0096,Rohan Nakamura,rohan.nakamura@asteria.invalid,employee,Engineering,Staff engineer,London,United Kingdom,2019-05-19,,active
+u-0097,Isaac Bouchard,isaac.bouchard@asteria.invalid,employee,Customer Success,Customer success manager,Paris,France,2023-10-23,,active
+u-0098,Olivia Bergman,olivia.bergman@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2023-03-04,,active
+u-0099,Emma Bouchard,emma.bouchard@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2021-02-21,,active
+u-0100,Lena Moreau,lena.moreau@asteria.invalid,employee,Customer Success,Onboarding specialist,Berlin,Germany,2022-11-28,,active
+u-0101,Marie Robin,marie.robin@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2021-08-13,,active
+u-0102,Ava Haddad,ava.haddad@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2023-10-28,,active
+u-0103,Caleb Okafor,caleb.okafor@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2024-07-31,,active
+u-0104,Nadia Ellery,nadia.ellery@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2025-11-23,,active
+u-0105,Tariq Whitfield,tariq.whitfield@asteria.invalid,employee,Customer Success,Onboarding specialist,London,United Kingdom,2025-05-29,,active
+u-0106,Nora Fontaine,nora.fontaine@asteria.invalid,employee,Customer Success,Onboarding specialist,London,United Kingdom,2019-07-09,,active
+u-0107,Noah Lorenz,noah.lorenz@asteria.invalid,employee,Customer Success,Customer success manager,Paris,France,2022-01-15,,active
+u-0108,Isla Brandt,isla.brandt@asteria.invalid,employee,Customer Success,Support engineer,Berlin,Germany,2023-03-31,,active
+u-0109,Marie Ellery,marie.ellery@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2020-04-15,,active
+u-0110,Olivia Raman,olivia.raman@asteria.invalid,employee,Customer Success,Customer success manager,Berlin,Germany,2025-04-12,,active
+u-0111,Liam Sato,liam.sato@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2025-10-18,2026-05-08,terminated
+u-0112,Sofia Pemberton,sofia.pemberton@asteria.invalid,employee,Customer Success,Onboarding specialist,Austin,United States,2022-10-31,,active
+u-0113,Jonas Whitfield,jonas.whitfield@asteria.invalid,employee,Customer Success,Support engineer,Austin,United States,2021-01-01,,active
+u-0114,Mia Schulz,mia.schulz@asteria.invalid,employee,Customer Success,Onboarding specialist,Austin,United States,2020-05-24,,active
+u-0115,Isaac Ferreira,isaac.ferreira@asteria.invalid,employee,Customer Success,Support engineer,Paris,France,2020-12-01,,active
+u-0116,Emma Schulz,emma.schulz@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2020-02-26,,active
+u-0117,Isla Robin,isla.robin@asteria.invalid,employee,Customer Success,Support engineer,Paris,France,2019-09-01,,active
+u-0118,Grace Hartley,grace.hartley@asteria.invalid,employee,Customer Success,Support engineer,Berlin,Germany,2025-11-01,,active
+u-0119,Owen Okafor,owen.okafor@asteria.invalid,employee,Customer Success,Support engineer,London,United Kingdom,2021-03-22,,active
+u-0120,Isaac Haddad,isaac.haddad@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2022-09-04,,active
+u-0121,Emma Girard,emma.girard@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2024-10-09,,active
+u-0122,Lucas Hartley,lucas.hartley@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2019-12-23,,active
+u-0123,George Fontaine,george.fontaine@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2024-06-12,,active
+u-0124,Louis Haddad,louis.haddad@asteria.invalid,employee,Customer Success,Customer success manager,London,United Kingdom,2025-01-16,,active
+u-0125,Amelie Nakamura,amelie.nakamura@asteria.invalid,employee,Customer Success,Onboarding specialist,London,United Kingdom,2019-02-21,,active
+u-0126,Hugo Bergman,hugo.bergman@asteria.invalid,employee,Customer Success,Customer success manager,Austin,United States,2023-09-02,,active
+u-0127,Rohan Larkin,rohan.larkin@asteria.invalid,employee,Customer Success,Onboarding specialist,London,United Kingdom,2022-07-08,,active
+u-0128,Liam Fontaine,liam.fontaine@asteria.invalid,employee,Customer Success,Support engineer,Berlin,Germany,2025-01-03,,active
+u-0129,Owen Girard,owen.girard@asteria.invalid,employee,Customer Success,Support engineer,London,United Kingdom,2020-11-08,,active
+u-0130,Owen Sato,owen.sato@asteria.invalid,employee,Customer Success,Customer success manager,Berlin,Germany,2024-11-17,,active
+u-0131,Isla Pemberton,isla.pemberton@asteria.invalid,employee,Sales,Account executive,London,United Kingdom,2026-03-02,,active
+u-0132,Sana Lorenz,sana.lorenz@asteria.invalid,employee,Sales,Sales development representative,Paris,France,2024-10-10,,active
+u-0133,Lina Whitfield,lina.whitfield@asteria.invalid,employee,Sales,Sales development representative,Paris,France,2021-03-01,2026-06-09,terminated
+u-0134,Arjun Okafor,arjun.okafor@asteria.invalid,employee,Sales,Account executive,London,United Kingdom,2021-04-15,,active
+u-0135,George Moreau,george.moreau@asteria.invalid,employee,Sales,Account executive,Berlin,Germany,2022-01-23,,active
+u-0136,Paul Kowalski,paul.kowalski@asteria.invalid,employee,Sales,Sales development representative,London,United Kingdom,2020-10-02,,active
+u-0137,Jade Hartley,jade.hartley@asteria.invalid,employee,Sales,Account executive,Paris,France,2025-10-14,,active
+u-0138,Liam Kaiser,liam.kaiser@asteria.invalid,employee,Sales,Sales manager,Austin,United States,2024-01-15,2026-05-28,terminated
+u-0139,Harry Larsen,harry.larsen@asteria.invalid,employee,Sales,Account executive,Paris,France,2022-04-29,2026-06-13,terminated
+u-0140,Elias Ashcroft,elias.ashcroft@asteria.invalid,employee,Sales,Sales manager,Paris,France,2023-05-09,,active
+u-0141,Yuki Novak,yuki.novak@asteria.invalid,employee,Sales,Sales manager,Paris,France,2024-05-23,,active
+u-0142,Priya Masson,priya.masson@asteria.invalid,employee,Sales,Sales development representative,Berlin,Germany,2021-12-22,,active
+u-0143,Ines Fontaine,ines.fontaine@asteria.invalid,employee,Sales,Account executive,Paris,France,2024-04-15,,active
+u-0144,Amelia Weber,amelia.weber@asteria.invalid,employee,Sales,Account executive,Paris,France,2019-12-07,,active
+u-0145,Maya Weber,maya.weber@asteria.invalid,employee,Sales,Sales development representative,Berlin,Germany,2021-05-06,,active
+u-0146,Amelie Pemberton,amelie.pemberton@asteria.invalid,employee,Sales,Sales manager,Berlin,Germany,2023-02-26,,active
+u-0147,Nora Lorenz,nora.lorenz@asteria.invalid,employee,Sales,Sales manager,London,United Kingdom,2020-04-15,,active
+u-0148,Ines Adeyemi,ines.adeyemi@asteria.invalid,employee,Sales,Account executive,Paris,France,2022-10-16,2026-05-20,terminated
+u-0149,Ava Costa,ava.costa@asteria.invalid,employee,Sales,Sales manager,Berlin,Germany,2024-02-02,,active
+u-0150,Olivia Lorenz,olivia.lorenz@asteria.invalid,employee,Sales,Sales manager,Austin,United States,2025-07-23,,active
+u-0151,Louis Schulz,louis.schulz@asteria.invalid,employee,Sales,Sales development representative,Berlin,Germany,2024-10-08,,active
+u-0152,Arjun Brandt,arjun.brandt@asteria.invalid,employee,Sales,Sales development representative,London,United Kingdom,2021-09-16,,active
+u-0153,Harry Carlisle,harry.carlisle@asteria.invalid,employee,Sales,Sales manager,Berlin,Germany,2024-08-11,,active
+u-0154,Nora Bergman,nora.bergman@asteria.invalid,employee,Sales,Account executive,Austin,United States,2019-08-06,,active
+u-0155,Ines Hartley,ines.hartley@asteria.invalid,employee,Sales,Sales manager,Berlin,Germany,2019-02-19,2026-06-01,terminated
+u-0156,Olivia Adeyemi,olivia.adeyemi@asteria.invalid,employee,Sales,Sales development representative,Paris,France,2026-03-09,,active
+u-0157,Aisha Beaumont,aisha.beaumont@asteria.invalid,employee,Sales,Account executive,Austin,United States,2025-04-02,,active
+u-0158,Ruby Nakamura,ruby.nakamura@asteria.invalid,employee,Sales,Sales manager,Berlin,Germany,2020-01-02,,active
+u-0159,Amelie Iyer,amelie.iyer@asteria.invalid,employee,Sales,Account executive,Paris,France,2021-02-15,,active
+u-0160,Jade Sato,jade.sato@asteria.invalid,employee,Sales,Sales manager,Austin,United States,2025-10-19,,active
+u-0161,Leo Iyer,leo.iyer@asteria.invalid,employee,Finance,Accountant,London,United Kingdom,2019-05-12,,active
+u-0162,Zoe Iyer,zoe.iyer@asteria.invalid,employee,Finance,Finance manager,Austin,United States,2023-02-07,,active
+u-0163,Nadia Hartley,nadia.hartley@asteria.invalid,employee,Finance,Accounts payable clerk,Berlin,Germany,2019-05-16,,active
+u-0164,Omar Raman,omar.raman@asteria.invalid,employee,Finance,Finance manager,Paris,France,2026-03-02,,active
+u-0165,Jonas Hartley,jonas.hartley@asteria.invalid,employee,Finance,Accounts payable clerk,London,United Kingdom,2020-02-29,2026-07-07,terminated
+u-0166,Ethan Haddad,ethan.haddad@asteria.invalid,employee,Finance,Accounts payable clerk,Paris,France,2025-11-15,2026-07-03,terminated
+u-0167,Zoe Brandt,zoe.brandt@asteria.invalid,employee,Finance,Accountant,Austin,United States,2025-11-05,,active
+u-0168,Isaac Okafor,isaac.okafor@asteria.invalid,employee,Finance,Accountant,Paris,France,2023-05-01,2026-06-21,terminated
+u-0169,Kenji Ferreira,kenji.ferreira@asteria.invalid,employee,Finance,Accounts payable clerk,London,United Kingdom,2020-03-20,2026-06-29,terminated
+u-0170,Isla Moreau,isla.moreau@asteria.invalid,employee,Finance,Accounts payable clerk,Paris,France,2023-11-24,,active
+u-0171,Hugo Hartley,hugo.hartley@asteria.invalid,employee,Finance,Financial analyst,London,United Kingdom,2023-04-14,,active
+u-0172,Jonas Bouchard,jonas.bouchard@asteria.invalid,employee,Finance,Financial analyst,Paris,France,2025-02-13,,active
+u-0173,Sofia Bianchi,sofia.bianchi@asteria.invalid,employee,Finance,Financial analyst,Austin,United States,2025-03-20,,active
+u-0174,Tariq Hoffmann,tariq.hoffmann@asteria.invalid,employee,Finance,Financial analyst,Berlin,Germany,2022-09-06,,active
+u-0175,Caleb Bergman,caleb.bergman@asteria.invalid,employee,Finance,Accountant,Berlin,Germany,2019-07-01,,active
+u-0176,Anna Moreau,anna.moreau@asteria.invalid,employee,Finance,Accounts payable clerk,Paris,France,2022-10-11,,active
+u-0177,Aisha Haddad,aisha.haddad@asteria.invalid,employee,Finance,Financial analyst,Austin,United States,2024-12-30,,active
+u-0178,Felix Iyer,felix.iyer@asteria.invalid,employee,Finance,Accounts payable clerk,Berlin,Germany,2024-03-06,,active
+u-0179,Nadia Carlisle,nadia.carlisle@asteria.invalid,employee,Product,Technical writer,Paris,France,2025-10-16,,active
+u-0180,Oscar Beaumont,oscar.beaumont@asteria.invalid,employee,Product,Technical writer,Austin,United States,2025-05-14,,active
+u-0181,Isaac Sommer,isaac.sommer@asteria.invalid,employee,Product,Product manager,Berlin,Germany,2020-07-31,,active
+u-0182,Felix Costa,felix.costa@asteria.invalid,employee,Product,Product manager,London,United Kingdom,2023-01-30,,active
+u-0183,Anna Bernard,anna.bernard@asteria.invalid,employee,Product,Technical writer,Berlin,Germany,2024-08-17,,active
+u-0184,Grace Bergman,grace.bergman@asteria.invalid,employee,Product,Product designer,Berlin,Germany,2021-06-04,,active
+u-0185,Caleb Raman,caleb.raman@asteria.invalid,employee,Product,Technical writer,Paris,France,2019-07-28,,active
+u-0186,Leo Robin,leo.robin@asteria.invalid,employee,Product,Product manager,Berlin,Germany,2021-05-24,,active
+u-0187,Louis Okafor,louis.okafor@asteria.invalid,employee,Product,Product manager,Austin,United States,2021-05-21,2026-06-17,terminated
+u-0188,Mathis Bernard,mathis.bernard@asteria.invalid,employee,Product,Product designer,Austin,United States,2024-11-10,,active
+u-0189,Gabriel Fontaine,gabriel.fontaine@asteria.invalid,employee,Product,Technical writer,London,United Kingdom,2022-10-26,,active
+u-0190,Harry Pemberton,harry.pemberton@asteria.invalid,employee,Product,Product designer,Paris,France,2020-06-05,,active
+u-0191,Lena Bergman,lena.bergman@asteria.invalid,employee,Product,Technical writer,Paris,France,2025-05-17,,active
+u-0192,Ethan Raman,ethan.raman@asteria.invalid,employee,Product,Technical writer,Paris,France,2022-11-21,,active
+u-0193,Kenji Bouchard,kenji.bouchard@asteria.invalid,employee,Product,Product manager,Paris,France,2021-12-25,,active
+u-0194,Jade Fontaine,jade.fontaine@asteria.invalid,employee,Product,Product designer,Paris,France,2020-02-18,,active
+u-0195,Lucas Pemberton,lucas.pemberton@asteria.invalid,employee,Security,Security analyst,London,United Kingdom,2019-06-28,2026-05-16,terminated
+u-0196,Gabriel Sommer,gabriel.sommer@asteria.invalid,employee,Security,Security manager,Austin,United States,2023-03-02,,active
+u-0197,Nora Robin,nora.robin@asteria.invalid,employee,Security,Security analyst,London,United Kingdom,2019-10-10,,active
+u-0198,Mia Kaiser,mia.kaiser@asteria.invalid,employee,Security,Security engineer,Paris,France,2025-06-01,,active
+u-0199,Hugo Weber,hugo.weber@asteria.invalid,employee,Security,Security manager,Berlin,Germany,2023-07-08,,active
+u-0200,Hugo Brandt,hugo.brandt@asteria.invalid,employee,Security,Security engineer,London,United Kingdom,2023-01-03,,active
+u-0201,Isla Bianchi,isla.bianchi@asteria.invalid,employee,Security,Security engineer,Paris,France,2020-07-19,,active
+u-0202,George Okafor,george.okafor@asteria.invalid,employee,Security,Security engineer,Paris,France,2019-12-12,,active
+u-0203,Emma Larsen,emma.larsen@asteria.invalid,employee,Security,Security manager,London,United Kingdom,2025-02-14,,active
+u-0204,Leo Hartley,leo.hartley@asteria.invalid,employee,Security,Security manager,Austin,United States,2019-05-25,,active
+u-0205,Maya Carlisle,maya.carlisle@asteria.invalid,employee,Security,Security engineer,Paris,France,2022-04-02,,active
+u-0206,Rohan Sommer,rohan.sommer@asteria.invalid,employee,Security,Security engineer,Paris,France,2022-04-17,,active
+u-0207,George Schulz,george.schulz@asteria.invalid,employee,People,Recruiter,Paris,France,2020-09-24,,active
+u-0208,Gabriel Kuhn,gabriel.kuhn@asteria.invalid,employee,People,People partner,Austin,United States,2023-12-04,,active
+u-0209,Ruby Larkin,ruby.larkin@asteria.invalid,employee,People,Recruiter,London,United Kingdom,2024-10-22,,active
+u-0210,Paul Ferreira,paul.ferreira@asteria.invalid,employee,People,People operations specialist,London,United Kingdom,2025-07-24,,active
+u-0211,Chloe Adeyemi,chloe.adeyemi@asteria.invalid,employee,People,People partner,London,United Kingdom,2024-12-09,,active
+u-0212,Hugo Bianchi,hugo.bianchi@asteria.invalid,employee,People,Recruiter,London,United Kingdom,2026-02-28,,active
+u-0213,Anna Brandt,anna.brandt@asteria.invalid,employee,People,Recruiter,Paris,France,2024-12-11,,active
+u-0214,Amelia Bernard,amelia.bernard@asteria.invalid,employee,People,People partner,London,United Kingdom,2025-08-13,,active
+u-0215,Owen Chevalier,owen.chevalier@asteria.invalid,employee,People,Recruiter,Paris,France,2019-12-26,,active
+u-0216,Marie Kaiser,marie.kaiser@asteria.invalid,employee,People,People partner,London,United Kingdom,2021-05-21,,active
+u-0217,Maya Chevalier,maya.chevalier@asteria.invalid,employee,Marketing,Demand generation manager,London,United Kingdom,2020-12-24,,active
+u-0218,Kenji Fontaine,kenji.fontaine@asteria.invalid,employee,Marketing,Marketing manager,Berlin,Germany,2024-06-29,,active
+u-0219,Paul Bernard,paul.bernard@asteria.invalid,employee,Marketing,Demand generation manager,London,United Kingdom,2023-08-18,,active
+u-0220,Kenji Hartley,kenji.hartley@asteria.invalid,employee,Marketing,Content strategist,Berlin,Germany,2020-07-04,,active
+u-0221,Yuki Haddad,yuki.haddad@asteria.invalid,employee,Marketing,Marketing manager,Paris,France,2025-08-11,,active
+u-0222,Zoe Moreau,zoe.moreau@asteria.invalid,employee,Marketing,Content strategist,London,United Kingdom,2025-09-21,,active
+u-0223,Kenji Masson,kenji.masson@asteria.invalid,employee,Marketing,Content strategist,Berlin,Germany,2020-10-12,,active
+u-0224,Louis Hartley,louis.hartley@asteria.invalid,employee,Marketing,Content strategist,Berlin,Germany,2024-11-07,,active
+u-0225,Mathis Whitfield,mathis.whitfield@asteria.invalid,employee,Marketing,Content strategist,Berlin,Germany,2024-09-09,,active
+u-0226,Owen Fontaine,owen.fontaine@asteria.invalid,employee,Marketing,Marketing manager,Berlin,Germany,2024-01-03,,active
+u-0227,Ruby Larsen,ruby.larsen@asteria.invalid,employee,Marketing,Marketing manager,Berlin,Germany,2019-04-05,,active
+u-0228,Yuki Kuhn,yuki.kuhn@asteria.invalid,employee,Marketing,Demand generation manager,Berlin,Germany,2019-05-21,,active
+u-0229,Nadia Kaiser,nadia.kaiser@asteria.invalid,employee,Legal & Compliance,Data protection officer,Austin,United States,2020-01-01,,active
+u-0230,Gabriel Raman,gabriel.raman@asteria.invalid,employee,Legal & Compliance,Compliance manager,Berlin,Germany,2023-06-11,,active
+u-0231,Louis Moreau,louis.moreau@asteria.invalid,employee,Legal & Compliance,Data protection officer,Berlin,Germany,2020-10-06,,active
+u-0232,Zoe Kuhn,zoe.kuhn@asteria.invalid,employee,Legal & Compliance,Compliance manager,Paris,France,2021-06-14,,active
+u-0233,Kenji Schulz,kenji.schulz@asteria.invalid,employee,Legal & Compliance,Legal counsel,Austin,United States,2024-12-14,,active
+u-0234,Isaac Lefevre,isaac.lefevre@asteria.invalid,employee,Legal & Compliance,Legal counsel,Berlin,Germany,2021-08-08,,active
+u-0235,Arjun Fontaine,arjun.fontaine@asteria.invalid,employee,Executive,Chief executive officer,London,United Kingdom,2026-02-17,,active
+u-0236,Maya Costa,maya.costa@asteria.invalid,employee,Executive,Chief executive officer,Paris,France,2019-04-04,,active
+u-0237,Elias Larkin,elias.larkin@asteria.invalid,employee,Executive,VP Revenue,Austin,United States,2023-02-09,,active
+u-0238,Isla Beaumont,isla.beaumont@asteria.invalid,employee,Executive,Chief technology officer,Paris,France,2020-08-11,,active
+u-0239,Sofia Rossi,sofia.rossi@asteria.invalid,employee,Executive,Chief technology officer,Paris,France,2021-02-27,,active
+u-0240,George Sato,george.sato@asteria.invalid,employee,Executive,VP Engineering,Austin,United States,2023-11-02,,active
+c-0001,Priya Weber,priya.weber@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Austin,France,2025-10-02,,active
+c-0002,Maya Kuhn,maya.kuhn@contractor.asteria.invalid,contractor,Security,Contract engineer,Austin,France,2026-02-17,,active
+c-0003,Priya Raman,priya.raman@contractor.asteria.invalid,contractor,Finance,Contract engineer,Berlin,France,2025-11-21,2026-05-29,terminated
+c-0004,Ava Iyer,ava.iyer@contractor.asteria.invalid,contractor,Finance,Contract engineer,Paris,France,2025-11-10,,active
+c-0005,Sana Larkin,sana.larkin@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Austin,France,2025-11-08,,active
+c-0006,Priya Brandt,priya.brandt@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Paris,France,2025-06-03,,active
+c-0007,Anna Okafor,anna.okafor@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Paris,France,2025-06-10,,active
+c-0008,Lucas Brandt,lucas.brandt@contractor.asteria.invalid,contractor,Finance,Contract engineer,London,France,2025-07-25,,active
+c-0009,Kenji Girard,kenji.girard@contractor.asteria.invalid,contractor,Security,Contract engineer,London,France,2025-08-20,,active
+c-0010,Liam Sommer,liam.sommer@contractor.asteria.invalid,contractor,Finance,Contract engineer,Paris,France,2025-06-11,,active
+c-0011,Lena Haddad,lena.haddad@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Berlin,France,2025-11-08,,active
+c-0012,Mathis Girard,mathis.girard@contractor.asteria.invalid,contractor,Security,Contract engineer,London,France,2025-12-26,,active
+c-0013,Sana Pemberton,sana.pemberton@contractor.asteria.invalid,contractor,Engineering,Contract engineer,Berlin,France,2025-07-23,,active
+c-0014,Lucas Pemberton,lucas.pemberton@contractor.asteria.invalid,contractor,Finance,Contract engineer,London,France,2025-06-27,,active

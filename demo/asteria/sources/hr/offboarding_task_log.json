@@ -1,0 +1,434 @@
+[
+  {
+    "ticket": "OFF-3100",
+    "user_id": "u-0077",
+    "opened_at": "2026-05-04T23:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3101",
+    "user_id": "u-0111",
+    "opened_at": "2026-05-08T20:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3102",
+    "user_id": "u-0054",
+    "opened_at": "2026-05-12T18:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3103",
+    "user_id": "u-0195",
+    "opened_at": "2026-05-16T17:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3104",
+    "user_id": "u-0148",
+    "opened_at": "2026-05-20T20:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3105",
+    "user_id": "u-0025",
+    "opened_at": "2026-05-24T17:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3106",
+    "user_id": "u-0138",
+    "opened_at": "2026-05-28T19:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3140",
+    "user_id": "c-0003",
+    "opened_at": "2026-05-29T16:30:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "not_created"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "not_created"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "not_created"
+      }
+    ],
+    "source_feed": "none"
+  },
+  {
+    "ticket": "OFF-3107",
+    "user_id": "u-0155",
+    "opened_at": "2026-06-01T18:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3108",
+    "user_id": "u-0010",
+    "opened_at": "2026-06-05T22:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3109",
+    "user_id": "u-0133",
+    "opened_at": "2026-06-09T21:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3110",
+    "user_id": "u-0139",
+    "opened_at": "2026-06-13T21:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3111",
+    "user_id": "u-0187",
+    "opened_at": "2026-06-17T22:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3112",
+    "user_id": "u-0168",
+    "opened_at": "2026-06-21T23:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3113",
+    "user_id": "u-0031",
+    "opened_at": "2026-06-25T20:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3114",
+    "user_id": "u-0169",
+    "opened_at": "2026-06-29T20:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3115",
+    "user_id": "u-0166",
+    "opened_at": "2026-07-03T20:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  },
+  {
+    "ticket": "OFF-3116",
+    "user_id": "u-0165",
+    "opened_at": "2026-07-07T21:00:00Z",
+    "tasks": [
+      {
+        "task": "Recover hardware",
+        "status": "done"
+      },
+      {
+        "task": "Disable directory account",
+        "status": "done"
+      },
+      {
+        "task": "Revoke privileged roles",
+        "status": "done"
+      },
+      {
+        "task": "Remove from groups",
+        "status": "done"
+      }
+    ],
+    "source_feed": "workday-employee-feed"
+  }
+]

@@ -1,0 +1,37 @@
+po_id,vendor_id,vendor_name,amount,currency,raised_on,approved_on,approved_by,status
+PO-7100,V-1001,Northbridge Technical Services,17090.58,EUR,2026-05-08,2026-05-09,finance.manager@asteria.invalid,open
+PO-7101,V-1002,Helvetia Cloud Partners,28701.58,EUR,2026-06-03,2026-06-05,finance.manager@asteria.invalid,received
+PO-7102,V-1003,Lumen Office Supplies,26876.23,EUR,2026-05-14,2026-05-17,finance.manager@asteria.invalid,received
+PO-7103,V-1004,Castellan Legal LLP,5165.66,EUR,2026-06-09,2026-06-13,finance.manager@asteria.invalid,received
+PO-7104,V-1005,Meridian Travel,3189.42,EUR,2026-05-29,2026-06-01,finance.manager@asteria.invalid,received
+PO-7105,V-1006,Aurora Data Labs,29425.36,EUR,2026-05-31,2026-06-04,finance.manager@asteria.invalid,received
+PO-7106,V-1007,Pinehurst Facilities,33478.29,EUR,2026-06-20,2026-06-23,finance.manager@asteria.invalid,received
+PO-7107,V-1008,Solstice Media,6628.55,EUR,2026-05-04,2026-05-08,finance.manager@asteria.invalid,open
+PO-7108,V-1001,Northbridge Technical Services,30241.21,EUR,2026-06-21,2026-06-23,finance.manager@asteria.invalid,received
+PO-7109,V-1002,Helvetia Cloud Partners,38917.62,EUR,2026-05-26,2026-05-28,finance.manager@asteria.invalid,received
+PO-7110,V-1003,Lumen Office Supplies,31743.28,EUR,2026-05-04,2026-05-07,finance.manager@asteria.invalid,received
+PO-7111,V-1004,Castellan Legal LLP,40123.27,EUR,2026-06-04,2026-06-05,finance.manager@asteria.invalid,received
+PO-7112,V-1005,Meridian Travel,28253.78,EUR,2026-05-02,2026-05-04,finance.manager@asteria.invalid,received
+PO-7113,V-1006,Aurora Data Labs,26623.89,EUR,2026-06-02,2026-06-07,finance.manager@asteria.invalid,received
+PO-7114,V-1007,Pinehurst Facilities,3668.42,EUR,2026-05-12,2026-05-13,finance.manager@asteria.invalid,open
+PO-7115,V-1008,Solstice Media,46707.21,EUR,2026-05-27,2026-05-28,finance.manager@asteria.invalid,received
+PO-7116,V-1001,Northbridge Technical Services,32308.83,EUR,2026-06-08,2026-06-12,finance.manager@asteria.invalid,received
+PO-7117,V-1002,Helvetia Cloud Partners,15163.63,EUR,2026-06-25,2026-06-28,finance.manager@asteria.invalid,received
+PO-7118,V-1003,Lumen Office Supplies,17336.20,EUR,2026-06-17,2026-06-21,finance.manager@asteria.invalid,received
+PO-7119,V-1004,Castellan Legal LLP,3890.46,EUR,2026-05-24,2026-05-25,finance.manager@asteria.invalid,received
+PO-7120,V-1005,Meridian Travel,29358.30,EUR,2026-06-05,2026-06-10,finance.manager@asteria.invalid,received
+PO-7121,V-1006,Aurora Data Labs,1805.16,EUR,2026-05-30,2026-06-01,finance.manager@asteria.invalid,open
+PO-7122,V-1007,Pinehurst Facilities,44379.84,EUR,2026-05-07,2026-05-08,finance.manager@asteria.invalid,received
+PO-7123,V-1008,Solstice Media,41396.64,EUR,2026-05-14,2026-05-15,finance.manager@asteria.invalid,received
+PO-7124,V-1001,Northbridge Technical Services,41663.60,EUR,2026-06-15,2026-06-18,finance.manager@asteria.invalid,received
+PO-7125,V-1002,Helvetia Cloud Partners,5828.71,EUR,2026-05-28,2026-05-29,finance.manager@asteria.invalid,received
+PO-7126,V-1003,Lumen Office Supplies,1794.20,EUR,2026-05-15,2026-05-17,finance.manager@asteria.invalid,received
+PO-7127,V-1004,Castellan Legal LLP,33747.60,EUR,2026-05-20,2026-05-24,finance.manager@asteria.invalid,received
+PO-7128,V-1005,Meridian Travel,23264.62,EUR,2026-06-10,2026-06-12,finance.manager@asteria.invalid,open
+PO-7129,V-1006,Aurora Data Labs,2991.75,EUR,2026-05-28,,,received
+PO-7130,V-1007,Pinehurst Facilities,41959.23,EUR,2026-06-27,2026-07-02,finance.manager@asteria.invalid,received
+PO-7131,V-1008,Solstice Media,12017.43,EUR,2026-05-31,2026-06-05,finance.manager@asteria.invalid,received
+PO-7132,V-1001,Northbridge Technical Services,36365.83,EUR,2026-06-10,2026-06-12,finance.manager@asteria.invalid,received
+PO-7133,V-1002,Helvetia Cloud Partners,47078.12,EUR,2026-06-05,2026-06-08,finance.manager@asteria.invalid,received
+PO-7134,V-1003,Lumen Office Supplies,14044.58,EUR,2026-05-01,2026-05-03,finance.manager@asteria.invalid,received
+PO-7135,V-1004,Castellan Legal LLP,8323.28,EUR,2026-05-15,2026-05-20,finance.manager@asteria.invalid,open

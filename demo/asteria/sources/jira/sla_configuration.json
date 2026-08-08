@@ -1,0 +1,27 @@
+{
+  "scheme": "Customer support SLA",
+  "applies_to_projects": [
+    "INC"
+  ],
+  "derived_from": "confluence/incident_response_plan.md",
+  "last_modified": "2025-11-04T15:22:00Z",
+  "last_modified_by": "jira.admin",
+  "per_customer_overrides": [],
+  "goals": [
+    {
+      "priority": "P1",
+      "first_response_hours": 8,
+      "calendar": "business_hours"
+    },
+    {
+      "priority": "P2",
+      "first_response_hours": 24,
+      "calendar": "business_hours"
+    },
+    {
+      "priority": "P3",
+      "first_response_hours": 72,
+      "calendar": "business_hours"
+    }
+  ]
+}

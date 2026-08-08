@@ -1,0 +1,15 @@
+{
+  "schema": "assurance.control_test_release.v1",
+  "test_id": "SLA-01",
+  "version": "1.0.0",
+  "released_at": "2026-08-08T20:25:29.973601+00:00",
+  "files": {
+    "golden_cases/basic.json": "4871522894fb33e80f927f139f48e39f81c2f0f6e33cf8c3d5d77f76737d7c96",
+    "input.schema.json": "492b67b2c06ef21b8ba2e837040e7f46b59b97afaacc1ee6e0e098e68b4a5da3",
+    "manifest.yaml": "b8bd632dc6c689f11abdd42f9c03f02a5b8d0a2391739acc0909d8b696e2b28a",
+    "output.schema.json": "9eedd14505a455ed0790c0cb4d4a31e42bac81e5186edf987e6a8275a415bc8f",
+    "parameters.schema.json": "ef26e42141e2b57111fc24d0d33b19686380b1c7720b86aaf92157ca85e1f7d6",
+    "test.py": "a5f650d3a4ffb053092145c11dc722199f963d30e8fafc91af1d34390ac6a06c"
+  },
+  "package_sha256": "850f61d5105a58bf258271751f7f214467a9b904fdc66a3d99145f1344945b81"
+}

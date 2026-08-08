@@ -34,8 +34,14 @@ def main() -> None:
             released_at=datetime.now(timezone.utc),
         )
         signature = sign_release_document(document, private_key=private_key, key_id=args.key_id)
-        (package_dir / "release.json").write_text(json.dumps(document, indent=2) + "\n")
-        (package_dir / "release.signature.json").write_text(json.dumps(signature, indent=2) + "\n")
+        # Explicit LF: these are committed artefacts, and a Windows run that
+        # emitted CRLF would differ from the same run anywhere else.
+        (package_dir / "release.json").write_text(
+            json.dumps(document, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
+        (package_dir / "release.signature.json").write_text(
+            json.dumps(signature, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
         print(f"released {manifest['test_id']}@{manifest['version']}")
 
 

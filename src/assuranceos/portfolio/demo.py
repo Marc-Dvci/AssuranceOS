@@ -235,25 +235,33 @@ SEEDED: list[dict[str, Any]] = [
 ]
 
 
-def run_portfolio_demo(*, database: Database) -> dict[str, Any]:
-    """Score the universe, plan under capacity, and report what was left out."""
+def run_portfolio_demo(
+    *, database: Database, tenant_id: str | None = None, reset: bool = True
+) -> dict[str, Any]:
+    """Score the universe, plan under capacity, and report what was left out.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or DEMO_TENANT
     service = PortfolioService(database)
-    _reset_and_seed(database)
+    _reset_and_seed(database, tenant, reset=reset)
 
     scores: dict[str, RiskScore] = {}
     for item in SEEDED:
         service.register_entity(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             entity_type=item["entity_type"],
             name=item["entity"],
             external_ref=item["entity"],
             criticality=item["criticality"],
         )
         service.register_risk(
-            tenant_id=DEMO_TENANT, code=item["code"], title=item["title"]
+            tenant_id=tenant, code=item["code"], title=item["title"]
         )
         assessment = service.assess_risk(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             risk_code=item["code"],
             factors=item["factors"],
             assessed_by="agent:risk-portfolio",
@@ -300,7 +308,7 @@ def run_portfolio_demo(*, database: Database) -> dict[str, Any]:
         max_high_disruption=1,
     )
     proposal = service.propose_plan(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         name="Asteria FY27 audit plan",
         candidates=candidates,
         policy=policy,
@@ -316,17 +324,17 @@ def run_portfolio_demo(*, database: Database) -> dict[str, Any]:
 
     agent_approval = _refusal(
         lambda: service.approve_plan(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             proposal_id=proposal["proposal_id"],
             approved_by="agent:risk-portfolio",
             reason="Approved automatically by the planning agent.",
         ),
         PlanStateError,
     )
-    undeliverable = _undeliverable_refusal(service, candidates, policy)
+    undeliverable = _undeliverable_refusal(service, candidates, policy, tenant)
 
     approved = service.approve_plan(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         proposal_id=proposal["proposal_id"],
         approved_by="dana.director@asteria.example",
         reason=(
@@ -336,14 +344,14 @@ def run_portfolio_demo(*, database: Database) -> dict[str, Any]:
     )
 
     with database.read_session() as session:
-        events = AuditEventRepository(session).list(DEMO_TENANT)
+        events = AuditEventRepository(session).list(tenant)
 
     data_score = scores["AST-R-DATA"]
     vendor_score = scores["AST-R-VENDOR"]
     return {
-        "tenant_id": DEMO_TENANT,
+        "tenant_id": tenant,
         "as_at": AS_AT.isoformat(),
-        "register": service.register_view(tenant_id=DEMO_TENANT),
+        "register": service.register_view(tenant_id=tenant),
         # An untested control reduces nothing. Read off the score rather than
         # asserted: residual equals inherent for the risk whose only control has
         # never been tested.
@@ -404,7 +412,10 @@ def _refusal(action: Any, expected: Any) -> str:
 
 
 def _undeliverable_refusal(
-    service: PortfolioService, candidates: list[Candidate], policy: CapacityPolicy
+    service: PortfolioService,
+    candidates: list[Candidate],
+    policy: CapacityPolicy,
+    tenant: str,
 ) -> str:
     """Show that a plan whose mandatory coverage exceeds capacity cannot be approved.
 
@@ -416,7 +427,7 @@ def _undeliverable_refusal(
         update={"available_days": 20, "minimum_coverage_criticality": 4.0}
     )
     proposal = service.propose_plan(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         name="Asteria FY27 audit plan (constrained)",
         candidates=candidates,
         policy=tight,
@@ -424,7 +435,7 @@ def _undeliverable_refusal(
     )
     return _refusal(
         lambda: service.approve_plan(
-            tenant_id=DEMO_TENANT,
+            tenant_id=tenant,
             proposal_id=proposal["proposal_id"],
             approved_by="dana.director@asteria.example",
             reason="Approving the constrained plan.",
@@ -433,18 +444,21 @@ def _undeliverable_refusal(
     )
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant_id: str, *, reset: bool = True) -> None:
+    if reset:
+        with database.transaction() as session:
+            tenant = TenantRepository(session).get(tenant_id)
+            if tenant is not None:
+                session.delete(tenant)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(DEMO_TENANT)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=DEMO_TENANT,
-                slug="asteria",
-                name="Asteria Systems DemoCo",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant_id) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant_id,
+                    slug="asteria",
+                    name="Asteria Systems DemoCo",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )

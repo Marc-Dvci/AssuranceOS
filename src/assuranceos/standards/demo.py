@@ -46,8 +46,20 @@ PAM_ENGAGEMENT = "eng_asteria_pam_blocked"
 PERIOD = (date(2026, 7, 1), date(2026, 7, 31))
 
 
-def run_pack_compiler_demo(*, database: Database, repository_root: Path) -> dict[str, Any]:
-    """Compile packs into engagements and report what canonical state says."""
+def run_pack_compiler_demo(
+    *,
+    database: Database,
+    repository_root: Path,
+    tenant_id: str | None = None,
+    reset: bool = True,
+) -> dict[str, Any]:
+    """Compile packs into engagements and report what canonical state says.
+
+    ``tenant_id`` retargets the demonstration so several demonstrations can
+    compose one complete tenant; ``reset`` keeps whatever that tenant already
+    holds instead of deleting it first.
+    """
+    tenant = tenant_id or DEMO_TENANT
     root = Path(repository_root)
     pack_key = (root / "security/release-keys/audit-pack-release-public.pem").read_bytes()
     test_key = (root / "security/release-keys/control-test-release-public.pem").read_bytes()
@@ -60,7 +72,7 @@ def run_pack_compiler_demo(*, database: Database, repository_root: Path) -> dict
     )
     service = StandardsService(database, registry=registry, compiler=compiler)
 
-    _reset_and_seed(database)
+    _reset_and_seed(database, tenant, reset=reset)
 
     # -- 1. admit the packs ----------------------------------------------------
     registered = {}
@@ -78,12 +90,12 @@ def run_pack_compiler_demo(*, database: Database, repository_root: Path) -> dict
         )
 
     context = OrganizationContext(
-        tenant_id=DEMO_TENANT,
+        tenant_id=tenant,
         entity_name="Asteria Systems DemoCo",
         period_start=PERIOD[0],
         period_end=PERIOD[1],
         in_scope_systems=["github://asteria/api", "jira://CHG"],
-        entitlements=service.effective_entitlements(tenant_id=DEMO_TENANT),
+        entitlements=service.effective_entitlements(tenant_id=tenant),
         profile_version=1,
     )
 
@@ -168,13 +180,13 @@ def run_pack_compiler_demo(*, database: Database, repository_root: Path) -> dict
     }
 
     # -- 5. report from canonical state ---------------------------------------
-    provenance = service.provenance(tenant_id=DEMO_TENANT, engagement_id=SCM_ENGAGEMENT)
+    provenance = service.provenance(tenant_id=tenant, engagement_id=SCM_ENGAGEMENT)
     with database.read_session() as session:
-        tasks = EngagementRepository(session).list_tasks(DEMO_TENANT, SCM_ENGAGEMENT)
-        events = AuditEventRepository(session).list(DEMO_TENANT, SCM_ENGAGEMENT)
+        tasks = EngagementRepository(session).list_tasks(tenant, SCM_ENGAGEMENT)
+        events = AuditEventRepository(session).list(tenant, SCM_ENGAGEMENT)
 
     return {
-        "tenant_id": DEMO_TENANT,
+        "tenant_id": tenant,
         "packs_registered": sorted(registered),
         "engagement_id": SCM_ENGAGEMENT,
         "pack": compiled["pack"],
@@ -247,21 +259,29 @@ def _tampered_pack_refusal(root: Path, pack_key: bytes) -> str:
     return ""
 
 
-def _reset_and_seed(database: Database) -> None:
+def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> None:
+    if reset:
+        with database.transaction() as session:
+            existing = TenantRepository(session).get(tenant)
+            if existing is not None:
+                session.delete(existing)
     with database.transaction() as session:
-        tenant = TenantRepository(session).get(DEMO_TENANT)
-        if tenant is not None:
-            session.delete(tenant)
-    with database.transaction() as session:
-        TenantRepository(session).add(
-            Tenant(
-                tenant_id=DEMO_TENANT,
-                slug="asteria",
-                name="Asteria Systems DemoCo",
-                status="active",
-                region="europe-west1",
+        repository = TenantRepository(session)
+        if repository.get(tenant) is None:
+            repository.add(
+                Tenant(
+                    tenant_id=tenant,
+                    slug="asteria",
+                    name="Asteria Systems DemoCo",
+                    status="active",
+                    region="europe-west1",
+                )
             )
-        )
+            session.flush()
+        # Composing onto a tenant another demonstration populated must not
+        # duplicate the records this one owns.
+        if session.get(Engagement, SCM_ENGAGEMENT) is not None:
+            return
         session.flush()
         for engagement_id, code, title in (
             (SCM_ENGAGEMENT, "SCM-2026-07", "Software change management"),
@@ -271,7 +291,7 @@ def _reset_and_seed(database: Database) -> None:
             session.add(
                 Engagement(
                     engagement_id=engagement_id,
-                    tenant_id=DEMO_TENANT,
+                    tenant_id=tenant,
                     code=code,
                     title=title,
                     status="planned",

@@ -1,0 +1,39 @@
+{
+  "project": "asteria-prod",
+  "etag": "BwYc3kZ1r0M=",
+  "captured_at": "2026-07-31T23:59:00Z",
+  "bindings": [
+    {
+      "role": "roles/run.admin",
+      "members": [
+        "group:grp-prod-deploy@asteria.invalid",
+        "serviceAccount:svc-deploy@asteria-prod.iam.gserviceaccount.invalid",
+        "user:priya.raman@contractor.asteria.invalid"
+      ]
+    },
+    {
+      "role": "roles/run.developer",
+      "members": [
+        "group:grp-engineering@asteria.invalid"
+      ]
+    },
+    {
+      "role": "roles/cloudsql.client",
+      "members": [
+        "serviceAccount:svc-api@asteria-prod.iam.gserviceaccount.invalid"
+      ]
+    },
+    {
+      "role": "roles/storage.objectViewer",
+      "members": [
+        "serviceAccount:svc-backup@asteria-prod.iam.gserviceaccount.invalid"
+      ]
+    },
+    {
+      "role": "roles/viewer",
+      "members": [
+        "group:grp-support-readonly@asteria.invalid"
+      ]
+    }
+  ]
+}

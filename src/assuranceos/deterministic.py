@@ -1,11 +1,28 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 REQUIRED_APPROVALS = 1
+PERIOD_START = datetime(2026, 7, 1, tzinfo=timezone.utc)
+PERIOD_END = datetime(2026, 7, 31, 23, 59, 59, 999999, tzinfo=timezone.utc)
+
+
+def is_in_period(timestamp: str) -> bool:
+    """Whether a source timestamp falls in the audit period, in UTC.
+
+    Source systems record offsets, and comparing the *text* of a timestamp to a
+    period is how a merge recorded at 00:30 local time on 1 July gets counted in
+    July when it actually happened at 22:30 UTC on 30 June. The period is a UTC
+    interval, so the timestamp is normalised before it is compared.
+    """
+    moment = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    if moment.tzinfo is None:
+        raise ValueError(f"source timestamp {timestamp!r} carries no offset")
+    return PERIOD_START <= moment.astimezone(timezone.utc) <= PERIOD_END
 
 
 def run_scm_population_test(demo_root: Path) -> dict[str, Any]:
@@ -23,7 +40,7 @@ def run_scm_population_test(demo_root: Path) -> dict[str, Any]:
         exception_key = pr.get("exception_key")
         approved = len(pr.get("approvals", [])) >= REQUIRED_APPROVALS
         ticket_approved = bool(ticket and ticket.get("status") == "Approved")
-        within_period = pr["merged_at"].startswith("2026-07")
+        within_period = is_in_period(pr["merged_at"])
 
         if not within_period:
             status = "out_of_period"

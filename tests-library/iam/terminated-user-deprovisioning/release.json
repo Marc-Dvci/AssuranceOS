@@ -2,7 +2,7 @@
   "schema": "assurance.control_test_release.v1",
   "test_id": "IAM-01",
   "version": "1.0.0",
-  "released_at": "2026-08-06T20:04:54.936458+00:00",
+  "released_at": "2026-08-08T20:25:29.960088+00:00",
   "files": {
     "golden_cases/basic.json": "794d4f7f09b4ef616167483220e6618ff5494c40469e600aabadde3c0e8694e9",
     "input.schema.json": "76394a9c3399cbf4547c83e724e60834f307f75542f4399058db878b1b5bbadb",
