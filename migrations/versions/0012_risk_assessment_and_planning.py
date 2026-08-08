@@ -23,6 +23,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Alembic creates ``alembic_version.version_num`` as VARCHAR(32). This
+    # revision and later descriptive revision IDs are longer, and PostgreSQL
+    # enforces that bound when Alembic records the completed migration. SQLite
+    # neither enforces VARCHAR lengths nor supports this ALTER COLUMN form.
+    if op.get_bind().dialect.name != "sqlite":
+        op.alter_column(
+            "alembic_version",
+            "version_num",
+            existing_type=sa.String(length=32),
+            type_=sa.String(length=64),
+            existing_nullable=False,
+        )
+
     op.create_table(
         "risk_assessments",
         sa.Column("assessment_id", sa.String(length=64), primary_key=True),

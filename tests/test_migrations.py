@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, text
 
 from conftest import alembic_head as current_head
@@ -42,6 +43,14 @@ def test_initial_migration_upgrades_fresh_database(tmp_path, monkeypatch):
             assert versions == [current_head()]
     finally:
         engine.dispose()
+
+
+def test_migration_revision_ids_fit_the_widened_version_column():
+    """Keep descriptive revision IDs within the capacity established by 0012."""
+    config = Config("alembic.ini")
+    revisions = ScriptDirectory.from_config(config).walk_revisions()
+
+    assert max(len(revision.revision) for revision in revisions) <= 64
 
 
 def test_orchestration_migration_backfills_existing_event_stream_order(tmp_path, monkeypatch):

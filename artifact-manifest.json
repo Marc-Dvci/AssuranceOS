@@ -2536,8 +2536,8 @@
     },
     {
       "path": "migrations/versions/0012_risk_assessment_and_planning.py",
-      "size_bytes": 8198,
-      "sha256": "f89657481131cebb56438cfcf668a2b39ef4df8afb8401aa7d7a795d65dd911d"
+      "size_bytes": 8771,
+      "sha256": "f4f3a750972ed7544a3c8ef7df0395c60977214a627e4517b44b77c050d13ff2"
     },
     {
       "path": "migrations/versions/0013_report_versions.py",
@@ -3896,8 +3896,8 @@
     },
     {
       "path": "tests/test_migrations.py",
-      "size_bytes": 14391,
-      "sha256": "96bcaef5978f9778fc41e4829c125987b21ef90714a3dfbfb1d45e6d252baab6"
+      "size_bytes": 14759,
+      "sha256": "93f20c14fddc4a4e83fba41b4a7854c59f2f610ebfbecde21db90acb1b62664d"
     },
     {
       "path": "tests/test_monitoring.py",
