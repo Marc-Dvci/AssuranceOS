@@ -143,6 +143,15 @@ samples, summarises or truncates the evidence to make it fit — an audit conclu
 drawn from the rows that happened to survive is not a weaker conclusion, it is a
 different one.
 
+Nothing here caps context. The window is a property of the serving process, and
+the serving process does not advertise it — `/props`, `/slots` and `/v1/models`
+are all silent — so `--context-tokens auto` measures it, by observing where
+`usage.prompt_tokens` pins on a deliberately oversized prompt. The measurement
+exists so the refusal can be accurate, and it follows whatever window is served:
+raise the server's `-c` and the same command uses all of it. On Vertex AI, where
+Gemini 3.6 Flash serves a million tokens and rejects an oversized request rather
+than trimming it, the check never fires.
+
 ## The golden engagement
 
 The included Asteria Systems dataset is a synthetic company, not a fixture: 56
@@ -379,6 +388,18 @@ parity, and the primary golden audit remains the Google Cloud path.
 Everything the platform reads in the demonstration is synthetic and lives in the
 repository, so a judge can reproduce any result byte for byte.
 
+- **The company's public footprint**, six pages retrieved under a collection
+  grant that names the hosts it may reach. `public_sources.py` refuses anything
+  else: non-HTTPS, credentialed or non-default-port URLs; a host outside the
+  grant; a name that resolves to any private, loopback, link-local, reserved or
+  multicast address; a redirect off the grant; a body over the size cap, stopped
+  while streaming rather than measured afterwards; a content type that is not
+  text-shaped. The peer address is re-checked after the response, so bytes
+  retrieved from an internal address are discarded even if the name was rebound
+  between the check and the connection. `robots.txt` is obeyed. The demonstration
+  reads the archived snapshots by default so cited hashes stay valid, and says
+  which of the two it did — `--live` fetches, and the run records the resolved
+  addresses.
 - **The Asteria corpus** — 56 files across ten source systems (`cloud`,
   `confluence`, `finance`, `github`, `governance`, `hr`, `identity`, `jira`,
   `legal`, `public`), generated deterministically by

@@ -22,10 +22,14 @@ one:
 * the profile cannot go canonical while any fact is still proposed. Approval is a
   human act with an owner and a timestamp.
 
-The pages are read from the published corpus rather than fetched over the
-network. That boundary is stated plainly in `docs/SUBMISSION.md`: AssuranceOS has
-no live public-source collector, and a fixture that pretends otherwise would be
-the one dishonest thing in the demonstration.
+Where the pages come from is a parameter, and the run says which it used. By
+default they are read from the published corpus, so the demonstration is
+byte-reproducible and cites hashes that stay valid. Passing a
+:class:`~assuranceos.public_sources.PublicSourceCollector` retrieves them over the
+network instead, under a collection grant that names the hosts. The result records
+`collection` as `archived_corpus` or `live_fetch` with the resolved addresses,
+because "we fetched this" and "we replayed this" are different claims and only one
+of them is true on any given run.
 """
 
 from __future__ import annotations
@@ -71,8 +75,14 @@ def run_onboarding_demo(
     repository_root: Path,
     tenant_id: str | None = None,
     vault: EvidenceVault | None = None,
+    collector: Any = None,
 ) -> dict[str, Any]:
-    """Ingest the public footprint, propose facts, correct one, approve the profile."""
+    """Ingest the public footprint, propose facts, correct one, approve the profile.
+
+    ``collector`` retrieves the pages over the network under its collection
+    grant. Without one the published corpus is read, which is the reproducible
+    default.
+    """
 
     tenant = tenant_id or DEMO_TENANT
     evidence_vault = vault or EvidenceVault.local(
@@ -94,9 +104,33 @@ def run_onboarding_demo(
     workflow_id = workflow["workflow_id"]
     retrieved_at = datetime(2026, 7, 1, 9, 0, tzinfo=timezone.utc)
 
+    # `start` is idempotent on the workflow key, so a second run reaches this
+    # point holding the first run's workflow -- and then fails on the first fact,
+    # because a profile may not hold the same key twice. Reporting the settled
+    # state is the honest answer to "run it again": the company was onboarded,
+    # and onboarding it a second time is not a thing that happens.
+    #
+    # The test is whether the researched facts are already there, not whether the
+    # workflow reached `approved`. A run interrupted mid-way leaves facts behind
+    # and a status that is not approved, which is exactly the case that must not
+    # try again from the top.
+    if any(str(item["fact_key"]).startswith("public.") for item in workflow.get("facts") or []):
+        return _settled(database, workflow, collector=collector)
+
     snapshots: dict[str, str] = {}
+    retrievals: list[dict[str, Any]] = []
     root = repository_root / "demo/asteria/sources/public"
     for filename, url, quality in PUBLIC_SOURCES:
+        if collector is not None:
+            fetched = collector.fetch(url)
+            content = fetched.content
+            mime_type = fetched.content_type
+            captured_at = fetched.retrieved_at
+            retrievals.append(fetched.as_dict())
+        else:
+            content = (root / filename).read_text(encoding="utf-8")
+            mime_type = "application/json" if filename.endswith(".json") else "text/markdown"
+            captured_at = retrieved_at
         snapshot = service.capture_source(
             tenant,
             workflow_id,
@@ -104,9 +138,9 @@ def run_onboarding_demo(
                 source_url=url,
                 publisher="Asteria Systems DemoCo",
                 source_quality=quality,
-                content=(root / filename).read_text(encoding="utf-8"),
-                mime_type="application/json" if filename.endswith(".json") else "text/markdown",
-                retrieved_at=retrieved_at,
+                content=content,
+                mime_type=mime_type,
+                retrieved_at=captured_at,
                 excerpt_locator=filename,
                 fetched_under_source_policy=True,
             ),
@@ -235,10 +269,39 @@ def run_onboarding_demo(
         "status": approved["status"],
         "profile_id": approved.get("profile_id"),
         "legal_name": legal_name,
+        "collection": "live_fetch" if collector is not None else "archived_corpus",
+        "retrievals": retrievals,
         "source_snapshots": len(snapshots),
         "facts_proposed": len(proposed),
         "facts_corrected": len(corrected),
         "correction": corrected[0] if corrected else None,
         "inferences": sum(1 for _, _, kind, _, _ in proposals if kind == "inference"),
         "readiness": approved.get("readiness"),
+    }
+
+
+def _settled(database: Database, workflow: dict[str, Any], *, collector: Any) -> dict[str, Any]:
+    """Report an already-approved profile instead of onboarding it twice."""
+
+    from .db.models import OrganizationProfile
+
+    facts = workflow.get("facts") or []
+    corrected = [item for item in facts if item.get("status") == "corrected"]
+    with database.read_session() as session:
+        profile = session.get(OrganizationProfile, workflow["profile_id"])
+        legal_name = profile.legal_name if profile else None
+    return {
+        "tenant_id": workflow.get("tenant_id"),
+        "workflow_id": workflow["workflow_id"],
+        "status": workflow["status"],
+        "profile_id": workflow["profile_id"],
+        "legal_name": legal_name,
+        "collection": "already_approved",
+        "retrievals": [],
+        "source_snapshots": len(workflow.get("source_snapshots") or []),
+        "facts_proposed": len([item for item in facts if item["fact_key"].startswith("public.")]),
+        "facts_corrected": len(corrected),
+        "correction": None,
+        "inferences": len([item for item in facts if item.get("claim_type") == "inference"]),
+        "readiness": workflow.get("readiness"),
     }

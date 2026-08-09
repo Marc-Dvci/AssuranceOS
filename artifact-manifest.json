@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 894,
+  "file_count": 896,
   "files": [
     {
       "path": ".dockerignore",
@@ -2511,8 +2511,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 23692,
-      "sha256": "a748221081d246a365558688463738ff66bc959ff8a60696ca1e4160de207f7b"
+      "size_bytes": 25179,
+      "sha256": "a77578c33af0b67035f42ca6d60ed5ae872838fcc3995cefdb8429e49d7eca30"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2851,8 +2851,8 @@
     },
     {
       "path": "models/gemma-4-12b-iq4-xs/model-manifest.yaml",
-      "size_bytes": 2929,
-      "sha256": "78807e35fb8a629e25f0565759dc6318c107b56cf55d2d1e8f29b8ab72c90d24"
+      "size_bytes": 3804,
+      "sha256": "bc6f75cfcc1f897adf61baa622861d2d430b8f2d80af6cf9948321b0c6a67d03"
     },
     {
       "path": "models/gemma-4-e4b-asr/README.md",
@@ -2956,8 +2956,8 @@
     },
     {
       "path": "scripts/run_agent_audit_demo.py",
-      "size_bytes": 3137,
-      "sha256": "36f5a74d1e57e7ceb8ce1229006afdfcdbbc70e11b191a239f220bd65a1efb65"
+      "size_bytes": 4190,
+      "sha256": "8fc183e4b12054864d676e02b5a82f63bd0768a40c299ac74f8a934c6a396ed1"
     },
     {
       "path": "scripts/run_agent_evaluations.py",
@@ -3006,8 +3006,8 @@
     },
     {
       "path": "scripts/run_onboarding_demo.py",
-      "size_bytes": 1436,
-      "sha256": "9bcd208c1e1d03e28d207d37d96c1e9f30046784cf011ad67a3ef30db134b20d"
+      "size_bytes": 2755,
+      "sha256": "a660697afb92c4cd3aa50df75ba502c892b6c84688c2f334ee13482dd177fa13"
     },
     {
       "path": "scripts/run_orchestrator_demo.py",
@@ -3656,8 +3656,8 @@
     },
     {
       "path": "src/assuranceos/governance/models_client.py",
-      "size_bytes": 16283,
-      "sha256": "a1f67b46ae0bc8eb320ddcc12a91fd7a7e48af19a33c9c5d9fc6ac8b815a8c8b"
+      "size_bytes": 18806,
+      "sha256": "ca85c892435ef6881fc0642dab53295d160431b4052f0ff22bcf38daa14d3589"
     },
     {
       "path": "src/assuranceos/governance/persistence.py",
@@ -3716,8 +3716,8 @@
     },
     {
       "path": "src/assuranceos/onboarding_demo.py",
-      "size_bytes": 9416,
-      "sha256": "e8408f69a0c66781c07947d721606e0f3c0fe96ea44cc14e9d6c0eabb37b5b02"
+      "size_bytes": 12479,
+      "sha256": "af7b0066e36d93e40976b84b978247cae98b59c6b56e3913985580425a29ea28"
     },
     {
       "path": "src/assuranceos/orchestration/__init__.py",
@@ -3818,6 +3818,11 @@
       "path": "src/assuranceos/product_schemas.py",
       "size_bytes": 4769,
       "sha256": "c0843079bad67a53aa426811025000177231e8c7e235ed4f4d05a50386c0f294"
+    },
+    {
+      "path": "src/assuranceos/public_sources.py",
+      "size_bytes": 13478,
+      "sha256": "9483ecd63e0eed328ec63e79fe4eac23ba894c89ac7a983fe0669ddcfbfba8fa"
     },
     {
       "path": "src/assuranceos/registry.py",
@@ -4388,6 +4393,11 @@
       "path": "tests/test_production_hardening.py",
       "size_bytes": 18392,
       "sha256": "266ded4287fb1645d5b8db8766ccce9f15d7d104947c2a1126e5261c5b47f55e"
+    },
+    {
+      "path": "tests/test_public_sources.py",
+      "size_bytes": 9436,
+      "sha256": "44da893ca17166994383ce297693555d389e5cecb87f1566af1fdc1b784d87fa"
     },
     {
       "path": "tests/test_registry.py",

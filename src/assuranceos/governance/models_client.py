@@ -360,6 +360,71 @@ def _optional_bool_env(name: str) -> bool | None:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def probe_context_window(
+    client: Any,
+    *,
+    lower: int = 1024,
+    upper: int = 1_048_576,
+    tolerance: int = 512,
+) -> int | None:
+    """Measure the context a server actually serves, rather than being told.
+
+    The number that matters is not what the weights support, it is what the
+    process was launched with. A llama.cpp-shaped server started with ``-c 16384``
+    serves 16384 whatever the model card says, and it does not advertise the
+    figure anywhere: ``/props``, ``/slots`` and ``/v1/models`` are all either
+    absent or silent about it on the endpoints seen here.
+
+    So it is measured. Oversized prompts come back with ``usage.prompt_tokens``
+    pinned at the ceiling, which makes the window directly observable: send a
+    prompt that is certainly too long, read what the server says it read, and the
+    window is that plus the output it reserved. A binary search then confirms the
+    boundary rather than trusting one reading.
+
+    Returns ``None`` when the endpoint cannot be probed, which leaves the runtime
+    with no declared window -- the honest state, and one the post-call truncation
+    arithmetic still covers.
+    """
+
+    def reads(words: int, max_tokens: int = 1) -> int | None:
+        try:
+            response = client.generate(
+                system_instruction="",
+                prompt="word " * words,
+                temperature=0.0,
+                max_output_tokens=max_tokens,
+            )
+        except Exception:
+            return None
+        return response.input_tokens or None
+
+    # One oversized call usually answers it outright: the reported count is the
+    # ceiling. Everything after this is confirmation.
+    ceiling = reads(upper // 8)
+    if ceiling is None:
+        return None
+    if ceiling >= (upper // 8) * 0.9:
+        # The server read essentially everything sent, so the window is larger
+        # than the probe. Report what was demonstrated rather than guessing.
+        return int(ceiling)
+
+    window = int(ceiling) + 1
+    # Confirm by bisection: the largest prompt read in full is the window.
+    low, high = lower, window
+    while high - low > tolerance:
+        middle = (low + high) // 2
+        observed = reads(middle)
+        if observed is None:
+            return None
+        # `middle` words encode to at least `middle` tokens, so reading fewer
+        # than that means the prompt was cut.
+        if observed >= middle:
+            low = middle
+        else:
+            high = middle
+    return max(window, low)
+
+
 def _optional_int_env(name: str) -> int | None:
     raw = os.getenv(name)
     if raw is None or not raw.strip():

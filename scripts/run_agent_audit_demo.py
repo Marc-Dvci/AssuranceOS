@@ -23,7 +23,23 @@ sys.path.insert(0, str(ROOT / "src"))
 from assuranceos.agent_audit_demo import DEMO_TENANT, run_agent_audit_demo  # noqa: E402
 from assuranceos.config import settings  # noqa: E402
 from assuranceos.db import Database  # noqa: E402
-from assuranceos.governance.models_client import build_client  # noqa: E402
+from assuranceos.governance.models_client import (  # noqa: E402
+    build_client,
+    probe_context_window,
+)
+
+
+def _declared_window(value: str, *, client) -> int | None:
+    """Resolve --context-tokens. Measuring beats being told; neither is a cap."""
+    setting = str(value or "auto").strip().lower()
+    if setting in {"none", "0", ""}:
+        return None
+    if setting == "auto":
+        return probe_context_window(client) if client is not None else None
+    try:
+        return int(setting)
+    except ValueError:
+        raise SystemExit("--context-tokens must be 'auto', 'none', or a number") from None
 
 
 def main() -> None:
@@ -44,11 +60,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--context-tokens",
-        type=int,
-        default=None,
+        default="auto",
         help=(
-            "context window the endpoint really serves. Set it and an oversized "
-            "task is refused before the call instead of being silently trimmed."
+            "what the endpoint serves, so an oversized task is refused rather "
+            "than silently trimmed. 'auto' measures it (the server does not "
+            "advertise it anywhere); a number states it; 'none' declares nothing "
+            "and relies on the post-call truncation check. This is never a cap "
+            "the runtime imposes -- serve the largest window your hardware "
+            "allows and this follows it."
         ),
     )
     parser.add_argument("--tenant", default=DEMO_TENANT)
@@ -62,8 +81,11 @@ def main() -> None:
             model=args.model or (settings.gemini_model if "gem" in args.model_mode else None),
             base_url=args.base_url,
             enable_thinking={"off": False, "on": True, "server-default": None}[args.thinking],
-            context_window_tokens=args.context_tokens,
+            context_window_tokens=_declared_window(args.context_tokens, client=None),
         )
+        client.context_window_tokens = _declared_window(args.context_tokens, client=client)
+        if client.context_window_tokens:
+            print(f"serving {client.context_window_tokens} context tokens", flush=True)
 
     result = run_agent_audit_demo(
         database=Database(settings.database_url),
