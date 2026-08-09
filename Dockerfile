@@ -1,4 +1,4 @@
-FROM python:3.12-slim@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36 AS runtime
+FROM python:3.14-slim@sha256:a7fb1e634c4a578f9e0bd6327f11a3cde11b7a9395f48e24360c0988bcc5c2bc AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -21,6 +21,11 @@ COPY agents ./agents
 COPY audit-packs ./audit-packs
 COPY apps ./apps
 COPY demo ./demo
+# The release evaluation reads evaluation/fixtures/asteria_context.json. Without
+# it the image fails its own qualification 57/76 -- every cross-industry case --
+# while the source tree passes 76/76, so Judge Mode in a deployed container
+# reported a fleet that could not qualify.
+COPY evaluation ./evaluation
 COPY examples ./examples
 COPY tests-library ./tests-library
 COPY security/release-keys ./security/release-keys

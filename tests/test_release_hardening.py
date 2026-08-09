@@ -329,3 +329,34 @@ def test_artifact_manifest_describes_exactly_the_tracked_source_tree():
     assert not (tracked - recorded), (
         "manifest omits tracked files: " + ", ".join(sorted(tracked - recorded)[:10])
     )
+
+
+def test_the_image_carries_every_directory_the_running_code_reads():
+    """A path the code resolves from the repository root must be in the image.
+
+    `evaluation/` was not copied, so the container failed its own release
+    qualification 57/76 -- every cross-industry case -- while the source tree
+    passed 76/76. Nothing caught it because the qualification gate runs against
+    the tree and the Docker step only checks that the build succeeds.
+    """
+    root = Path(__file__).resolve().parents[1]
+    dockerfile = (root / "Dockerfile").read_text(encoding="utf-8")
+
+    required = {
+        "agents": "signed agent packages",
+        "audit-packs": "signed methodology",
+        "demo": "the Asteria corpus",
+        "evaluation": "release-qualification fixtures",
+        "examples": "workflow definitions",
+        "migrations": "alembic revisions",
+        "scripts": "operational entrypoints",
+        "src": "the application",
+        "tests-library": "signed control tests",
+    }
+    missing = [
+        f"{name} ({why})"
+        for name, why in required.items()
+        if f"COPY {name} ./{name}" not in dockerfile
+    ]
+
+    assert not missing, "Dockerfile does not copy: " + ", ".join(missing)

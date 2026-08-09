@@ -27,12 +27,12 @@
     {
       "path": ".github/workflows/ci.yml",
       "size_bytes": 2534,
-      "sha256": "ffce4c7e9dbb65b6222159b44dfad3be625adc7e19bbd9ed70aa08f406c4df9e"
+      "sha256": "025f227d3a0d9c2b2f347fe6397fea2d6e7176c56ecd9bbe2e5331d39b6502b8"
     },
     {
       "path": ".github/workflows/security.yml",
       "size_bytes": 2010,
-      "sha256": "098d7b02b56276d1b6ffeae9eddf54d7400efd016b003d05fdf8a85a429ab362"
+      "sha256": "f452eb520888201e7f64de5cbf88452254ac605625d46075e6deb74a5b8e405e"
     },
     {
       "path": ".gitignore",
@@ -81,8 +81,8 @@
     },
     {
       "path": "Dockerfile",
-      "size_bytes": 1281,
-      "sha256": "b9cc8440e4d6c41129bef5302c272b4af6b013e411d907d0b0079d1abdbf2b65"
+      "size_bytes": 1591,
+      "sha256": "dd1c389f269d524a1f19c9db2b5a6009eefc9d3eb9570f48143f6de24f4a6f9b"
     },
     {
       "path": "MODULE.bazel",
@@ -2716,8 +2716,8 @@
     },
     {
       "path": "infrastructure/terraform/.terraform.lock.hcl",
-      "size_bytes": 2369,
-      "sha256": "760d6dfdec58a1a5cd1aba27798783af9fdabe1b37754fb93b991d0062192d2c"
+      "size_bytes": 2444,
+      "sha256": "f3537764a0d8e1e5dce3fc9f808c31dda924d24d1d7350bfe840d8b0940c75ad"
     },
     {
       "path": "infrastructure/terraform/README.md",
@@ -4406,8 +4406,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 13575,
-      "sha256": "4a05903fda8402db75f1c7bcc4e15b1370eb1831be58ae8203849e13156de585"
+      "size_bytes": 14790,
+      "sha256": "4f88d18dda8aab87f6d8c7bf239c4ad541ca32dfa5e68fd7694fc08cf2b4fb5e"
     },
     {
       "path": "tests/test_reporting.py",
