@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import sqlite3
 from datetime import date
 from pathlib import Path
 
@@ -18,12 +19,29 @@ from assuranceos.control_testing.exceptions import (
     TestInputValidationError as InputValidationError,
     TestPackageError as PackageError,
 )
+from assuranceos.control_testing.runtime import (
+    DeterministicRuntime,
+    TestExecutionError as ControlTestExecutionError,
+)
 from assuranceos.db.models import ControlTestRun, Tenant
 from assuranceos.db.repositories import TenantRepository
 from assuranceos.db.session import Database
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_KEY = (ROOT / "security/release-keys/control-test-release-public.pem").read_bytes()
+
+
+def test_sql_dataset_loader_rejects_unsafe_column_identifiers():
+    connection = sqlite3.connect(":memory:")
+    try:
+        with pytest.raises(ControlTestExecutionError, match="unsafe dataset columns"):
+            DeterministicRuntime._load_table(
+                connection,
+                "population",
+                [{'safe" TEXT); DROP TABLE population; --': "value"}],
+            )
+    finally:
+        connection.close()
 
 
 def registry(root: Path = ROOT / "tests-library") -> ControlTestRegistry:

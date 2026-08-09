@@ -26,15 +26,44 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
-from xml.etree import ElementTree
+
+from defusedxml import ElementTree
+from defusedxml.common import DefusedXmlException
 
 _NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 _R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _CELL_REFERENCE = re.compile(r"^([A-Z]+)(\d+)$")
+_MAX_ARCHIVE_ENTRIES = 250
+_MAX_UNCOMPRESSED_BYTES = 50 * 1024 * 1024
+_MAX_XML_PART_BYTES = 10 * 1024 * 1024
 
 
 class WorkbookError(ValueError):
     """The workbook is outside the subset this module will read."""
+
+
+def _read_xml(archive: zipfile.ZipFile, part: str) -> ElementTree.Element:
+    try:
+        info = archive.getinfo(part)
+    except KeyError as exc:
+        raise WorkbookError(f"workbook part is missing: {part}") from exc
+    if info.file_size > _MAX_XML_PART_BYTES:
+        raise WorkbookError(f"workbook XML part exceeds the size limit: {part}")
+    try:
+        return ElementTree.fromstring(archive.read(info))
+    except (DefusedXmlException, ElementTree.ParseError) as exc:
+        raise WorkbookError(f"unsafe or malformed workbook XML: {part}") from exc
+
+
+def _validate_archive(archive: zipfile.ZipFile) -> None:
+    entries = archive.infolist()
+    if len(entries) > _MAX_ARCHIVE_ENTRIES:
+        raise WorkbookError("workbook contains too many archive entries")
+    if sum(item.file_size for item in entries) > _MAX_UNCOMPRESSED_BYTES:
+        raise WorkbookError("workbook exceeds the uncompressed size limit")
+    names = [item.filename for item in entries]
+    if len(names) != len(set(names)):
+        raise WorkbookError("workbook contains duplicate archive entries")
 
 
 @dataclass(frozen=True)
@@ -86,7 +115,10 @@ def _shared_strings(archive: zipfile.ZipFile) -> list[str]:
         raw = archive.read("xl/sharedStrings.xml")
     except KeyError:
         return []
-    root = ElementTree.fromstring(raw)
+    try:
+        root = ElementTree.fromstring(raw)
+    except (DefusedXmlException, ElementTree.ParseError) as exc:
+        raise WorkbookError("unsafe or malformed workbook XML: xl/sharedStrings.xml") from exc
     values: list[str] = []
     for item in root.findall(f"{{{_NS}}}si"):
         values.append("".join(node.text or "" for node in item.iter(f"{{{_NS}}}t")))
@@ -125,8 +157,8 @@ def _cell_value(cell: ElementTree.Element, shared: Sequence[str]) -> Any:
 
 def _sheet_targets(archive: zipfile.ZipFile) -> list[tuple[str, str]]:
     """Sheet names paired with their part paths, in workbook order."""
-    workbook = ElementTree.fromstring(archive.read("xl/workbook.xml"))
-    relationships = ElementTree.fromstring(archive.read("xl/_rels/workbook.xml.rels"))
+    workbook = _read_xml(archive, "xl/workbook.xml")
+    relationships = _read_xml(archive, "xl/_rels/workbook.xml.rels")
     by_id = {
         node.get("Id"): node.get("Target", "")
         for node in relationships
@@ -139,7 +171,10 @@ def _sheet_targets(archive: zipfile.ZipFile) -> list[tuple[str, str]]:
             raise WorkbookError(f"sheet {name!r} has no resolvable part")
         if not target.startswith("/"):
             target = f"xl/{target.lstrip('/')}"
-        targets.append((name, target.lstrip("/")))
+        target = target.lstrip("/")
+        if not target.startswith("xl/worksheets/") or ".." in target.split("/"):
+            raise WorkbookError(f"sheet {name!r} points outside xl/worksheets")
+        targets.append((name, target))
     return targets
 
 
@@ -152,10 +187,11 @@ def read_workbook(path: Path | str) -> Workbook:
     """
     location = Path(path)
     with zipfile.ZipFile(location) as archive:
+        _validate_archive(archive)
         shared = _shared_strings(archive)
         sheets: list[Sheet] = []
         for name, target in _sheet_targets(archive):
-            root = ElementTree.fromstring(archive.read(target))
+            root = _read_xml(archive, target)
             grid: list[list[Any]] = []
             for row in root.iter(f"{{{_NS}}}row"):
                 cells: list[Any] = []

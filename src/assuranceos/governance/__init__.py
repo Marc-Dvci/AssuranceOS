@@ -50,6 +50,11 @@ from .identity import (
     generate_agent_identity_keypair,
     workload_uri,
 )
+from .managed_armor import (
+    GoogleManagedModelArmor,
+    build_model_armor,
+    verify_model_armor_template,
+)
 from .speech import (
     Chirp3Client,
     ScriptedTranscriptionClient,
@@ -98,6 +103,7 @@ __all__ = [
     "GatewayDecision",
     "GatewayDenied",
     "GovernedAgentTaskHandler",
+    "GoogleManagedModelArmor",
     "InMemoryRevocationList",
     "IndexedDocument",
     "LocalEmbeddingClient",
@@ -117,6 +123,8 @@ __all__ = [
     "WalkthroughAssertion",
     "audit_log_record",
     "build_embedding_client",
+    "build_model_armor",
+    "verify_model_armor_template",
     "build_transcription_client",
     "configure_telemetry",
     "cosine_similarity",

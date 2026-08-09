@@ -9,6 +9,26 @@ data "google_project" "current" {
 
 locals {
   prefix = "assuranceos-${var.environment}"
+  operational_jobs = {
+    seed = {
+      suffix      = "seed-demo"
+      args        = ["scripts/seed_demo_tenant.py", "--model-mode", "vertex"]
+      timeout     = "1800s"
+      max_retries = 0
+    }
+    control_test = {
+      suffix      = "control-test"
+      args        = ["scripts/run_control_test_demo.py"]
+      timeout     = "900s"
+      max_retries = 0
+    }
+    scheduler = {
+      suffix      = "scheduler"
+      args        = ["scripts/run_scheduler_worker.py", "--worker-id", "cloud-run-scheduler"]
+      timeout     = "300s"
+      max_retries = 1
+    }
+  }
   services = toset([
     "run.googleapis.com",
     "aiplatform.googleapis.com",
@@ -18,6 +38,7 @@ locals {
     "cloudscheduler.googleapis.com",
     "secretmanager.googleapis.com",
     "artifactregistry.googleapis.com",
+    "modelarmor.googleapis.com",
     "cloudtrace.googleapis.com",
     "logging.googleapis.com",
     "monitoring.googleapis.com",
@@ -30,6 +51,15 @@ resource "google_project_service" "required" {
   for_each           = local.services
   service            = each.value
   disable_on_destroy = false
+}
+
+resource "google_artifact_registry_repository" "containers" {
+  location      = var.region
+  repository_id = local.prefix
+  description   = "Immutable AssuranceOS release images"
+  format        = "DOCKER"
+
+  depends_on = [google_project_service.required]
 }
 
 resource "google_service_account" "runtime" {
@@ -217,6 +247,12 @@ resource "google_project_iam_member" "runtime_agent_platform" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+resource "google_project_iam_member" "runtime_model_armor" {
+  project = var.project_id
+  role    = "roles/modelarmor.user"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
 resource "google_storage_bucket_iam_member" "runtime_agent_staging" {
   bucket = google_storage_bucket.agent_staging.name
   role   = "roles/storage.objectAdmin"
@@ -298,7 +334,9 @@ resource "google_cloud_run_v2_service" "api" {
         items {
           version = "latest"
           path    = "private.pem"
-          mode    = 0400
+          # Cloud Run v2 secret volumes are root-owned. The image deliberately
+          # runs as a non-root user, so grant read-only access to all identities.
+          mode = 0444
         }
       }
     }
@@ -312,7 +350,8 @@ resource "google_cloud_run_v2_service" "api" {
         items {
           version = "latest"
           path    = "private.pem"
-          mode    = 0400
+          # Keep the key immutable while allowing the non-root process to read it.
+          mode = 0444
         }
       }
     }
@@ -358,13 +397,33 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
+        name  = "GOOGLE_CLOUD_PROJECT"
+        value = var.project_id
+      }
+
+      env {
+        name  = "GOOGLE_CLOUD_LOCATION"
+        value = var.region
+      }
+
+      env {
         name  = "ASSURANCEOS_GEMINI_MODEL"
         value = "gemini-3.6-flash"
       }
 
       env {
+        name  = "ASSURANCEOS_MODEL_ARMOR_TEMPLATE"
+        value = var.model_armor_template
+      }
+
+      env {
         name  = "ASSURANCEOS_AGENT_ENGINE_STAGING_BUCKET"
         value = "gs://${google_storage_bucket.agent_staging.name}"
+      }
+
+      env {
+        name  = "ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON"
+        value = var.agent_engine_resource_map_json
       }
 
       env {
@@ -460,7 +519,9 @@ resource "google_cloud_run_v2_service" "api" {
         failure_threshold     = 12
 
         http_get {
-          path = "/ready"
+          # Startup proves the process is alive. Deployment migrations and
+          # registry synchronization are separately visible through /ready.
+          path = "/health"
           port = 8080
         }
       }
@@ -482,6 +543,7 @@ resource "google_cloud_run_v2_service" "api" {
     google_project_service.required,
     google_project_iam_member.runtime_sql,
     google_project_iam_member.runtime_agent_platform,
+    google_project_iam_member.runtime_model_armor,
     google_secret_manager_secret_iam_member.runtime_database,
     google_secret_manager_secret_iam_member.runtime_export_signing,
     google_secret_manager_secret_iam_member.runtime_execution_signing,
@@ -659,6 +721,197 @@ resource "google_cloud_run_v2_job" "outbox" {
   ]
 }
 
+resource "google_cloud_run_v2_job" "operations" {
+  for_each            = local.operational_jobs
+  name                = "${local.prefix}-${each.value.suffix}"
+  location            = var.region
+  deletion_protection = var.environment == "production"
+
+  template {
+    task_count  = 1
+    parallelism = 1
+
+    template {
+      service_account = google_service_account.runtime.email
+      timeout         = each.value.timeout
+      max_retries     = each.value.max_retries
+
+      volumes {
+        name = "cloudsql"
+
+        cloud_sql_instance {
+          instances = [google_sql_database_instance.primary.connection_name]
+        }
+      }
+
+      volumes {
+        name = "export-signing"
+
+        secret {
+          secret = var.export_signing_secret_id
+
+          items {
+            version = "latest"
+            path    = "private.pem"
+            mode    = 0444
+          }
+        }
+      }
+
+      volumes {
+        name = "execution-signing"
+
+        secret {
+          secret = var.execution_signing_secret_id
+
+          items {
+            version = "latest"
+            path    = "private.pem"
+            mode    = 0444
+          }
+        }
+      }
+
+      containers {
+        image   = var.container_image
+        command = ["python"]
+        args    = each.value.args
+
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+
+        volume_mounts {
+          name       = "export-signing"
+          mount_path = "/var/run/secrets/export-signing"
+        }
+
+        volume_mounts {
+          name       = "execution-signing"
+          mount_path = "/var/run/secrets/execution-signing"
+        }
+
+        env {
+          name  = "ASSURANCEOS_ENV"
+          value = var.environment == "production" ? "production" : "demo"
+        }
+
+        env {
+          name  = "ASSURANCEOS_MODEL_MODE"
+          value = "vertex"
+        }
+
+        env {
+          name  = "ASSURANCEOS_GEMINI_MODEL"
+          value = "gemini-3.6-flash"
+        }
+
+        env {
+          name  = "ASSURANCEOS_MODEL_ARMOR_TEMPLATE"
+          value = var.model_armor_template
+        }
+
+        env {
+          name  = "GOOGLE_CLOUD_PROJECT"
+          value = var.project_id
+        }
+
+        env {
+          name  = "GOOGLE_CLOUD_LOCATION"
+          value = var.region
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTH_MODE"
+          value = "jwt"
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTH_JWT_ISSUER"
+          value = var.auth_jwt_issuer
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTH_JWT_AUDIENCE"
+          value = var.auth_jwt_audience
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTH_JWKS_URL"
+          value = var.auth_jwks_url
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTH_JWT_ALGORITHMS"
+          value = "RS256"
+        }
+
+        env {
+          name  = "ASSURANCEOS_TRUSTED_HOSTS"
+          value = var.trusted_hosts
+        }
+
+        env {
+          name  = "ASSURANCEOS_AUTO_CREATE_SCHEMA"
+          value = "false"
+        }
+
+        env {
+          name  = "ASSURANCEOS_EVIDENCE_STORAGE"
+          value = "gcs"
+        }
+
+        env {
+          name  = "ASSURANCEOS_EVIDENCE_BUCKET"
+          value = google_storage_bucket.evidence.name
+        }
+
+        env {
+          name  = "ASSURANCEOS_EXPORT_SIGNING_KEY_ID"
+          value = "${local.prefix}-exports-v1"
+        }
+
+        env {
+          name  = "ASSURANCEOS_EXPORT_SIGNING_PRIVATE_KEY"
+          value = "/var/run/secrets/export-signing/private.pem"
+        }
+
+        env {
+          name  = "ASSURANCEOS_EXECUTION_SIGNING_KEY_ID"
+          value = "assuranceos-execution-v1"
+        }
+
+        env {
+          name  = "ASSURANCEOS_EXECUTION_SIGNING_PRIVATE_KEY"
+          value = "/var/run/secrets/execution-signing/private.pem"
+        }
+
+        env {
+          name = "ASSURANCEOS_DATABASE_URL"
+
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.database_url.secret_id
+              version = google_secret_manager_secret_version.database_url.version
+            }
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    google_project_iam_member.runtime_sql,
+    google_project_iam_member.runtime_agent_platform,
+    google_project_iam_member.runtime_model_armor,
+    google_secret_manager_secret_iam_member.runtime_database,
+    google_secret_manager_secret_iam_member.runtime_export_signing,
+    google_secret_manager_secret_iam_member.runtime_execution_signing,
+    google_storage_bucket_iam_member.runtime_evidence,
+  ]
+}
+
 resource "google_project_iam_member" "scheduler_run_invoker" {
   project = var.project_id
   role    = "roles/run.invoker"
@@ -682,6 +935,33 @@ resource "google_cloud_scheduler_job" "outbox" {
   http_target {
     http_method = "POST"
     uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${var.project_id}/jobs/${google_cloud_run_v2_job.outbox.name}:run"
+
+    oauth_token {
+      service_account_email = google_service_account.scheduler.email
+      scope                 = "https://www.googleapis.com/auth/cloud-platform"
+    }
+  }
+
+  depends_on = [google_project_iam_member.scheduler_run_invoker]
+}
+
+resource "google_cloud_scheduler_job" "audit_scheduler" {
+  name        = "${local.prefix}-audit-scheduler"
+  description = "Evaluate due AssuranceOS schedules and launch eligible engagements"
+  region      = var.region
+  schedule    = "* * * * *"
+  time_zone   = "UTC"
+
+  retry_config {
+    retry_count          = 3
+    min_backoff_duration = "10s"
+    max_backoff_duration = "60s"
+    max_doublings        = 3
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${var.project_id}/jobs/${google_cloud_run_v2_job.operations["scheduler"].name}:run"
 
     oauth_token {
       service_account_email = google_service_account.scheduler.email

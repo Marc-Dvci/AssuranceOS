@@ -569,7 +569,7 @@ def evaluator_overview(
             _component("Agent Registry", len(packages) == 19, f"{len(packages)} signed roles"),
             _component(
                 "Managed Agent Engine fleet",
-                fleet_proof["status"] in {"release_qualified", "cloud_verified"},
+                fleet_proof["cloud_verified"],
                 (
                     f"{fleet_proof['deployed_count']}/{fleet_proof['expected_count']} cloud resources "
                     "verified"
@@ -584,27 +584,38 @@ def evaluator_overview(
             ),
             _component(
                 "Agent Runtime",
-                model_name == "gemini-3.6-flash",
+                model_name == "gemini-3.6-flash"
+                and model_mode == "vertex"
+                and deployment_target == "Google Cloud",
                 f"{model_name} via {model_mode} execution policy",
             ),
             _component(
                 "Agent Identity",
-                identity_count >= 0,
-                f"issuer/verifier active · {identity_count} runtime identities retained",
+                fleet_proof["agent_identity"]["configured"],
+                (
+                    f"managed AGENT_IDENTITY read back for {fleet_proof['deployed_count']} agents; "
+                    f"{identity_count} signed task identities retained"
+                    if fleet_proof["agent_identity"]["configured"]
+                    else f"managed identity awaiting deployment; {identity_count} signed task identities retained"
+                ),
             ),
             _component(
                 "Agent Gateway",
-                decision_count >= 0,
-                f"default-deny gateway active · {decision_count} decisions retained",
+                decision_count > 0,
+                f"default-deny application gateway · {decision_count} decisions retained",
             ),
             _component(
                 "Model Armor",
-                blocked_count >= 0,
-                f"screening active · {blocked_count} blocked findings retained",
+                fleet_proof["model_armor"]["configured"],
+                (
+                    f"managed template verified with safe/adversarial live calls · {blocked_count} blocks retained"
+                    if fleet_proof["model_armor"]["configured"]
+                    else f"managed template not configured · {blocked_count} local guardrail blocks retained"
+                ),
             ),
             _component(
                 "Agent Observability",
-                trace_count >= 0,
+                trace_count > 0,
                 f"trace recorder active · {trace_count} canonical traces",
             ),
             _component(

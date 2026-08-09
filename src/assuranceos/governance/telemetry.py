@@ -196,6 +196,16 @@ def configure_telemetry(config: "TelemetryConfig | None" = None) -> bool:
             provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
         except ImportError:
             pass
+    elif project_id := os.getenv("GOOGLE_CLOUD_PROJECT"):
+        try:
+            from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+            from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+            provider.add_span_processor(
+                BatchSpanProcessor(CloudTraceSpanExporter(project_id=project_id))
+            )
+        except ImportError:
+            pass
     trace.set_tracer_provider(provider)
     return True
 

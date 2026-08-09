@@ -1,4 +1,4 @@
-.PHONY: install validate migrate test coverage run corpus seed-demo demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo model-fleet-demo pack-demo portfolio-demo reporting-demo governance-demo evaluate-agents sync-control-tests openapi manifest outbox docker local-privacy zip clean
+.PHONY: install validate migrate test coverage release-check run corpus seed-demo demo orchestrator-demo scheduler-demo evidence-demo connector-demo control-test-demo loop-demo model-fleet-demo pack-demo portfolio-demo reporting-demo governance-demo evaluate-agents sync-control-tests openapi manifest outbox docker local-privacy zip clean
 
 install:
 	python -m pip install -e '.[dev]'
@@ -14,6 +14,15 @@ test:
 
 coverage:
 	pytest --cov=assuranceos --cov-report=term-missing --cov-fail-under=85
+
+release-check:
+	python -m ruff check src tests scripts
+	python -m compileall -q src scripts
+	python scripts/validate_repo.py
+	pytest --cov=assuranceos --cov-report=term-missing --cov-fail-under=85
+	python scripts/run_agent_evaluations.py --mode contract
+	python scripts/generate_openapi.py --check
+	python scripts/build_artifact_manifest.py --check
 
 run:
 	uvicorn assuranceos.api:app --reload --port 8080

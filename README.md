@@ -327,6 +327,8 @@ See [`docs/architecture/evidence-grounded-reporting.md`](docs/architecture/evide
 
 ## Architecture
 
+[Open the submission-ready Google Cloud architecture diagram](docs/architecture/assuranceos-google-cloud-architecture.svg).
+
 ```mermaid
 flowchart LR
   subgraph Control["Control plane"]

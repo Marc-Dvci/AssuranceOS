@@ -27,7 +27,7 @@ from ..db.repositories import TenantRepository
 from ..db.session import Database
 from ..models import ExecutionEnvelope
 from ..registry import AgentRegistry
-from .armor import ModelArmor
+from .managed_armor import build_model_armor
 from .gateway import AgentGateway, BoundedTool, GatewayDenied
 from .identity import AgentIdentityIssuer, AgentIdentityVerifier
 from .models_client import ModelClient, ScriptedClient
@@ -96,7 +96,9 @@ def run_governance_demo(
         revocations=DatabaseRevocationChecker(recorder, tenant),
     )
 
-    armor = ModelArmor(egress_allowlist=frozenset({"api.github.com", "asteria.atlassian.net"}))
+    armor = build_model_armor(
+        egress_allowlist=frozenset({"api.github.com", "asteria.atlassian.net"})
+    )
     gateway = AgentGateway(identity_verifier=verifier, armor=armor)
     gateway.register_tool(
         AGENT_ROLE,

@@ -22,6 +22,7 @@ dependencies = [
   "PyJWT[crypto]>=2.9,<3",
   "cryptography>=50,<51",
   "python-dotenv>=1.1,<2",
+  "defusedxml>=0.7,<1",
   # Windows ships no system IANA database; the recurring audit scheduler resolves
   # IANA zone names through zoneinfo and fails closed without it.
   "tzdata>=2024.1; sys_platform == 'win32'",
@@ -53,9 +54,11 @@ gcp-runtime = [
   "google-cloud-secret-manager>=2.21,<3",
   "google-cloud-pubsub>=2.27,<3",
   "google-cloud-logging>=3.11,<4",
+  "opentelemetry-sdk>=1.27,<2",
+  "opentelemetry-exporter-gcp-trace>=1.9,<2",
 ]
 agent-cloud = [
-  "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
   # Also the transport for EmbeddingGemma on Vertex AI.
   "google-genai>=2.9,<3",
 ]
@@ -71,7 +74,9 @@ cloud = [
   "google-cloud-secret-manager>=2.21,<3",
   "google-cloud-pubsub>=2.27,<3",
   "google-cloud-logging>=3.11,<4",
-  "google-cloud-aiplatform[agent_engines,adk]>=1.153,<2",
+  "opentelemetry-sdk>=1.27,<2",
+  "opentelemetry-exporter-gcp-trace>=1.9,<2",
+  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
   "google-genai>=2.9,<3",
   "google-cloud-speech>=2.28,<3",
 ]

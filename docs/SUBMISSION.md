@@ -62,9 +62,11 @@ Nineteen signed ADK agent roles form a managed specialist fleet. Deployment is
 qualification-gated: all release cases must pass before the script can create
 Agent Engine resources. The resulting proof document records each
 projects/.../reasoningEngines/... resource name next to its signed package
-digest, model, region, deployment time, and Memory Bank policy. Judge Mode
-re-validates that map against the running release rather than displaying a
-static inventory.
+digest, model, region, deployment time, managed Agent Identity, and Memory Bank
+policy. The deploy command reads every resource back through the Agent Engine
+API. Judge Mode re-validates that receipt against the running release rather
+than displaying a static inventory; until that receipt exists it says
+"deployment-qualified," not "operational."
 
 ### Vertex AI Memory Bank
 
@@ -314,7 +316,7 @@ repository, so a judge can reproduce any result byte for byte.
 - **A recorded walkthrough interview**, transcribed by Chirp 3 into
   timecoded segments with per-word confidence.
 - **The published answer key**, `demo/asteria/ground_truth.yaml`, declaring all
-  ten seeded conditions so every run marks itself rather than reporting on its
+  17 seeded conditions so every run marks itself rather than reporting on its
   own execution.
 - **Licensed methodology**, as three signed Audit Packs compiling criteria,
   controls, deterministic tests, evidence requirements, agent roles and human
@@ -335,7 +337,7 @@ runtime splits the channels before any JSON extraction, keeps the reasoning as
 trace evidence, and screens it with Model Armor, because an injection that fails
 to change the answer can still try to move secrets out through the scratchpad.
 
-**A green test suite is blind to the axis it never varies.** 472 passing tests
+**A green test suite is blind to the axis it never varies.** Hundreds of passing tests
 did not notice that five of nine cockpit screens were empty, because each
 demonstration entrypoint owned a tenant and deleted it on entry. Clicking every
 button in order, once, found four defects the suite could not: traces that were

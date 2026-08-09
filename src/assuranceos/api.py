@@ -201,9 +201,18 @@ from .vault.exceptions import (
 )
 from .vault.inspection import ContentInspectionRejected
 from .governance.armor import ModelArmor
+from .governance.telemetry import TelemetryConfig, configure_telemetry
 
 app = FastAPI(title="AssuranceOS API", version="0.8.0")
 app.state.settings = settings
+if os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    configure_telemetry(
+        TelemetryConfig(
+            environment=settings.environment,
+            cloud_project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+            cloud_region=os.getenv("GOOGLE_CLOUD_LOCATION"),
+        )
+    )
 if settings.auth_mode == "jwt":
     app.state.jwt_verifier = JwtVerifier(
         issuer=settings.auth_jwt_issuer or "",

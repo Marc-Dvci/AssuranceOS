@@ -96,6 +96,24 @@ def test_workbook_reports_a_missing_sheet_by_name(tmp_path):
         read_workbook(path).sheet("Absent")
 
 
+def test_workbook_rejects_xml_entities(tmp_path):
+    path = write_workbook(tmp_path / "entity.xlsx", {"Only": (["a"], [["value"]])})
+    with zipfile.ZipFile(path) as archive:
+        parts = {name: archive.read(name) for name in archive.namelist()}
+    target = "xl/worksheets/sheet1.xml"
+    parts[target] = parts[target].replace(
+        b'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">',
+        b'<!DOCTYPE worksheet [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
+        b'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">',
+    ).replace(b">value<", b">&xxe;<")
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, content in parts.items():
+            archive.writestr(name, content)
+
+    with pytest.raises(WorkbookError, match="unsafe"):
+        read_workbook(path)
+
+
 def _inject_formula(path: Path) -> None:
     with zipfile.ZipFile(path) as archive:
         parts = {name: archive.read(name) for name in archive.namelist()}

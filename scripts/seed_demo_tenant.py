@@ -37,7 +37,12 @@ from assuranceos.connectors.demo import run_connector_demo  # noqa: E402
 from assuranceos.control_testing.demo import run_control_test_demo  # noqa: E402
 from assuranceos.db import Database  # noqa: E402
 from assuranceos.demo import TENANT_ID, run_golden_engagement  # noqa: E402
-from assuranceos.vault import EvidenceVault  # noqa: E402
+from assuranceos.vault import (  # noqa: E402
+    BaselineContentInspector,
+    Ed25519ManifestSigner,
+    EvidenceVault,
+    GoogleCloudStorageObjectStore,
+)
 from assuranceos.governance.demo import run_governance_demo  # noqa: E402
 from assuranceos.governance.models_client import build_client  # noqa: E402
 from assuranceos.governance.telemetry import TelemetryConfig, configure_telemetry  # noqa: E402
@@ -87,7 +92,29 @@ def main() -> None:
 
     database = Database(settings.database_url)
     ledger = AuditLedger(settings.database_url)
-    vault = EvidenceVault.local(database, settings.evidence_root)
+    signer = (
+        Ed25519ManifestSigner.from_pem(
+            settings.export_signing_private_key,
+            key_id=settings.export_signing_key_id,
+        )
+        if settings.export_signing_private_key
+        else None
+    )
+    vault = (
+        EvidenceVault(
+            database,
+            GoogleCloudStorageObjectStore(settings.evidence_bucket or ""),
+            export_signer=signer,
+            inspector=BaselineContentInspector(),
+        )
+        if settings.evidence_storage == "gcs"
+        else EvidenceVault.local(
+            database,
+            settings.evidence_root,
+            export_signer=signer,
+            inspector=BaselineContentInspector(),
+        )
+    )
     tenant = args.tenant
 
     # The golden audit goes first and is the only stage allowed to clear the
@@ -141,6 +168,7 @@ def main() -> None:
                 export_path=settings.evidence_export_root / "asteria-evidence-demo.zip",
                 tenant_id=tenant,
                 reset=False,
+                vault=vault,
             ),
         ),
         (

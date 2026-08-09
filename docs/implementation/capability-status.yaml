@@ -3,7 +3,8 @@ release: 0.8.0
 status_definitions:
   implemented: Executable code, migrations, tests, APIs, and evaluator proof exist.
   integration_ready: Executable adapter and contract exist; activation requires provider credentials.
-  cloud_verified: Deployment proof contains validated Google Cloud resource identifiers.
+  release_qualified: Signed artifacts and deployment configuration pass local release gates; no cloud runtime is claimed.
+  cloud_verified: An operator receipt records successful live API read-back of every expected Google Cloud resource.
 capabilities:
   canonical_domain_database: implemented
   durable_engagement_orchestrator: implemented
@@ -21,9 +22,9 @@ capabilities:
   continuous_monitoring_review_cases: implemented
   local_privacy_model_runtime: implemented
   signed_agent_packages: implemented
-  gemini_3_6_structured_runtime: implemented
-  adk_managed_fleet_deployment: implemented
-  vertex_ai_memory_bank: implemented
+  gemini_3_6_structured_runtime: integration_ready
+  adk_managed_fleet_deployment: integration_ready
+  vertex_ai_memory_bank: integration_ready
   judge_mode_live_proofs: implemented
 hardening:
   jwt_tenant_authorization: implemented
@@ -43,6 +44,9 @@ provider_activations:
   github_jira_confluence_google_drive: integration_ready
   entra_okta_gcp_iam: integration_ready
   service_now_ticket_writer: integration_ready
+  google_model_armor: integration_ready
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
-  verification: resource name, release digest, model, fleet completeness, and Memory Bank policy
+  current_status: release_qualified
+  verification: live Agent Engine read-back, resource name, release digest, model, fleet completeness, managed Agent Identity, and Memory Bank policy
+  limitation: the operator receipt is validated application evidence, not a cryptographic remote attestation

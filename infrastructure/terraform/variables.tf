@@ -65,6 +65,28 @@ variable "execution_signing_secret_id" {
   type        = string
 }
 
+variable "model_armor_template" {
+  description = "Existing Model Armor template resource used to sanitize prompts and responses. Leave empty until the template has been created."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.model_armor_template == "" || can(regex("^projects/[^/]+/locations/[^/]+/templates/[^/]+$", var.model_armor_template))
+    error_message = "model_armor_template must be a full projects/.../locations/.../templates/... resource name"
+  }
+}
+
+variable "agent_engine_resource_map_json" {
+  description = "Deployment result JSON emitted by scripts/deploy_adk_agent.py after live Agent Engine read-back. Empty means no cloud fleet is claimed."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.agent_engine_resource_map_json == "" || can(jsondecode(var.agent_engine_resource_map_json))
+    error_message = "agent_engine_resource_map_json must be empty or valid JSON"
+  }
+}
+
 variable "database_tier" {
   description = "Cloud SQL Enterprise tier."
   type        = string

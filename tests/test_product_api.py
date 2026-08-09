@@ -67,6 +67,10 @@ def test_judge_overview_reads_signed_registries_and_deployment(product_client):
     assert payload["fleet"]["released_count"] == 19
     assert len(payload["components"]) >= 10
     assert payload["release"]["commit"]
+    components = {item["name"]: item for item in payload["components"]}
+    assert components["Managed Agent Engine fleet"]["status"] == "attention"
+    assert components["Memory Bank"]["status"] == "attention"
+    assert components["Agent Runtime"]["status"] == "attention"
 
 
 def test_prompt_injection_proof_replays_the_published_source(product_client):

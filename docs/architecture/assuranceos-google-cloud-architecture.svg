@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">AssuranceOS Google Cloud architecture</title>
+  <desc id="desc">Auditors use a Cloud Run API and Judge Mode. Governed agent work passes through signed task authority, application guardrails, Google Model Armor, managed Agent Identity, ADK agents on Agent Engine, Memory Bank, and Gemini. Durable state uses Cloud SQL, Cloud Storage, Pub/Sub, Cloud Run Jobs, Cloud Scheduler, and Cloud Trace.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f9ff"/>
+      <stop offset="1" stop-color="#eef8f4"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#43546a"/>
+    </marker>
+    <style>
+      .title{font:700 30px system-ui,sans-serif;fill:#172235}.subtitle{font:400 15px system-ui,sans-serif;fill:#526174}
+      .group{fill:none;stroke:#8ba1bd;stroke-width:2;stroke-dasharray:8 7}.group-title{font:700 17px system-ui,sans-serif;fill:#335272}
+      .box{fill:#fff;stroke:#476789;stroke-width:2;rx:16}.managed{fill:#eef4ff;stroke:#3973c6}.data{fill:#effaf5;stroke:#27865e}.security{fill:#fff5e9;stroke:#b97019}
+      .label{font:700 17px system-ui,sans-serif;fill:#1e3045;text-anchor:middle}.small{font:400 13px system-ui,sans-serif;fill:#526174;text-anchor:middle}
+      .line{fill:none;stroke:#43546a;stroke-width:2.3;marker-end:url(#arrow)}.event{fill:none;stroke:#778ca5;stroke-width:2;stroke-dasharray:5 5;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1400" height="820" fill="url(#bg)"/>
+  <text x="54" y="52" class="title">AssuranceOS · governed audit agents on Google Cloud</text>
+  <text x="54" y="80" class="subtitle">Every model proposal is bounded by signed authority; canonical evidence and decisions remain outside model memory.</text>
+
+  <rect x="38" y="112" width="1324" height="392" rx="24" class="group"/>
+  <text x="62" y="143" class="group-title">Synchronous governed path</text>
+
+  <rect x="74" y="190" width="190" height="110" class="box"/>
+  <text x="169" y="232" class="label">Auditor / Judge</text><text x="169" y="257" class="small">browser · JWT tenant scope</text>
+
+  <rect x="330" y="174" width="225" height="142" class="box managed"/>
+  <text x="442" y="215" class="label">Cloud Run API</text><text x="442" y="241" class="small">cockpit · workflows · Judge Mode</text><text x="442" y="263" class="small">live readiness and proof endpoints</text>
+
+  <rect x="622" y="164" width="250" height="162" class="box security"/>
+  <text x="747" y="203" class="label">Governed boundary</text><text x="747" y="231" class="small">signed lease-bound envelope</text><text x="747" y="253" class="small">default-deny tool gateway</text><text x="747" y="275" class="small">local deterministic guardrails</text><text x="747" y="297" class="small">Google Model Armor</text>
+
+  <rect x="940" y="153" width="368" height="184" class="box managed"/>
+  <text x="1124" y="193" class="label">Vertex AI Agent Engine</text><text x="1124" y="221" class="small">19 signed Google ADK agent applications</text><text x="1124" y="245" class="small">managed Agent Identity · API read-back proof</text><text x="1124" y="269" class="small">Vertex AI Memory Bank · tenant-qualified user_id</text><text x="1124" y="293" class="small">Gemini 3.6 Flash · structured output</text>
+
+  <path d="M264 245 H330" class="line"/><path d="M555 245 H622" class="line"/><path d="M872 245 H940" class="line"/>
+  <path d="M940 310 C900 392 580 395 552 300" class="event"/><text x="748" y="379" class="subtitle" text-anchor="middle">typed proposal only · human gates before consequential state changes</text>
+
+  <rect x="38" y="536" width="1324" height="232" rx="24" class="group"/>
+  <text x="62" y="567" class="group-title">Durable control plane, evidence, and operations</text>
+
+  <rect x="74" y="610" width="202" height="102" class="box data"/>
+  <text x="175" y="650" class="label">Cloud SQL</text><text x="175" y="675" class="small">canonical audit state</text><text x="175" y="696" class="small">leases · decisions · custody</text>
+
+  <rect x="330" y="610" width="202" height="102" class="box data"/>
+  <text x="431" y="650" class="label">Cloud Storage</text><text x="431" y="675" class="small">content-addressed evidence</text><text x="431" y="696" class="small">retention · versions · exports</text>
+
+  <rect x="586" y="610" width="202" height="102" class="box managed"/>
+  <text x="687" y="650" class="label">Cloud Run Jobs</text><text x="687" y="675" class="small">migrate · seed · control tests</text><text x="687" y="696" class="small">scheduler · transactional outbox</text>
+
+  <rect x="842" y="610" width="202" height="102" class="box managed"/>
+  <text x="943" y="650" class="label">Pub/Sub + Scheduler</text><text x="943" y="675" class="small">durable events · retries</text><text x="943" y="696" class="small">minute-level job triggers</text>
+
+  <rect x="1098" y="610" width="210" height="102" class="box managed"/>
+  <text x="1203" y="650" class="label">Cloud Trace + Logging</text><text x="1203" y="675" class="small">OpenTelemetry export</text><text x="1203" y="696" class="small">join on assuranceos.trace_id</text>
+
+  <path d="M442 316 V590 H175 V610" class="line"/><path d="M442 590 H431 V610" class="line"/><path d="M747 326 V610" class="line"/><path d="M943 610 V590 H687 V610" class="event"/><path d="M1124 337 V575 H1203 V610" class="event"/>
+  <text x="700" y="798" class="subtitle" text-anchor="middle">Release-qualified locally; managed components become operational in Judge Mode only after provider-backed proof exists.</text>
+</svg>

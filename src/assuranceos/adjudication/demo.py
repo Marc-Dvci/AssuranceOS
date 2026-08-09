@@ -27,7 +27,7 @@ from ..control_testing.demo import DEMO_TENANT
 from ..db.models import Engagement, EngagementTask, Tenant
 from ..db.repositories import AuditEventRepository, TenantRepository
 from ..db.session import Database
-from ..governance.armor import ModelArmor
+from ..governance.managed_armor import build_model_armor
 from ..governance.gateway import AgentGateway, BoundedTool
 from ..governance.identity import AgentIdentityIssuer, AgentIdentityVerifier
 from ..governance.models_client import ModelClient, ScriptedClient
@@ -550,7 +550,7 @@ def _run_governed_agent(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
-    armor = ModelArmor(egress_allowlist=frozenset({"api.github.com"}))
+    armor = build_model_armor(egress_allowlist=frozenset({"api.github.com"}))
     gateway = AgentGateway(
         identity_verifier=AgentIdentityVerifier({"loop-v1": public_pem}), armor=armor
     )

@@ -69,8 +69,9 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
         "agent-a": SimpleNamespace(release={"package_sha256": "sha-a"}),
         "agent-b": SimpleNamespace(release={"package_sha256": "sha-b"}),
     }
+    template = "projects/assurance-project/locations/us-central1/templates/guardrails"
     result = {
-        "schema": "assurance.agent_engine_deployment_result.v1",
+        "schema": "assurance.agent_engine_deployment_result.v2",
         "complete": True,
         "model": "gemini-3.6-flash",
         "project": "assurance-project",
@@ -83,6 +84,9 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
                 "resource_name": (
                     "projects/1/locations/us-central1/reasoningEngines/engine-a"
                 ),
+                "identity_type": "AGENT_IDENTITY",
+                "verified_at": "2026-08-08T00:01:00Z",
+                "memory_bank": {"configured": True},
             },
             {
                 "agent_id": "agent-b",
@@ -90,12 +94,31 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
                 "resource_name": (
                     "projects/1/locations/us-central1/reasoningEngines/engine-b"
                 ),
+                "identity_type": "AGENT_IDENTITY",
+                "verified_at": "2026-08-08T00:01:00Z",
+                "memory_bank": {"configured": True},
             },
         ],
+        "verification": {
+            "method": "agentplatform.agent_engines.get",
+            "verified_at": "2026-08-08T00:01:00Z",
+            "resource_count": 2,
+        },
+        "managed_services": {
+            "model_armor": {
+                "schema": "assurance.model_armor_verification.v1",
+                "template": template,
+                "verified_at": "2026-08-08T00:01:00Z",
+                "method": "modelarmor.sanitizeUserPrompt+sanitizeModelResponse",
+                "safe_model_response": "NO_MATCH_FOUND",
+                "adversarial_user_prompt": "MATCH_FOUND",
+            }
+        },
     }
     proof_path = tmp_path / "fleet.json"
     proof_path.write_text(json.dumps(result), encoding="utf-8")
     monkeypatch.setenv("ASSURANCEOS_AGENT_ENGINE_PROOF", str(proof_path))
+    monkeypatch.setenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", template)
 
     proof = managed_fleet_proof(
         repository_root=tmp_path,
@@ -105,3 +128,70 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
     assert proof["cloud_verified"] is True
     assert proof["deployed_count"] == 2
     assert proof["memory_bank"]["configured"] is True
+    assert proof["agent_identity"]["configured"] is True
+    assert proof["model_armor"]["configured"] is True
+
+
+def test_release_qualification_is_not_reported_as_a_cloud_deployment(
+    tmp_path: Path, monkeypatch
+):
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON", raising=False)
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.6-flash",
+    )
+
+    assert proof["status"] == "release_qualified"
+    assert proof["cloud_verified"] is False
+    assert proof["memory_bank"]["configured"] is False
+    assert proof["memory_bank"]["deployment_ready"] is True
+
+
+def test_managed_fleet_rejects_duplicate_or_unread_deployment_receipts(
+    tmp_path: Path, monkeypatch
+):
+    packages = {
+        "agent-a": SimpleNamespace(release={"package_sha256": "sha-a"}),
+        "agent-b": SimpleNamespace(release={"package_sha256": "sha-b"}),
+    }
+    item = {
+        "agent_id": "agent-a",
+        "package_sha256": "sha-a",
+        "resource_name": "projects/1/locations/us-central1/reasoningEngines/engine-a",
+        "identity_type": "AGENT_IDENTITY",
+        "verified_at": "2026-08-08T00:01:00Z",
+        "memory_bank": {"configured": True},
+    }
+    monkeypatch.setenv(
+        "ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON",
+        json.dumps(
+            {
+                "schema": "assurance.agent_engine_deployment_result.v2",
+                "complete": True,
+                "model": "gemini-3.6-flash",
+                "project": "assurance-project",
+                "region": "us-central1",
+                "deployed": [item, item],
+                "verification": {
+                    "method": "create-response-only",
+                    "verified_at": "2026-08-08T00:01:00Z",
+                    "resource_count": 2,
+                },
+            }
+        ),
+    )
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.6-flash",
+    )
+
+    assert proof["status"] == "proof_invalid"
+    assert proof["cloud_verified"] is False
+    assert any("read-back" in error for error in proof["verification_errors"])
+    assert any("duplicate" in error for error in proof["verification_errors"])

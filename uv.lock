@@ -208,6 +208,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "cryptography" },
+    { name = "defusedxml" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "jsonschema" },
@@ -232,8 +233,11 @@ cloud = [
     { name = "google-cloud-logging" },
     { name = "google-cloud-pubsub" },
     { name = "google-cloud-secret-manager" },
+    { name = "google-cloud-speech" },
     { name = "google-cloud-storage" },
     { name = "google-genai" },
+    { name = "opentelemetry-exporter-gcp-trace" },
+    { name = "opentelemetry-sdk" },
 ]
 dev = [
     { name = "bandit" },
@@ -250,6 +254,8 @@ gcp-runtime = [
     { name = "google-cloud-pubsub" },
     { name = "google-cloud-secret-manager" },
     { name = "google-cloud-storage" },
+    { name = "opentelemetry-exporter-gcp-trace" },
+    { name = "opentelemetry-sdk" },
 ]
 otel = [
     { name = "opentelemetry-api" },
@@ -259,21 +265,27 @@ otel = [
 postgres = [
     { name = "psycopg", extra = ["binary"] },
 ]
+speech = [
+    { name = "google-cloud-speech" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.14,<2" },
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.8,<2" },
     { name = "cryptography", specifier = ">=50,<51" },
+    { name = "defusedxml", specifier = ">=0.7,<1" },
     { name = "fastapi", specifier = ">=0.115,<1" },
-    { name = "google-cloud-aiplatform", extras = ["agent-engines", "adk"], marker = "extra == 'agent-cloud'", specifier = ">=1.153,<2" },
-    { name = "google-cloud-aiplatform", extras = ["agent-engines", "adk"], marker = "extra == 'cloud'", specifier = ">=1.153,<2" },
+    { name = "google-cloud-aiplatform", extras = ["agent-engines", "adk"], marker = "extra == 'agent-cloud'", specifier = ">=1.163,<2" },
+    { name = "google-cloud-aiplatform", extras = ["agent-engines", "adk"], marker = "extra == 'cloud'", specifier = ">=1.163,<2" },
     { name = "google-cloud-logging", marker = "extra == 'cloud'", specifier = ">=3.11,<4" },
     { name = "google-cloud-logging", marker = "extra == 'gcp-runtime'", specifier = ">=3.11,<4" },
     { name = "google-cloud-pubsub", marker = "extra == 'cloud'", specifier = ">=2.27,<3" },
     { name = "google-cloud-pubsub", marker = "extra == 'gcp-runtime'", specifier = ">=2.27,<3" },
     { name = "google-cloud-secret-manager", marker = "extra == 'cloud'", specifier = ">=2.21,<3" },
     { name = "google-cloud-secret-manager", marker = "extra == 'gcp-runtime'", specifier = ">=2.21,<3" },
+    { name = "google-cloud-speech", marker = "extra == 'cloud'", specifier = ">=2.28,<3" },
+    { name = "google-cloud-speech", marker = "extra == 'speech'", specifier = ">=2.28,<3" },
     { name = "google-cloud-storage", marker = "extra == 'cloud'", specifier = ">=2.18,<4" },
     { name = "google-cloud-storage", marker = "extra == 'gcp-runtime'", specifier = ">=2.18,<4" },
     { name = "google-genai", marker = "extra == 'agent-cloud'", specifier = ">=2.9,<3" },
@@ -283,8 +295,12 @@ requires-dist = [
     { name = "jsonschema", specifier = ">=4.23,<5" },
     { name = "opentelemetry-api", marker = "extra == 'dev'", specifier = ">=1.27,<2" },
     { name = "opentelemetry-api", marker = "extra == 'otel'", specifier = ">=1.27,<2" },
+    { name = "opentelemetry-exporter-gcp-trace", marker = "extra == 'cloud'", specifier = ">=1.9,<2" },
+    { name = "opentelemetry-exporter-gcp-trace", marker = "extra == 'gcp-runtime'", specifier = ">=1.9,<2" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'otel'", specifier = ">=1.27,<2" },
+    { name = "opentelemetry-sdk", marker = "extra == 'cloud'", specifier = ">=1.27,<2" },
     { name = "opentelemetry-sdk", marker = "extra == 'dev'", specifier = ">=1.27,<2" },
+    { name = "opentelemetry-sdk", marker = "extra == 'gcp-runtime'", specifier = ">=1.27,<2" },
     { name = "opentelemetry-sdk", marker = "extra == 'otel'", specifier = ">=1.27,<2" },
     { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.9,<3" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2,<4" },
@@ -301,7 +317,7 @@ requires-dist = [
     { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2024.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32,<1" },
 ]
-provides-extras = ["postgres", "otel", "dev", "gcp-runtime", "agent-cloud", "cloud"]
+provides-extras = ["postgres", "otel", "dev", "gcp-runtime", "agent-cloud", "speech", "cloud"]
 
 [[package]]
 name = "attrs"
@@ -1198,6 +1214,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/33/4a/7acb616b316c91969f7abf5f3719cb61cc4a97af86411e683ddb11147aa1/google_cloud_secret_manager-2.30.0.tar.gz", hash = "sha256:26ec87737731b483f7f95c26a8c7ab79e22cb66317c95006e7f6985dbc43c8a2", size = 286034, upload-time = "2026-07-16T20:36:23.29Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/8b/9347282b7f6828511d8cf927f3ab62b4b849aaa46aa12ae79e2f6da6cb0b/google_cloud_secret_manager-2.30.0-py3-none-any.whl", hash = "sha256:0f285e77d09a73700e3fca9abbc77f844a50276989bf76d64a76b6e2b871e396", size = 229181, upload-time = "2026-07-16T20:36:01.125Z" },
+]
+
+[[package]]
+name = "google-cloud-speech"
+version = "2.40.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpcio" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/c1/5dc9795314f4aefea0b01b02e9f5486a198341ecc15fe47f89a61c68df63/google_cloud_speech-2.40.0.tar.gz", hash = "sha256:e89e688e4ce0b926754038bf992d0d0f065c5f1c3503bb20e6c46d08b63658fc", size = 404366, upload-time = "2026-06-03T16:13:59.506Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/78/afeca8d597fab54bdd823f857aad15d6f9c4628ff3cb72aa237d01700721/google_cloud_speech-2.40.0-py3-none-any.whl", hash = "sha256:7cc0302b3b9ca33d2eae9669da94a44316601a240942895362ac70e765b9f39c", size = 345427, upload-time = "2026-06-03T16:12:40.909Z" },
 ]
 
 [[package]]

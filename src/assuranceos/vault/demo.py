@@ -26,6 +26,7 @@ def run_evidence_vault_demo(
     export_path: Path,
     tenant_id: str | None = None,
     reset: bool = True,
+    vault: EvidenceVault | None = None,
 ) -> dict[str, Any]:
     """Store, verify, transform, and export evidence under one custody chain.
 
@@ -39,7 +40,7 @@ def run_evidence_vault_demo(
     def clock() -> datetime:
         return EVIDENCE_DEMO_NOW
 
-    vault = EvidenceVault(database, LocalObjectStore(object_root), clock=clock)
+    vault = vault or EvidenceVault(database, LocalObjectStore(object_root), clock=clock)
 
     sources = [
         ("github", demo_root / "sources/github/pull_requests.json"),

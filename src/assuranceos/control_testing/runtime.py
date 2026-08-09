@@ -203,18 +203,29 @@ class DeterministicRuntime:
         if not name.replace("_", "").isalnum() or name[0].isdigit():
             raise TestExecutionError(f"unsafe dataset name: {name}")
         columns = sorted({key for row in records for key in row})
+        unsafe_columns = [
+            column
+            for column in columns
+            if not column or not column.replace("_", "").isalnum() or column[0].isdigit()
+        ]
+        if unsafe_columns:
+            raise TestExecutionError(f"unsafe dataset columns: {unsafe_columns}")
         if not columns:
-            connection.execute(f'CREATE TABLE "{name}" (__empty INTEGER)')
+            # Dynamic identifiers cannot be bound by SQLite; validation above
+            # restricts this value to a plain identifier.
+            empty_table_sql = f'CREATE TABLE "{name}" (__empty INTEGER)'
+            connection.execute(empty_table_sql)
             return
         definitions = ", ".join(f'"{column}"' for column in columns)
-        connection.execute(f'CREATE TABLE "{name}" ({definitions})')
+        create_table_sql = f'CREATE TABLE "{name}" ({definitions})'
+        connection.execute(create_table_sql)
         placeholders = ", ".join("?" for _ in columns)
         quoted = ", ".join(f'"{column}"' for column in columns)
         for row in records:
             values = [DeterministicRuntime._sqlite_value(row.get(column)) for column in columns]
-            connection.execute(
-                f'INSERT INTO "{name}" ({quoted}) VALUES ({placeholders})', values
-            )
+            # Identifiers were validated above and all record values are bound.
+            insert_sql = f'INSERT INTO "{name}" ({quoted}) VALUES ({placeholders})'  # nosec B608
+            connection.execute(insert_sql, values)
 
     @staticmethod
     def _sqlite_value(value: Any) -> Any:

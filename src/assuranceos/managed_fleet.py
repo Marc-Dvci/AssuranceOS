@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -134,52 +135,135 @@ def managed_fleet_proof(
     expected_packages: Mapping[str, Any],
     model: str,
 ) -> dict[str, Any]:
-    """Load and verify deploy output supplied as JSON or an explicit file path."""
+    """Validate an Agent Engine deployment receipt against the signed fleet.
+
+    A release-qualified package set is not a cloud deployment. ``cloud_verified``
+    is therefore reserved for receipts produced after the deployment command has
+    read every resource back from the Agent Engine API. The receipt is still an
+    operator-supplied artifact (not a remote attestation), and that limitation is
+    made explicit in the returned proof metadata.
+    """
 
     source = "deployment_plan"
     raw = os.getenv("ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON", "").strip()
     path_value = os.getenv("ASSURANCEOS_AGENT_ENGINE_PROOF", "").strip()
     document: dict[str, Any] | None = None
-    if raw:
-        document = json.loads(raw)
-        source = "environment"
-    elif path_value:
-        proof_path = Path(path_value)
-        if not proof_path.is_absolute():
-            proof_path = repository_root / proof_path
-        if proof_path.is_file():
-            document = json.loads(proof_path.read_text(encoding="utf-8"))
+    load_errors: list[str] = []
+    try:
+        if raw:
+            loaded = json.loads(raw)
+            if not isinstance(loaded, dict):
+                raise ValueError("deployment proof must be a JSON object")
+            document = loaded
+            source = "environment"
+        elif path_value:
+            proof_path = Path(path_value)
+            if not proof_path.is_absolute():
+                proof_path = repository_root / proof_path
             source = str(proof_path)
+            if not proof_path.is_file():
+                load_errors.append("configured deployment proof file does not exist")
+            else:
+                loaded = json.loads(proof_path.read_text(encoding="utf-8"))
+                if not isinstance(loaded, dict):
+                    raise ValueError("deployment proof must be a JSON object")
+                document = loaded
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        load_errors.append(f"deployment proof could not be loaded: {exc}")
 
     expected = {
         agent_id: str(package.release.get("package_sha256") or "")
         for agent_id, package in expected_packages.items()
     }
     deployed: list[dict[str, Any]] = []
-    errors: list[str] = []
+    errors: list[str] = list(load_errors)
+    model_armor_template = os.getenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", "").strip()
+    model_armor_errors: list[str] = []
+    model_armor_verified = False
     if document is not None:
-        if document.get("schema") != "assurance.agent_engine_deployment_result.v1":
+        if document.get("schema") != "assurance.agent_engine_deployment_result.v2":
             errors.append("unsupported deployment proof schema")
         if document.get("model") != model:
             errors.append("deployment model does not match the running release")
-        for item in document.get("deployed") or []:
+        project = str(document.get("project") or "").strip()
+        location = str(document.get("region") or "").strip()
+        if not project or not location:
+            errors.append("deployment project and region are required")
+
+        verification = document.get("verification")
+        if not isinstance(verification, dict):
+            errors.append("live Agent Engine read-back verification is missing")
+            verification = {}
+        if verification.get("method") != "agentplatform.agent_engines.get":
+            errors.append("deployment was not verified through Agent Engine read-back")
+        if not _is_utc_timestamp(verification.get("verified_at")):
+            errors.append("deployment verification timestamp is invalid")
+
+        items = document.get("deployed")
+        if not isinstance(items, list):
+            errors.append("deployed resources must be a list")
+            items = []
+        seen: set[str] = set()
+        for item in items:
+            if not isinstance(item, dict):
+                errors.append("deployed resource entry must be an object")
+                continue
             agent_id = str(item.get("agent_id") or "")
             resource_name = str(item.get("resource_name") or "")
             digest = str(item.get("package_sha256") or "")
             if agent_id not in expected:
                 errors.append(f"unknown deployed agent: {agent_id}")
                 continue
+            if agent_id in seen:
+                errors.append(f"duplicate deployed agent: {agent_id}")
+                continue
+            seen.add(agent_id)
             if digest != expected[agent_id]:
                 errors.append(f"release digest mismatch: {agent_id}")
                 continue
-            if "/reasoningEngines/" not in resource_name:
+            expected_path = f"/locations/{location}/reasoningEngines/"
+            if not resource_name.startswith("projects/") or expected_path not in resource_name:
                 errors.append(f"invalid Agent Engine resource: {agent_id}")
+                continue
+            if item.get("identity_type") != "AGENT_IDENTITY":
+                errors.append(f"managed Agent Identity is not enabled: {agent_id}")
+                continue
+            if not _is_utc_timestamp(item.get("verified_at")):
+                errors.append(f"Agent Engine read-back timestamp is invalid: {agent_id}")
+                continue
+            memory = item.get("memory_bank")
+            if not isinstance(memory, dict) or memory.get("configured") is not True:
+                errors.append(f"Memory Bank deployment is not confirmed: {agent_id}")
                 continue
             deployed.append(dict(item))
         if not document.get("complete"):
             errors.append("deployment result is not complete")
         if len(deployed) != len(expected):
             errors.append("deployment result does not cover the complete signed fleet")
+        if verification.get("resource_count") != len(expected):
+            errors.append("verified resource count does not match the signed fleet")
+
+        if model_armor_template:
+            managed_services = document.get("managed_services")
+            armor = (
+                managed_services.get("model_armor")
+                if isinstance(managed_services, dict)
+                else None
+            )
+            if not isinstance(armor, dict):
+                model_armor_errors.append("Model Armor verification receipt is missing")
+            else:
+                if armor.get("schema") != "assurance.model_armor_verification.v1":
+                    model_armor_errors.append("unsupported Model Armor verification schema")
+                if armor.get("template") != model_armor_template:
+                    model_armor_errors.append("Model Armor template does not match deployment")
+                if armor.get("safe_model_response") != "NO_MATCH_FOUND":
+                    model_armor_errors.append("Model Armor safe-response check did not pass")
+                if armor.get("adversarial_user_prompt") != "MATCH_FOUND":
+                    model_armor_errors.append("Model Armor adversarial check did not pass")
+                if not _is_utc_timestamp(armor.get("verified_at")):
+                    model_armor_errors.append("Model Armor verification timestamp is invalid")
+                model_armor_verified = not model_armor_errors
 
     project = str((document or {}).get("project") or os.getenv("GOOGLE_CLOUD_PROJECT") or "")
     location = str(
@@ -197,21 +281,50 @@ def managed_fleet_proof(
         }
     )
     cloud_verified = document is not None and not errors
+    proof_status = (
+        "cloud_verified"
+        if cloud_verified
+        else "proof_invalid"
+        if document is not None or load_errors
+        else "release_qualified"
+    )
     return {
-        "status": "cloud_verified" if cloud_verified else "release_qualified",
+        "status": proof_status,
         "cloud_verified": cloud_verified,
+        "verification_kind": "operator_receipt_with_live_api_readback" if cloud_verified else None,
+        "attestation": "not_cryptographic",
         "source": source,
         "deployed_count": len(deployed),
         "expected_count": len(expected),
         "agents": deployed,
         "memory_bank": {
-            "configured": True,
+            "configured": cloud_verified,
+            "deployment_ready": True,
             "service": "VertexAiMemoryBankService",
             "generation": "explicit_after_review",
             "tenant_isolation": "tenant-qualified user_id",
             "revision_history": True,
             "configuration": planned_memory,
         },
+        "agent_identity": {
+            "configured": cloud_verified,
+            "identity_type": "AGENT_IDENTITY" if cloud_verified else None,
+        },
+        "model_armor": {
+            "configured": model_armor_verified,
+            "template": model_armor_template or None,
+            "verification_errors": model_armor_errors,
+        },
         "verification_errors": errors,
         "deployed_at": (document or {}).get("deployed_at"),
     }
+
+
+def _is_utc_timestamp(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None and parsed.utcoffset() is not None

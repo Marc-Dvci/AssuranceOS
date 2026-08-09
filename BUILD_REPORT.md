@@ -13,7 +13,7 @@ and continuous monitoring.
 - 19 Ed25519-signed Agent Definition Packages using Gemini 3.6 Flash.
 - 76 release-qualification cases across golden, adversarial,
   missing-evidence, and cross-industry scenarios.
-- 3 signed Audit Packs and 2 signed deterministic control-test releases.
+- 3 signed Audit Packs and 3 signed deterministic control-test releases.
 - Canonical SQLAlchemy domain model with Alembic migrations.
 - Google ADK and Vertex AI Agent Engine deployment with Memory Bank policy.
 - Responsive operator cockpit and evaluator-specific Judge Mode.
