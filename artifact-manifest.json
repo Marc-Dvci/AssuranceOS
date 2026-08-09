@@ -2881,8 +2881,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 3020,
-      "sha256": "cddd9003edef813cdcc5e9ebc08d67ccf774e093bad8a99e10324ed3dcff0717"
+      "size_bytes": 3462,
+      "sha256": "70f2a1674d1ad81217b6cf0df6ece4931ed2a2e37c3548e03cb9ee95ab4f2d2f"
     },
     {
       "path": "scripts/build_artifact_manifest.py",

@@ -86,7 +86,13 @@ where = ["src"]
 
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+# "." is here because two test modules import from `scripts`, which is a
+# directory of entrypoints rather than an installed package. `python -m pytest`
+# puts the working directory on sys.path and a bare `pytest` does not, so those
+# tests passed locally and failed collection in CI, which runs the bare form.
+# Declaring the path makes the suite independent of how it was invoked instead of
+# depending on an accident of the launcher.
+pythonpath = ["src", "."]
 testpaths = ["tests"]
 addopts = "-p no:cacheprovider"
 
