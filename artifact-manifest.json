@@ -2742,7 +2742,7 @@
     {
       "path": "infrastructure/terraform/versions.tf",
       "size_bytes": 239,
-      "sha256": "b5e74a64445192efbcc0ddcf2db7b49b7468a3906cd54b31b9e813bae8257642"
+      "sha256": "270f57b9bbb9a6186296a9ea941bec603728945df639a92fbf4db78fdb0e88ef"
     },
     {
       "path": "migrations/env.py",
