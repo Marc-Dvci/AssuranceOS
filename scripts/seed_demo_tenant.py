@@ -47,6 +47,7 @@ from assuranceos.governance.demo import run_governance_demo  # noqa: E402
 from assuranceos.governance.models_client import build_client  # noqa: E402
 from assuranceos.governance.telemetry import TelemetryConfig, configure_telemetry  # noqa: E402
 from assuranceos.ledger import AuditLedger  # noqa: E402
+from assuranceos.onboarding_demo import run_onboarding_demo  # noqa: E402
 from assuranceos.orchestration.demo import run_orchestrator_demo  # noqa: E402
 from assuranceos.portfolio.demo import run_portfolio_demo  # noqa: E402
 from assuranceos.reporting.demo import run_reporting_demo  # noqa: E402
@@ -124,6 +125,12 @@ def main() -> None:
         (
             "golden audit",
             lambda: run_golden_engagement(ROOT / "demo/asteria", ledger, reset=True),
+        ),
+        (
+            "public onboarding and profile approval",
+            lambda: run_onboarding_demo(
+                database=database, repository_root=ROOT, tenant_id=tenant, vault=vault
+            ),
         ),
         (
             "risk portfolio and plan",

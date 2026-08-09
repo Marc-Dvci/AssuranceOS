@@ -386,6 +386,7 @@ class OnboardingService:
                 or 0
             )
             workflow.status = "ready" if remaining == 0 else "profile_review"
+            self._promote_to_profile(session, workflow, correction or fact)
             session.flush()
             return {
                 "decision_id": decision.decision_id,
@@ -393,6 +394,30 @@ class OnboardingService:
                 "fact": self._fact_view(correction or fact),
                 "profile_ready": remaining == 0,
             }
+
+    # A reviewed fact that identifies the company has to reach the canonical
+    # profile, or the correction is real and invisible: the record shows the
+    # reviewer renaming the entity while every screen keeps the name the reviewer
+    # rejected. The map is explicit and small on purpose -- promoting on a naming
+    # convention would let any researched key overwrite canonical identity.
+    _PROFILE_COLUMNS: dict[str, str] = {
+        "public.legal_entity_name": "legal_name",
+        "public.headquarters_country": "headquarters_country",
+        "public.industry": "industry",
+    }
+
+    @classmethod
+    def _promote_to_profile(cls, session, workflow, fact) -> None:
+        column = cls._PROFILE_COLUMNS.get(fact.fact_key)
+        if column is None or fact.status != "accepted":
+            return
+        value = fact.value_json
+        if not isinstance(value, str) or not value.strip():
+            return
+        profile = session.get(OrganizationProfile, workflow.profile_id)
+        if profile is not None:
+            setattr(profile, column, value.strip())
+            profile.updated_at = datetime.now(timezone.utc)
 
     def approve(self, tenant_id: str, workflow_id: str, *, approved_by: str) -> dict[str, Any]:
         now = datetime.now(timezone.utc)

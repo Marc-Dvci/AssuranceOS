@@ -189,6 +189,20 @@ class AgentGateway:
     def registered_tools(self, agent_role: str) -> list[str]:
         return sorted(name for role, name in self._routes if role == agent_role)
 
+    def tool_descriptions(self, agent_role: str) -> dict[str, str]:
+        """What each bound tool accepts, for the caller that has to fill it in.
+
+        Policy needs a tool's name; a model needs its arguments. Publishing the
+        second from the same place that enforces it keeps the two from drifting,
+        and an agent that cannot read the contract guesses -- which shows up as a
+        tool_execution denial rather than as the missing documentation it is.
+        """
+        return {
+            name: tool.description
+            for (role, name), tool in self._routes.items()
+            if role == agent_role and tool.description
+        }
+
     def budget_for(self, task_id: str) -> TaskBudget | None:
         return self._budgets.get(task_id)
 
@@ -334,18 +348,22 @@ class AgentGateway:
                 raise deny("tool_execution", f"{type(exc).__name__}: {exc}") from exc
 
             # 11. Screen what comes back out.
-            if isinstance(result, str):
+            #
+            # A tool that returns a document returns it inside a structure, not as
+            # a bare string. Screening only ``str`` results was therefore a hole
+            # exactly where the payload is largest: evidence content reaches the
+            # model through a dict field, and the boundary never looks at it.
+            # Every string leaf is screened, whatever it is nested in.
+            if isinstance(result, (str, Mapping, list, tuple)):
                 with tracer.span(SPAN_ARMOR, **{"assuranceos.armor.direction": "outbound_text"}):
-                    output_armor = self.armor.inspect_output(result)
-                    armor_results.append(output_armor)
-                    if output_armor.blocked:
+                    result, screened, blocked = self._screen_result(result)
+                    armor_results.extend(screened)
+                    if blocked is not None:
                         raise deny(
                             "model_armor",
                             "tool output withheld: secret material detected",
-                            findings=[f.as_dict() for f in output_armor.findings],
+                            findings=[f.as_dict() for f in blocked.findings],
                         )
-                    if output_armor.redaction_count:
-                        result = output_armor.sanitized_text
                     tracer.allow()
 
             tracer.allow()
@@ -364,6 +382,49 @@ class AgentGateway:
             return result
 
     # -- internals -------------------------------------------------------------
+
+    def _screen_result(
+        self, result: Any, *, depth: int = 0
+    ) -> tuple[Any, list[ArmorResult], ArmorResult | None]:
+        """Screen every string leaf of a tool result, preserving its shape.
+
+        Returns the possibly-redacted result, the armor results to retain, and the
+        first blocking result if there was one. Depth is bounded because a handler
+        returning a deeply nested structure is a bug rather than an attack, and
+        recursing without a limit turns that bug into a crash inside the gateway.
+        """
+        collected: list[ArmorResult] = []
+        if depth > 6:
+            return result, collected, None
+        if isinstance(result, str):
+            screened = self.armor.inspect_output(result)
+            collected.append(screened)
+            if screened.blocked:
+                return result, collected, screened
+            return (
+                screened.sanitized_text if screened.redaction_count else result,
+                collected,
+                None,
+            )
+        if isinstance(result, Mapping):
+            rebuilt: dict[Any, Any] = {}
+            for key, value in result.items():
+                cleaned, screened, blocked = self._screen_result(value, depth=depth + 1)
+                collected.extend(screened)
+                if blocked is not None:
+                    return result, collected, blocked
+                rebuilt[key] = cleaned
+            return rebuilt, collected, None
+        if isinstance(result, (list, tuple)):
+            rebuilt_items = []
+            for value in result:
+                cleaned, screened, blocked = self._screen_result(value, depth=depth + 1)
+                collected.extend(screened)
+                if blocked is not None:
+                    return result, collected, blocked
+                rebuilt_items.append(cleaned)
+            return type(result)(rebuilt_items), collected, None
+        return result, collected, None
 
     @staticmethod
     def _declared_tool(package: AgentPackage, tool_name: str) -> dict[str, Any]:

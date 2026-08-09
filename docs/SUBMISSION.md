@@ -92,6 +92,57 @@ evidence and approval boundaries that make assurance defensible.
 - Secret Manager supplies credential and signing-key references.
 - Terraform defines the production topology and IAM.
 
+## An agent that does the audit, not one that describes it
+
+The distinction the whole track turns on is whether the model is doing work or
+narrating it, and there is a mechanical test for that: does a tool result ever
+come back into the prompt? Until it does, an agent's "tool calls" are a list of
+things it claims to have done, executed by someone else, whose answers it never
+reads — and its conclusion can only ever restate the documents it was handed.
+
+The governed runtime is a real loop. The agent replies either with a request for
+data or with a conclusion. A request is routed through the Agent Gateway, and
+whatever comes back — a population, a denial and its reason, a refusal from the
+output gate — is written into the next prompt.
+
+```bash
+make agent-audit-demo                                     # deterministic
+python scripts/run_agent_audit_demo.py --model-mode local \
+  --base-url http://127.0.0.1:5000/v1 --model gemma-4-12b-it-IQ4_XS.gguf \
+  --context-tokens 16384                                  # Gemma 4 12B decides
+python scripts/run_agent_audit_demo.py --model-mode vertex   # Gemini 3.6 Flash
+```
+
+Thirteen domain tools are bound to real services — evidence query with custody
+recorded against the agent's own identity, signed control-test execution,
+population reconciliation, exception classification, criteria and control reads,
+contradiction search, and a finding proposal that proposes and nothing more.
+Each publishes the arguments it takes, because a tool that is only a name gets
+called with invented arguments; measured on Gemma 4 12B, `tests.execute` arrived
+with no `test_id` at all until the contract was published in the prompt.
+
+The boundary is proven rather than hoped for. A well-behaved model never asks for
+a tool outside its envelope, so the demonstration asks for one explicitly, under
+the same identity, and records the denial.
+
+### Evidence is never trimmed to fit
+
+The worst failure available to a system like this is quiet. An OpenAI-compatible
+server handed more input than its window drops the overflow, returns HTTP 200,
+and answers confidently on whatever survived. Nothing downstream can tell that
+answer apart from one drawn from the whole population.
+
+Measured against the local endpoint: a 51,909-token prompt was answered after the
+server read 12,288 tokens, with no error of any kind.
+
+So the runtime refuses instead. Before the call, if the evidence plus the reserved
+answer exceeds the served window, the task ends as `context_exceeded` naming the
+shortfall. After the call, if the server reports reading fewer tokens than the
+prompt can possibly encode to, the task ends as `context_truncated`. Neither path
+samples, summarises or truncates the evidence to make it fit — an audit conclusion
+drawn from the rows that happened to survive is not a weaker conclusion, it is a
+different one.
+
 ## The golden engagement
 
 The included Asteria Systems dataset is a synthetic company, not a fixture: 56
@@ -172,7 +223,7 @@ add a way to reach a conclusion.
 | --- | --- | --- | --- |
 | **EmbeddingGemma** (`embeddinggemma-300m`) | semantic retrieval over canonical evidence | `governance/embeddings.py` | `tests/test_embeddings.py` |
 | **Chirp 3** (Speech-to-Text v2) | walkthrough-interview transcription | `governance/speech.py`, `walkthrough.py` | `tests/test_walkthrough.py` |
-| **Gemma 4** (12B / 26B `IQ4_XS`) | the whole governed loop on loopback | `governance/models_client.py` | `tests/test_governed_runtime.py` |
+| **Gemma 4 12B** (`IQ4_XS`) | the whole governed loop on loopback | `governance/models_client.py` | `tests/test_governed_runtime.py` |
 
 ### EmbeddingGemma — retrieval that finds candidates and grants no authority
 
@@ -272,13 +323,35 @@ guarantees are not.
 That makes a second, verifiable claim possible. The complete assurance loop —
 population test, injection containment, skeptic review, human gate, remediation
 under replay, independent retest — has been run end to end against **Gemma 4
-12B** (`IQ4_XS`) on a loopback `llama.cpp` server with network egress denied,
-producing the same conclusion and the same ground-truth match as the hosted
-path:
+12B** (`IQ4_XS`) on a loopback server with network egress denied, producing the
+same conclusion and the same ground-truth match as the hosted path:
 
 ```bash
 python scripts/run_assurance_loop_demo.py   --model-mode local   --base-url http://127.0.0.1:5000/v1   --model gemma-4-12b-it-IQ4_XS.gguf
 ```
+
+The stronger run is the agentic one, where the model is not replaying a script
+but deciding what it needs:
+
+```bash
+python scripts/run_agent_audit_demo.py --model-mode local \
+  --base-url http://127.0.0.1:5000/v1 --model gemma-4-12b-it-IQ4_XS.gguf \
+  --context-tokens 16384
+```
+
+Gemma 4 12B asked for the signed SCM-01 release, read back a complete population
+of 44 changes with three exceptions, concluded ineffective citing resolvable
+evidence ids, reported the instruction embedded in the policy page instead of
+obeying it, and was refused `connector.write` under its own identity. Four of
+four against the published ground truth. The one thing it got wrong is
+instructive: it mistyped an evidence id, the output gate refused the conclusion
+because an unresolvable citation is indistinguishable from a fabricated one, and
+it corrected the citation on a single bounded repair round.
+
+Every signed profile now names the model that was actually qualified. The
+manifest at `models/gemma-4-12b-iq4-xs/model-manifest.yaml` records the measured
+context window and the qualification run, and leaves the artefact digest and
+server build null rather than carrying a placeholder that reads as a pin.
 
 The local profile exists for a real constraint, not for the demonstration: some
 audit populations cannot leave the auditee's network. It proves private local

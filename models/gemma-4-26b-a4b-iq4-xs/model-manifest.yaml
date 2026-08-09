@@ -1,7 +1,0 @@
-model_id: google/gemma-4-26B-A4B-it
-quantization: IQ4_XS
-weights_committed: false
-llama_cpp_commit: PIN_BEFORE_RELEASE
-artifact_sha256: SET_AFTER_APPROVED_DOWNLOAD
-network_mode: loopback_only
-release_status: not_qualified

@@ -20,8 +20,16 @@ uvicorn assuranceos.api:app --port 8080        # / is the cockpit, /judge the ev
 
 `make seed-demo` matters. Every demonstration entrypoint used to own a tenant and
 delete it on entry, so running them in sequence had each wipe the last. The
-seeder composes all eleven into `tnt_asteria_demo`: 6 risks, an approved plan, 10
-engagements, 34 tasks, 69 evidence records, 2 findings, 1 issued report, 1 trace.
+seeder composes all thirteen into `tnt_asteria_demo`: an approved company profile
+built from six public sources, 6 risks, an approved plan, 11 engagements, 34
+tasks, 80 evidence records, 3 findings, 1 issued report, 1 trace.
+
+Two of those stages are worth running on their own:
+
+```bash
+make onboarding-demo     # public footprint in, corrected profile out
+make agent-audit-demo    # an agent that runs the signed test and reads the result
+```
 
 On Windows, prefix those commands with
 `ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX=true`. The control-test sandbox
@@ -42,7 +50,7 @@ should not:
 
 | Model | What it does | Where it lives |
 | --- | --- | --- |
-| **Gemma 4** (12B / 26B `IQ4_XS`) | the same governed loop on loopback, for populations that cannot leave the auditee's network | [`models_client.py`](src/assuranceos/governance/models_client.py) · [`models/gemma-4-26b-a4b-iq4-xs`](models/gemma-4-26b-a4b-iq4-xs) |
+| **Gemma 4 12B** (`IQ4_XS`) | the same governed loop on loopback, for populations that cannot leave the auditee's network | [`models_client.py`](src/assuranceos/governance/models_client.py) · [`models/gemma-4-12b-iq4-xs`](models/gemma-4-12b-iq4-xs) |
 | **EmbeddingGemma** | semantic retrieval over canonical evidence: how a person finds the record, never what a claim resolves to | [`governance/embeddings.py`](src/assuranceos/governance/embeddings.py) · [`models/embeddinggemma`](models/embeddinggemma) |
 | **Chirp 3** | walkthrough interviews become transcripts, and transcripts become assertions to be tested | [`governance/speech.py`](src/assuranceos/governance/speech.py) · [`walkthrough.py`](src/assuranceos/walkthrough.py) · [`models/chirp-3`](models/chirp-3) |
 

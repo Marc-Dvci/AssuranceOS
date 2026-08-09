@@ -13,14 +13,14 @@
     "input.schema.json": "ed05c52a969b89aa1a01345c3aac24d3bb677a125cbe7a5d88f4a718dcfef3d6",
     "known_limitations.md": "9480b26febf6e1d17eeccfb726336c08dcba14a1792095957e354aa7f56c796e",
     "manifest.yaml": "12296eebd2d9facf78001aecb70849324aa3ebcb6f7c738afbbe0c9cc341390a",
-    "model_profiles.yaml": "7a58f7da082199e0774fe1bc2d4ed62476d395b90d32b0ea844e2eb594737eb1",
+    "model_profiles.yaml": "4839f9ea8f122b737e01702ae47aaead402d88caa97d7194b98d6654c0a68408",
     "output.schema.json": "3af7ffb531cb69b7b8862177d4033e326f1973c5260b17ecb0f01a0a19b1b481",
     "policy.yaml": "113cb976970559ba4402f554e18d1ab96d3428d10c35b02fb9a1fd5572d94b86",
     "system_prompt.md": "5d7361397a1958a56b8c2e275402d3db759d58829214462067e61c0542d65d00",
     "tools.yaml": "91ccc599cff4de5fa10a64b17521ee7b5b1ef86ae8bf49d29c565f5f03513645"
   },
-  "package_sha256": "6518c3e5c2fdc0d95c0179bcd34449f36ccb6702befdcb0f0c592704620dd12a",
-  "released_at": "2026-08-08T13:30:50.886107+00:00",
+  "package_sha256": "154889bb001a91edad60f511271d29cb7837994fa4246c5957c0820fb249593a",
+  "released_at": "2026-08-09T13:08:19.094363+00:00",
   "schema": "assurance.agent_release.v1",
   "version": "0.8.0"
 }

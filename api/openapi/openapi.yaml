@@ -4355,8 +4355,20 @@ paths:
   /api/v1/judge/proofs/prompt-injection:
     post:
       summary: Replay Prompt Injection
-      description: Replay the published attack through the same deterministic runtime
-        guardrail.
+      description: 'Replay the published attack through the guardrail the runtime
+        actually uses.
+
+
+        Constructed through ``build_model_armor`` rather than ``ModelArmor()`` so
+        that
+
+        a deployment with a Model Armor template configured demonstrates the managed
+
+        Google service here too. Hard-wiring the local guard meant the most-watched
+
+        proof action on the evaluator surface was the one place the managed service
+
+        could never appear.'
       operationId: replay_prompt_injection_api_v1_judge_proofs_prompt_injection_post
       responses:
         '200':
@@ -6895,6 +6907,9 @@ components:
         source:
           type: string
           title: Source
+        screened_by:
+          type: string
+          title: Screened By
         verdict:
           type: string
           title: Verdict
@@ -6918,6 +6933,7 @@ components:
       type: object
       required:
       - source
+      - screened_by
       - verdict
       - tainted
       - instruction_neutralized

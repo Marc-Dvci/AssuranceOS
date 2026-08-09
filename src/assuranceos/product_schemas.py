@@ -177,6 +177,9 @@ class ArmorDetectorProof(BaseModel):
 
 class PromptInjectionProofResponse(BaseModel):
     source: str
+    # Which guardrail screened it. An evaluator watching this action needs to know
+    # whether the managed Google service was in the path or only the local checks.
+    screened_by: str
     verdict: str
     tainted: bool
     instruction_neutralized: bool

@@ -117,6 +117,10 @@ class GeminiClient:
     project: str | None = None
     location: str = "us-central1"
     use_vertex: bool | None = None
+    # Gemini 3.x Flash serves a one-million-token window and the API rejects a
+    # prompt that exceeds it rather than silently trimming, so this is a pre-flight
+    # convenience rather than a safety net. The whole Asteria corpus is ~48k.
+    context_window_tokens: int | None = 1_000_000
     _client: Any = None
 
     def __post_init__(self) -> None:
@@ -223,6 +227,13 @@ class OpenAICompatibleClient:
     # inside the budget.
     enable_thinking: bool | None = None
     extra_body: dict[str, Any] = field(default_factory=dict)
+    # What this deployment actually serves, which is a launch flag, not a property
+    # of the weights. A server started with a window smaller than the prompt drops
+    # the overflow and answers 200 anyway, so the runtime needs the real number to
+    # refuse before the call rather than discover it from a confident wrong answer.
+    # Measured, not assumed: probe the endpoint and set it, or leave it None and
+    # rely on the runtime's post-call truncation arithmetic.
+    context_window_tokens: int | None = None
 
     def generate(
         self,
@@ -349,6 +360,17 @@ def _optional_bool_env(name: str) -> bool | None:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _optional_int_env(name: str) -> int | None:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return None
+    try:
+        value = int(raw.strip())
+    except ValueError:
+        return None
+    return value if value > 0 else None
+
+
 def build_client(
     mode: str,
     *,
@@ -357,16 +379,20 @@ def build_client(
     project: str | None = None,
     location: str | None = None,
     enable_thinking: bool | None = None,
+    context_window_tokens: int | None = None,
 ) -> ModelClient:
     """Resolve a client from configuration. Unknown modes fail closed."""
     normalized = (mode or "mock").strip().lower()
     if normalized in {"gemini", "vertex"}:
-        return GeminiClient(
+        client = GeminiClient(
             model_name=model or DEFAULT_GEMINI_MODEL,
             project=project,
             location=location or "us-central1",
             use_vertex=normalized == "vertex" or None,
         )
+        if window := (context_window_tokens or _optional_int_env("ASSURANCEOS_MODEL_CONTEXT_TOKENS")):
+            client.context_window_tokens = window
+        return client
     if normalized in {"local", "openai-compatible", "llamacpp"}:
         return OpenAICompatibleClient(
             base_url=base_url or os.getenv(
@@ -377,6 +403,11 @@ def build_client(
                 enable_thinking
                 if enable_thinking is not None
                 else _optional_bool_env("ASSURANCEOS_LOCAL_MODEL_ENABLE_THINKING")
+            ),
+            context_window_tokens=(
+                context_window_tokens
+                or _optional_int_env("ASSURANCEOS_LOCAL_MODEL_CONTEXT_TOKENS")
+                or _optional_int_env("ASSURANCEOS_MODEL_CONTEXT_TOKENS")
             ),
         )
     if normalized == "mock":

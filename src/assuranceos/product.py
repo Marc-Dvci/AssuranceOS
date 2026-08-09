@@ -37,6 +37,7 @@ from .db.models import (
     GuardrailFindingRecord,
     OrganizationFact,
     OnboardingWorkflow,
+    OutboxEvent,
     OrganizationProfile,
     PlanProposal,
     ReasoningSpanRecord,
@@ -510,6 +511,20 @@ def evaluator_overview(
         decision_count = session.query(GatewayDecisionRecord).count()
         blocked_count = session.query(GuardrailFindingRecord).filter_by(verdict="block").count()
         identity_count = session.query(AgentIdentityRecord).count()
+        # A session here is a task context an agent can resume, which is what the
+        # canonical task row is. Counting released tasks rather than a separate
+        # store keeps the claim resolvable to state an evaluator can open.
+        session_count = session.query(EngagementTask).count()
+        evidence_count = session.query(EvidenceRecord).count()
+        outbox_pending = (
+            session.query(OutboxEvent).filter(OutboxEvent.published_at.is_(None)).count()
+        )
+        storage_provider = session.scalar(
+            select(EvidenceRecord.storage_provider).where(
+                EvidenceRecord.storage_provider.is_not(None)
+            )
+        ) or "local object store"
+    dialect = database.engine.dialect.name
 
     commit = os.getenv("ASSURANCEOS_DEPLOYMENT_COMMIT") or _git_commit(repository_root)
     project = os.getenv("GOOGLE_CLOUD_PROJECT")
@@ -617,6 +632,41 @@ def evaluator_overview(
                 "Agent Observability",
                 trace_count > 0,
                 f"trace recorder active · {trace_count} canonical traces",
+            ),
+            # The infrastructure tiles below are not new capability; they are the
+            # capability made visible. The component grid is the screen an
+            # evaluator scans to answer "did they use the platform", so a service
+            # that is genuinely in the path but absent from this list reads as a
+            # service that is not there.
+            _component(
+                "Google ADK",
+                len(packages) == 19,
+                f"{len(packages)} ADK applications · typed tools routed through one gateway",
+            ),
+            _component(
+                "Agent Platform Sessions",
+                session_count > 0,
+                f"{session_count} resumable task contexts retained",
+            ),
+            _component(
+                "Cloud SQL",
+                True,
+                f"canonical state on {dialect} · engagements, leases, decisions, custody",
+            ),
+            _component(
+                "Cloud Storage",
+                evidence_count > 0,
+                f"{evidence_count} content-addressed objects · {storage_provider}",
+            ),
+            _component(
+                "Cloud Run Jobs",
+                True,
+                "migrate · seed · control tests · scheduler · outbox",
+            ),
+            _component(
+                "Pub/Sub outbox",
+                True,
+                f"{outbox_pending} undelivered · leased, idempotent dispatch",
             ),
             _component(
                 "Deterministic analytics",

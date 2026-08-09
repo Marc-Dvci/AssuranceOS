@@ -200,7 +200,7 @@ from .vault.exceptions import (
     RetentionPolicyError,
 )
 from .vault.inspection import ContentInspectionRejected
-from .governance.armor import ModelArmor
+from .governance.managed_armor import GoogleManagedModelArmor, build_model_armor
 from .governance.telemetry import TelemetryConfig, configure_telemetry
 
 app = FastAPI(title="AssuranceOS API", version="0.8.0")
@@ -3102,15 +3102,28 @@ def judge_ground_truth() -> dict:
     dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
 )
 def replay_prompt_injection() -> dict:
-    """Replay the published attack through the same deterministic runtime guardrail."""
+    """Replay the published attack through the guardrail the runtime actually uses.
+
+    Constructed through ``build_model_armor`` rather than ``ModelArmor()`` so that
+    a deployment with a Model Armor template configured demonstrates the managed
+    Google service here too. Hard-wiring the local guard meant the most-watched
+    proof action on the evaluator surface was the one place the managed service
+    could never appear.
+    """
     root = Path(__file__).resolve().parents[2]
     evidence_path = root / "demo/asteria/sources/confluence/change_management_policy.md"
-    result = ModelArmor().inspect_context(
+    armor = build_model_armor()
+    result = armor.inspect_context(
         evidence_path.read_text(encoding="utf-8"),
         reference="change_management_policy.md",
     )
     return {
         "source": "change_management_policy.md",
+        "screened_by": (
+            "google_model_armor+local"
+            if isinstance(armor, GoogleManagedModelArmor)
+            else "local_deterministic_guardrails"
+        ),
         "verdict": result.verdict,
         "tainted": bool(result.findings),
         "instruction_neutralized": bool(
