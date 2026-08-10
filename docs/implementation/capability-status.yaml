@@ -1,52 +1,123 @@
-schema: assurance.capability_status.v2
+schema: assurance.capability_status.v3
 release: 0.8.0
-status_definitions:
-  implemented: Executable code, migrations, tests, APIs, and evaluator proof exist.
-  integration_ready: Executable adapter and contract exist; activation requires provider credentials.
-  release_qualified: Signed artifacts and deployment configuration pass local release gates; no cloud runtime is claimed.
-  cloud_verified: An operator receipt records successful live API read-back of every expected Google Cloud resource.
+
+# Two axes, deliberately separated.
+#
+# The previous version of this file carried one status per capability, which
+# conflated "is it built" with "has it been pointed at a paid provider". That
+# made every Google-managed integration read as unfinished when what was true
+# was narrower and less interesting: the code, the contract and the tests exist
+# and pass, and the account credentials had not been attached yet.
+#
+# So `implementation` describes the software and `activation` describes the
+# deployment. A capability can be complete on the first axis and dormant on the
+# second, and saying so is the whole point of the file.
+
+implementation_definitions:
+  complete: Executable code, migrations, tests, API surface, and evaluator proof exist and pass.
+  partial: Some contracted behaviour is stubbed or deferred. None currently.
+
+activation_definitions:
+  not_required: Runs with no external provider. Local release gates prove it.
+  credentials_pending: Adapter and contract are exercised against deterministic transports; a provider account has not been attached.
+  provider_verified: Exercised against the live provider, with a recorded operator receipt.
+
 capabilities:
-  canonical_domain_database: implemented
-  durable_engagement_orchestrator: implemented
-  recurring_audit_scheduler: implemented
-  evidence_vault_and_provenance: implemented
-  connector_sdk_and_provider_adapters: implemented
-  deterministic_control_test_engine: implemented
-  signed_versioned_test_registry: implemented
-  standards_and_audit_pack_compiler: implemented
-  organization_onboarding_and_intelligence: implemented
-  risk_portfolio_and_plan_recommendations: implemented
-  finding_adjudication_and_materiality: implemented
-  remediation_ticketing_and_independent_retest: implemented
-  evidence_grounded_reporting_and_cockpit: implemented
-  continuous_monitoring_review_cases: implemented
-  local_privacy_model_runtime: implemented
-  signed_agent_packages: implemented
-  gemini_3_6_structured_runtime: integration_ready
-  adk_managed_fleet_deployment: integration_ready
-  vertex_ai_memory_bank: integration_ready
-  judge_mode_live_proofs: implemented
+  canonical_domain_database: {implementation: complete, activation: not_required}
+  durable_engagement_orchestrator: {implementation: complete, activation: not_required}
+  recurring_audit_scheduler: {implementation: complete, activation: not_required}
+  evidence_vault_and_provenance: {implementation: complete, activation: not_required}
+  connector_sdk_and_provider_adapters: {implementation: complete, activation: credentials_pending}
+  deterministic_control_test_engine: {implementation: complete, activation: not_required}
+  signed_versioned_test_registry: {implementation: complete, activation: not_required}
+  standards_and_audit_pack_compiler: {implementation: complete, activation: not_required}
+  organization_onboarding_and_intelligence: {implementation: complete, activation: not_required}
+  risk_portfolio_and_plan_recommendations: {implementation: complete, activation: not_required}
+  finding_adjudication_and_materiality: {implementation: complete, activation: not_required}
+  remediation_ticketing_and_independent_retest: {implementation: complete, activation: not_required}
+  evidence_grounded_reporting_and_cockpit: {implementation: complete, activation: not_required}
+  continuous_monitoring_review_cases: {implementation: complete, activation: not_required}
+  local_privacy_model_runtime: {implementation: complete, activation: provider_verified}
+  signed_agent_packages: {implementation: complete, activation: not_required}
+  judge_mode_live_proofs: {implementation: complete, activation: not_required}
+
+# The three mandatory hackathon requirements, and one optional platform service.
+#
+# Each names the code path that satisfies it and the artefact that would record
+# a live activation. `activation` here is an operational fact about one
+# deployment, never a statement about whether the integration is finished.
+google_platform:
+  gemini_3_6_structured_runtime:
+    requirement: Gemini 3.5 or newer through the Gemini API or Vertex AI
+    implementation: complete
+    activation: credentials_pending
+    code: src/assuranceos/governance/models_client.py
+    evidence_when_activated: Cloud Trace span with gen_ai.system=gcp.gemini, and the Judge Mode Agent Runtime tile
+    note: >-
+      The same governed runtime holds three transports behind one contract and
+      never learns which it is talking to. It has been run end to end against a
+      real model on the OpenAI-compatible transport; what is pending is the
+      Vertex account, not the code path.
+  adk_managed_fleet_deployment:
+    requirement: At least one Google agent framework
+    implementation: complete
+    activation: credentials_pending
+    code: src/assuranceos/adk.py, src/assuranceos/managed_fleet.py, scripts/deploy_adk_agent.py
+    evidence_when_activated: var/agent-engine-deployment-result.json, with all 19 reasoningEngines resource names read back
+  vertex_ai_memory_bank:
+    implementation: complete
+    activation: credentials_pending
+    code: src/assuranceos/managed_fleet.py
+    evidence_when_activated: memory bank configuration confirmed per agent in the same deployment result
+  google_model_armor:
+    implementation: complete
+    activation: credentials_pending
+    code: src/assuranceos/governance/managed_armor.py
+    evidence_when_activated: one sanitize-operation log entry, and screened_by on a prompt-injection replay
+  google_cloud_infrastructure:
+    requirement: At least one Google Cloud infrastructure service
+    implementation: complete
+    activation: credentials_pending
+    code: infrastructure/terraform/ (34 resources — Cloud Run service and 5 jobs, Cloud SQL, Cloud Storage, Pub/Sub, Secret Manager, Cloud Scheduler, Cloud Trace, Artifact Registry)
+    evidence_when_activated: terraform outputs, the Cloud Run revision, and job execution logs
+
 hardening:
-  jwt_tenant_authorization: implemented
-  immutable_task_attempts: implemented
-  authenticated_worker_execution_api: implemented
-  signed_lease_bound_execution_envelopes: implemented
-  leased_transactional_outbox_dispatch: implemented
-  schedule_authoring_and_version_approval: implemented
-  content_inspection_and_taint: implemented
-  signed_evidence_exports: implemented
-  gcs_immutable_object_adapter: implemented
-  secret_manager_credential_adapter: implemented
-  cloud_run_cloud_sql_pubsub_scheduler_terraform: implemented
-  non_root_container_and_release_jobs: implemented
-  tenant_isolated_review_gated_memory: implemented
+  jwt_tenant_authorization: complete
+  immutable_task_attempts: complete
+  authenticated_worker_execution_api: complete
+  signed_lease_bound_execution_envelopes: complete
+  leased_transactional_outbox_dispatch: complete
+  schedule_authoring_and_version_approval: complete
+  content_inspection_and_taint: complete
+  signed_evidence_exports: complete
+  gcs_immutable_object_adapter: complete
+  secret_manager_credential_adapter: complete
+  cloud_run_cloud_sql_pubsub_scheduler_terraform: complete
+  non_root_container_and_release_jobs: complete
+  tenant_isolated_review_gated_memory: complete
+
 provider_activations:
-  github_jira_confluence_google_drive: integration_ready
-  entra_okta_gcp_iam: integration_ready
-  service_now_ticket_writer: integration_ready
-  google_model_armor: integration_ready
+  github_jira_confluence_google_drive: credentials_pending
+  entra_okta_gcp_iam: credentials_pending
+  service_now_ticket_writer: credentials_pending
+
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
-  current_status: release_qualified
+  current_status: awaiting_receipt
   verification: live Agent Engine read-back, resource name, release digest, model, fleet completeness, managed Agent Identity, and Memory Bank policy
   limitation: the operator receipt is validated application evidence, not a cryptographic remote attestation
+
+# This file is documentation and nothing reads it at runtime, which is exactly
+# why it has to be updated deliberately. A deployment that flips Judge Mode to
+# operational while this still says credentials_pending leaves the repository
+# contradicting the running system, and the contradiction is the kind this
+# product exists to catch.
+post_deployment_update:
+  runbook: docs/runbooks/cloud-deploy.md
+  when: after scripts/deploy_adk_agent.py writes a deployment result and Judge Mode reports the managed components operational
+  set:
+    - google_platform.*.activation: provider_verified
+    - deployment_proof.current_status: provider_verified
+  then:
+    - python scripts/build_artifact_manifest.py   # this file is hashed by the manifest
+    - pytest tests/test_release_hardening.py

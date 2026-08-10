@@ -355,7 +355,7 @@ flowchart LR
   subgraph Agents["Governed agents"]
     Runtime["In-process governed runtime"]
     ADK["Google ADK / Agent Engine"]
-    Model["Gemini 3.5 / local Gemma"]
+    Model["Gemini 3.6 Flash / local Gemma 4"]
   end
 
   subgraph Work["Bounded work"]
@@ -611,6 +611,21 @@ instantiate the matching adapter.
 All management and worker routes use the release JWT, role-permission, tenant-isolation, and verified-actor controls. These are backend contracts and do not add or modify UI behavior.
 
 ## Google Cloud / ADK
+
+**Deploying it: [`docs/runbooks/cloud-deploy.md`](docs/runbooks/cloud-deploy.md).** Empty project
+to a running deployment with a receipt Judge Mode accepts, including the two steps that are
+ordered for a reason — Model Armor is applied to the seed *jobs* and fails closed on any match,
+and the managed fleet proof is all-or-nothing across all nineteen agents.
+
+Authentication needs no identity provider. The API verifies bearer tokens against a JWKS
+document over HTTPS, and a JWKS document is a static file describing a public key:
+
+```bash
+python scripts/make_evaluator_token.py init --out-dir var/auth   # keypair + jwks.json
+# publish jwks.json to a public Cloud Storage object, then:
+python scripts/make_evaluator_token.py token --role viewer --tenant tnt_asteria_demo \
+  --base-url https://<service>.run.app        # prints a ready /judge#token= link
+```
 
 The core application runs without cloud credentials. The optional cloud extra contains the Google
 ADK and Vertex AI Agent Engine adapter:

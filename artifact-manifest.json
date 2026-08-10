@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 896,
+  "file_count": 898,
   "files": [
     {
       "path": ".dockerignore",
@@ -85,6 +85,11 @@
       "sha256": "dd1c389f269d524a1f19c9db2b5a6009eefc9d3eb9570f48143f6de24f4a6f9b"
     },
     {
+      "path": "LICENSE",
+      "size_bytes": 11343,
+      "sha256": "31f392099b16582484c9ecfce3f3e5d73921f75d1536dca8b3f6b6399d5cadc1"
+    },
+    {
       "path": "MODULE.bazel",
       "size_bytes": 48,
       "sha256": "06aea409df9b59bc24e4230c5cc64d44bef185b829eb4ece2a6c0869e39119ac"
@@ -96,8 +101,8 @@
     },
     {
       "path": "NOTICE.md",
-      "size_bytes": 299,
-      "sha256": "9d036c6ff1289ce1e3c652556991477cad94d0ad4076efabda69367e4fbb4232"
+      "size_bytes": 912,
+      "sha256": "6bd0020663fb40fb7ae09c3a1dfce1b36c54a94061be090cac9025ddaadb79c0"
     },
     {
       "path": "PRODUCTION_READINESS_AUDIT.md",
@@ -106,8 +111,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 32973,
-      "sha256": "d0532e9131d86c5d667a75ffff55d4447e8db2246d2c0d3c16458648dbbfca14"
+      "size_bytes": 33846,
+      "sha256": "791c59f47e912520fcc6bd91199f80f21ab554103a5b869e7a2f1694823816cf"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -1966,8 +1971,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 69095,
-      "sha256": "58f705ef2ae8bf1472a4285cd24ed1dfdee21ecb2db62967294ffb45ff0440b8"
+      "size_bytes": 69780,
+      "sha256": "580fdb698a793ffdc3bdbf0e3ab1080011abb09ad598bb8f9cf9a1b3686b9be9"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2606,8 +2611,13 @@
     },
     {
       "path": "docs/implementation/capability-status.yaml",
-      "size_bytes": 2719,
-      "sha256": "577143ecbc5b0daf914790dc874f82488b22d0ffb90766aead7034d9ff8adda6"
+      "size_bytes": 6979,
+      "sha256": "f27676b238ba02ef871a35a91bdd1147d9bab8bd96b8e03539b361acd3f8ddd5"
+    },
+    {
+      "path": "docs/runbooks/cloud-deploy.md",
+      "size_bytes": 15878,
+      "sha256": "80c26cd5766252211793f8a1d175b25f5e5ac72dc9f98a37d88b5c43ac974dad"
     },
     {
       "path": "docs/runbooks/local-demo.md",
@@ -2855,11 +2865,6 @@
       "sha256": "bc6f75cfcc1f897adf61baa622861d2d430b8f2d80af6cf9948321b0c6a67d03"
     },
     {
-      "path": "models/gemma-4-e4b-asr/README.md",
-      "size_bytes": 207,
-      "sha256": "b18104ab6a6e06d1a118ff1f82900cfd0332be584f7011e1e71eda3d745672e2"
-    },
-    {
       "path": "models/release-profiles/README.md",
       "size_bytes": 179,
       "sha256": "3fdf23bee6d19e23c3f0d59276a5b7caabfd661fee612482439ce0e235dd3342"
@@ -2933,6 +2938,11 @@
       "path": "scripts/import_evidence_bundle.py",
       "size_bytes": 1512,
       "sha256": "523cf29e22eb284f2df7efe50a595267a86f51c56c9bd28779ea66a64d3e9b11"
+    },
+    {
+      "path": "scripts/make_evaluator_token.py",
+      "size_bytes": 7128,
+      "sha256": "678ed4b4c144af08c060db7a3073b8b72f9bd75688f55d7d9d44180e8ec4adbe"
     },
     {
       "path": "scripts/migrate.py",

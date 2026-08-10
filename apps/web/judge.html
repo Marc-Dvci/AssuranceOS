@@ -111,6 +111,11 @@
   const pct=v=>v==null?'—':`${Math.round(Number(v)*100)}%`;
   const date=v=>v?new Intl.DateTimeFormat(undefined,{dateStyle:'medium'}).format(new Date(v)):'—';
   const status=v=>`<span class="status ${esc(String(v||'').toLowerCase())}">${esc(String(v||'unknown').replaceAll('_',' '))}</span>`;
+  // A token handed over in the URL fragment, so an evaluator can be given one
+  // working link instead of a bearer token to copy into a dialog. A fragment is
+  // never sent to the server, and it is stripped from the address bar as soon as
+  // it is read so the token does not survive in history or in a screenshot.
+  (function adoptFragmentToken(){const fragment=new URLSearchParams(location.hash.slice(1)),token=fragment.get('token');if(!token)return;sessionStorage.setItem('assuranceos.token',token.trim().replace(/^Bearer\s+/i,''));fragment.delete('token');const rest=fragment.toString();history.replaceState(null,'',location.pathname+location.search+(rest?`#${rest}`:''))})();
   function headers(){const token=sessionStorage.getItem('assuranceos.token');return token?{Authorization:`Bearer ${token}`}:{}}
   async function api(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetch(url,{...options,signal:options.signal||controller.signal,headers:{...headers(),...(options.headers||{})}})}catch(error){if(error.name==='AbortError')throw new Error('The control plane did not respond within 12 seconds.');throw error}finally{clearTimeout(timer)}let body={};try{body=await response.json()}catch{body={detail:response.statusText}}if(!response.ok){const error=new Error(body.detail||`Request failed (${response.status})`);error.status=response.status;throw error}return body}
   function toast(message,error=false){document.querySelector('.toast')?.remove();const el=document.createElement('div');el.className=`toast${error?' error':''}`;el.textContent=message;document.body.append(el);setTimeout(()=>el.remove(),5000)}
