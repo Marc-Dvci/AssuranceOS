@@ -31,12 +31,15 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from sqlalchemy import select  # noqa: E402
+
 from assuranceos.adjudication.demo import run_assurance_loop_demo  # noqa: E402
 from assuranceos.agent_audit_demo import run_agent_audit_demo  # noqa: E402
 from assuranceos.config import settings  # noqa: E402
 from assuranceos.connectors.demo import run_connector_demo  # noqa: E402
 from assuranceos.control_testing.demo import run_control_test_demo  # noqa: E402
 from assuranceos.db import Database  # noqa: E402
+from assuranceos.db.models import EngagementTask  # noqa: E402
 from assuranceos.demo import TENANT_ID, run_golden_engagement  # noqa: E402
 from assuranceos.vault import (  # noqa: E402
     BaselineContentInspector,
@@ -54,10 +57,30 @@ from assuranceos.portfolio.demo import run_portfolio_demo  # noqa: E402
 from assuranceos.reporting.demo import run_reporting_demo  # noqa: E402
 from assuranceos.scheduling.demo import run_scheduler_demo  # noqa: E402
 from assuranceos.service_delivery_demo import run_service_delivery_demo  # noqa: E402
-from assuranceos.standards.demo import run_pack_compiler_demo  # noqa: E402
+from assuranceos.standards.demo import SCM_ENGAGEMENT, run_pack_compiler_demo  # noqa: E402
 from assuranceos.vault.demo import run_evidence_vault_demo  # noqa: E402
 
 WORKFLOW = ROOT / "examples/workflows/software-change-management.json"
+
+
+def plan_task(database: Database, engagement_id: str, task_key: str) -> str | None:
+    """The compiled plan's own step for a piece of work, if the plan has one.
+
+    The governed stages run *inside* the compiled engagement rather than beside
+    it, so the audit a viewer opens is one plan with agents working through it —
+    not a plan that never started next to executions attributed to nothing. The
+    ids the pack compiler mints are not knowable in advance, so they are looked
+    up by task key at the point the stage runs. Returning ``None`` lets the
+    demonstration fall back to the task it owns, which is what happens when it
+    is run on its own.
+    """
+    with database.read_session() as session:
+        task = session.scalars(
+            select(EngagementTask)
+            .where(EngagementTask.engagement_id == engagement_id)
+            .where(EngagementTask.task_key == task_key)
+        ).first()
+    return task.task_id if task is not None else None
 
 
 def main() -> None:
@@ -206,6 +229,8 @@ def main() -> None:
                 repository_root=ROOT,
                 model_client=client,
                 tenant_id=tenant,
+                engagement_id=SCM_ENGAGEMENT,
+                task_id=plan_task(database, SCM_ENGAGEMENT, "capture-change-evidence"),
                 reset=False,
             ),
         ),
@@ -220,6 +245,8 @@ def main() -> None:
                 repository_root=ROOT,
                 model_client=client,
                 tenant_id=tenant,
+                engagement_id=SCM_ENGAGEMENT,
+                task_id=plan_task(database, SCM_ENGAGEMENT, "execute-population-test"),
                 vault=vault,
             ),
         ),

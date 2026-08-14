@@ -36,9 +36,14 @@ uvicorn assuranceos.api:app --port 8080        # / is the cockpit, /judge the ev
 
 `make seed-demo` matters. Every demonstration entrypoint used to own a tenant and
 delete it on entry, so running them in sequence had each wipe the last. The
-seeder composes all thirteen into `tnt_asteria_demo`: an approved company profile
-built from six public sources, 6 risks, an approved plan, 11 engagements, 34
-tasks, 80 evidence records, 3 findings, 1 issued report, 1 trace.
+seeder composes all fourteen into `tnt_asteria_demo`: an approved company profile
+built from six public sources, 6 risks, an approved plan, 10 engagements, 33
+tasks, 80 evidence records, 3 findings, 1 issued report, 2 traces.
+
+The two governed stages run *inside* the compiled software-change engagement
+rather than beside it — they adopt its own evidence and control-testing steps —
+so one audit shows a plan with agents working through it, and the gateway
+decisions they record are attributable to the work they were made for.
 
 Two of those stages are worth running on their own:
 

@@ -57,9 +57,9 @@ def engagement_delegation(
 ) -> dict[str, Any]:
     """Who did what on one engagement, and under what authority.
 
-    ``engagement_id`` defaults to the engagement with the most tasks, which is
-    the one worth looking at. Passing it explicitly is how the cockpit links a
-    specific audit to its routing.
+    ``engagement_id`` defaults to the engagement that most of this view's
+    subject actually happened on — see :func:`_select_engagement`. Passing it
+    explicitly is how the cockpit links a specific audit to its routing.
     """
     packages = packages or {}
     with database.read_session() as session:
@@ -96,7 +96,7 @@ def engagement_delegation(
             )
         )
 
-    selected = _select_engagement(engagements, tasks, engagement_id)
+    selected = _select_engagement(engagements, tasks, decisions, engagement_id)
     if selected is None:
         return {
             "engagement": None,
@@ -163,14 +163,25 @@ def engagement_delegation(
 def _select_engagement(
     engagements: list[Engagement],
     tasks: list[EngagementTask],
+    decisions: list[GatewayDecisionRecord],
     engagement_id: str | None,
 ) -> Engagement | None:
     """The engagement worth looking at, when the caller does not name one.
 
-    Ranked on how many *distinct specialist roles* the work was split across
-    rather than on task count, because that is the question this view answers. A
-    twelve-task engagement handled end to end by one role demonstrates less
-    delegation than a five-task one that moved across five.
+    Ranked on **authority actually exercised** first — an engagement the gateway
+    made decisions on — then on how many distinct specialist roles the work was
+    split across, then on how much of it has run.
+
+    Ranking on breadth alone is subtly wrong, and it is what this used to do. A
+    compiled plan contains every role in the pack and has by definition executed
+    none of them, so it wins any comparison against an engagement that really was
+    routed across the fleet — and then renders every agent at 0 of 5 tools used
+    and 0 gateway decisions. On a view whose entire subject is the gap between
+    authority granted and authority used, the engagement with the most roles in
+    it is the one guaranteed to have exercised none.
+
+    Decisions are attributed through their task when they carry no engagement of
+    their own, so a run that recorded one and not the other still counts.
     """
     if engagement_id is not None:
         return next(
@@ -178,7 +189,16 @@ def _select_engagement(
         )
     if not engagements:
         return None
+    engagement_of_task = {task.task_id: task.engagement_id for task in tasks}
+    decided: Counter[str] = Counter()
+    for decision in decisions:
+        owner = decision.engagement_id or engagement_of_task.get(decision.task_id or "")
+        if owner:
+            decided[owner] += 1
     counts = Counter(task.engagement_id for task in tasks)
+    executed = Counter(
+        task.engagement_id for task in tasks if task.status not in _UNSTARTED
+    )
     per_engagement: dict[str, set[str]] = {}
     for task in tasks:
         role = task.assigned_agent_role or ""
@@ -188,8 +208,10 @@ def _select_engagement(
     return max(
         engagements,
         key=lambda item: (
+            decided[item.engagement_id] > 0,
             len(per_engagement.get(item.engagement_id, ())),
-            counts.get(item.engagement_id, 0),
+            executed[item.engagement_id],
+            counts[item.engagement_id],
             item.engagement_id,
         ),
     )

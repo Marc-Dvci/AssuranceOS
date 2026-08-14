@@ -168,11 +168,17 @@ def _extract_run(prompt: str) -> dict[str, Any]:
     return {}
 
 
-def _seed_engagement(database: Database, tenant: str) -> None:
+def _seed_engagement(
+    database: Database, tenant: str, engagement_id: str, task_id: str
+) -> None:
     """The engagement and task this run is attributable to.
 
     Composing onto a tenant another demonstration populated must not duplicate
-    the records this one owns, so both inserts are conditional.
+    the records this one owns, so every insert is conditional — and when the
+    caller names a task that already exists, this run *adopts* it rather than
+    writing a parallel one. That is what lets the seeded tenant show one audit
+    with an agent working inside its compiled plan, instead of a plan that never
+    started next to an execution that belongs to nothing.
     """
     with database.transaction() as session:
         repository = TenantRepository(session)
@@ -187,13 +193,14 @@ def _seed_engagement(database: Database, tenant: str) -> None:
                 )
             )
             session.flush()
-        if session.get(Engagement, DEMO_ENGAGEMENT) is None:
+        engagement = session.get(Engagement, engagement_id)
+        if engagement is None:
             session.add(
                 Engagement(
-                    engagement_id=DEMO_ENGAGEMENT,
+                    engagement_id=engagement_id,
                     tenant_id=tenant,
                     code="SCM-2026-AGENTIC",
-                    title="Software change management - agent-executed testing",
+                    title="Software change management — control testing",
                     status="fieldwork",
                     audit_pack_ref="software-change-management@2.0.0",
                     period_start=PERIOD_START,
@@ -201,20 +208,41 @@ def _seed_engagement(database: Database, tenant: str) -> None:
                 )
             )
             session.flush()
-        if session.get(EngagementTask, DEMO_TASK) is None:
+        elif engagement.status == "planned":
+            # An engagement an agent is working inside is not a plan any more.
+            engagement.status = "fieldwork"
+        task = session.get(EngagementTask, task_id)
+        if task is None:
             session.add(
                 EngagementTask(
-                    task_id=DEMO_TASK,
+                    task_id=task_id,
                     tenant_id=tenant,
-                    engagement_id=DEMO_ENGAGEMENT,
+                    engagement_id=engagement_id,
                     task_key="test-change-authorisation",
                     task_type="agent",
                     definition_version="1.0.0",
                     status="running",
                     assigned_agent_role=AGENT_ROLE,
-                    idempotency_key=f"{DEMO_ENGAGEMENT}:test-change-authorisation",
+                    idempotency_key=f"{engagement_id}:test-change-authorisation",
                 )
             )
+            return
+        # Adopting somebody else's task must not rewrite who it was assigned to:
+        # a run recorded under a role the plan never routed it to is a false
+        # delegation record, which is precisely what this view exists to refute.
+        if (task.assigned_agent_role or AGENT_ROLE) != AGENT_ROLE:
+            raise ValueError(
+                f"task {task_id} is assigned to {task.assigned_agent_role!r}, "
+                f"and this demonstration runs as {AGENT_ROLE!r}"
+            )
+        if task.engagement_id != engagement_id:
+            raise ValueError(
+                f"task {task_id} belongs to engagement {task.engagement_id!r}, "
+                f"not {engagement_id!r}"
+            )
+        task.assigned_agent_role = AGENT_ROLE
+        if task.status in {"pending", "ready", "blocked"}:
+            task.status = "running"
 
 
 def run_agent_audit_demo(
@@ -223,16 +251,26 @@ def run_agent_audit_demo(
     repository_root: Path,
     model_client: ModelClient | None = None,
     tenant_id: str | None = None,
+    engagement_id: str | None = None,
+    task_id: str | None = None,
     vault: EvidenceVault | None = None,
     max_tool_rounds: int = 4,
 ) -> dict[str, Any]:
-    """Give one agent a real task, real tools, and no shortcut to the answer."""
+    """Give one agent a real task, real tools, and no shortcut to the answer.
+
+    ``engagement_id`` and ``task_id`` let a caller run this inside an engagement
+    that already exists — the composed demo tenant points it at the compiled
+    plan's own control-testing step — so the work lands on the audit it belongs
+    to rather than on an engagement invented for the demonstration.
+    """
 
     tenant = tenant_id or DEMO_TENANT
+    engagement = engagement_id or DEMO_ENGAGEMENT
+    task = task_id or DEMO_TASK
     packages = AgentRegistry(repository_root / "agents").load()
     package = packages[AGENT_ROLE]
 
-    _seed_engagement(database, tenant)
+    _seed_engagement(database, tenant, engagement, task)
 
     signing_key = Ed25519PrivateKey.generate()
     public_pem = signing_key.public_key().public_bytes(
@@ -267,8 +305,8 @@ def run_agent_audit_demo(
     evidence = [EvidenceItem("ev_scm_policy", "confluence", policy_text, tainted=True)]
 
     envelope = ExecutionEnvelope(
-        task_id=DEMO_TASK,
-        engagement_id=DEMO_ENGAGEMENT,
+        task_id=task,
+        engagement_id=engagement,
         tenant_id=tenant,
         agent_role=AGENT_ROLE,
         agent_version=str(package.manifest["version"]),
@@ -298,7 +336,8 @@ def run_agent_audit_demo(
     recorder.record_chain(
         tracer.chain,
         tenant_id=tenant,
-        task_id=DEMO_TASK,
+        engagement_id=engagement,
+        task_id=task,
         agent_role=AGENT_ROLE,
     )
 
@@ -316,8 +355,12 @@ def run_agent_audit_demo(
         envelope=envelope,
         tracer=tracer,
     )
+    # Every decision carries the engagement it was made on. Leaving it null is
+    # not a cosmetic omission: the delegation read model attributes authority by
+    # engagement, so an unattributed allow or deny is one the fleet cannot be
+    # shown to have exercised — the run looks like an agent that did nothing.
     recorder.record_decisions(
-        gateway.decisions, audit_events=gateway.audit_events, engagement_id=None
+        gateway.decisions, audit_events=gateway.audit_events, engagement_id=engagement
     )
 
     executed = [item for item in result.observations if item["outcome"] == "allowed"]
@@ -337,6 +380,8 @@ def run_agent_audit_demo(
         "status": result.status,
         "model": result.model_name,
         "agent_role": AGENT_ROLE,
+        "engagement_id": engagement,
+        "task_id": task,
         "tools_bound": bound,
         "tools_declared_without_handler": unimplemented_tools(package),
         "tool_rounds": result.tool_rounds,

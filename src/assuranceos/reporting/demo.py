@@ -396,16 +396,24 @@ def _reset_and_seed(database: Database, tenant_id: str, *, reset: bool = True) -
                 )
             )
         session.flush()
-        for engagement_id, code, period in (
-            (ENGAGEMENT, "SCM-2026-07-RPT", PERIOD),
-            (OTHER_ENGAGEMENT, "SCM-2025-07-RPT", (date(2025, 7, 1), date(2025, 7, 31))),
+        # Two periods of the same audit: this year's report, and the prior-year
+        # conclusion the comparative claim in it resolves against. Identical
+        # titles made them indistinguishable in every list view.
+        for engagement_id, code, title, period in (
+            (ENGAGEMENT, "SCM-2026-07-RPT", "Software change management — FY26 report", PERIOD),
+            (
+                OTHER_ENGAGEMENT,
+                "SCM-2025-07-RPT",
+                "Software change management — FY25 comparative",
+                (date(2025, 7, 1), date(2025, 7, 31)),
+            ),
         ):
             session.add(
                 Engagement(
                     engagement_id=engagement_id,
                     tenant_id=tenant_id,
                     code=code,
-                    title="Software change management",
+                    title=title,
                     status="reporting",
                     audit_pack_ref="software-change-management@2.0.0",
                     period_start=period[0],

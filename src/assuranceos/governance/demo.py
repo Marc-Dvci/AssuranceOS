@@ -71,6 +71,9 @@ def run_governance_demo(
     repository_root: Path,
     model_client: ModelClient | None = None,
     tenant_id: str | None = None,
+    engagement_id: str | None = None,
+    task_id: str | None = None,
+    replay_task_id: str | None = None,
     reset: bool = True,
 ) -> dict[str, Any]:
     """Run one governed agent task and rebuild its correlated chain.
@@ -78,11 +81,27 @@ def run_governance_demo(
     ``tenant_id`` retargets the demonstration so several demonstrations can
     compose one complete tenant; ``reset`` keeps whatever that tenant already
     holds instead of deleting it first.
+
+    ``engagement_id`` and ``task_id`` run it inside an engagement that already
+    exists — the composed tenant points it at the compiled plan's own evidence
+    step — so the gateway decisions it records are attributable to the audit
+    they were made for. ``replay_task_id`` is the *other* real task the captured
+    credential is replayed onto; it must belong to the same engagement.
     """
     tenant = tenant_id or GOVERNANCE_DEMO_TENANT_ID
+    engagement = engagement_id or GOVERNANCE_DEMO_ENGAGEMENT_ID
+    task = task_id or GOVERNANCE_DEMO_TASK_ID
+    replay_task = replay_task_id or GOVERNANCE_DEMO_OTHER_TASK_ID
     packages = AgentRegistry(repository_root / "agents").load()
     package = packages[AGENT_ROLE]
-    _reset_and_seed(database, tenant, reset=reset)
+    _reset_and_seed(
+        database,
+        tenant,
+        engagement_id=engagement,
+        task_id=task,
+        replay_task_id=replay_task,
+        reset=reset,
+    )
 
     signing_key = Ed25519PrivateKey.generate()
     public_pem = signing_key.public_key().public_bytes(
@@ -130,7 +149,7 @@ def run_governance_demo(
         telemetry=TelemetryConfig(environment="demo", cloud_region="europe-west1"),
     )
 
-    envelope = _envelope(package, tenant)
+    envelope = _envelope(package, tenant, engagement_id=engagement, task_id=task)
     tracer = AgentTracer(runtime.telemetry)
     result = runtime.run(
         package=package,
@@ -143,11 +162,42 @@ def run_governance_demo(
         tracer=tracer,
     )
 
+    # Two of the four mechanisms below used to fire only because the *scripted*
+    # reply asked for a tool outside the envelope and passed a path-traversal
+    # locator. Inside the loop that is the better demonstration — the denial goes
+    # back to the model as a readable reason, which is the thing worth showing —
+    # but it makes the proof a property of what the model happened to request. A
+    # competent live model asks for neither, and the run then records no policy
+    # denial and no inline-guardrail block at all: the seeded tenant loses its
+    # only tool-poisoning block, on the screen that exists to show it.
+    #
+    # So whatever the run did not exercise is probed for explicitly afterwards,
+    # under the same identity and envelope. Nothing is probed twice.
+    probed: dict[str, str] = {}
+    if not any("absent from execution envelope" in item for item in result.denials):
+        probed["undeclared_tool"] = _probe(
+            gateway,
+            issuer,
+            package=package,
+            envelope=envelope,
+            tracer=tracer,
+            tool_name="connector.read",
+            arguments={"source": "jira"},
+        )
+    if not any("guardrails" in item for item in result.denials):
+        probed["poisoned_arguments"] = _probe(
+            gateway,
+            issuer,
+            package=package,
+            envelope=envelope,
+            tracer=tracer,
+            tool_name="evidence.capture",
+            arguments={"locator": "../../../etc/passwd"},
+        )
+
     # A credential captured from this task must not work on another one.
     replay_identity = issuer.issue(package, envelope)
-    replayed_envelope = envelope.model_copy(
-        update={"task_id": GOVERNANCE_DEMO_OTHER_TASK_ID}
-    )
+    replayed_envelope = envelope.model_copy(update={"task_id": replay_task})
     try:
         gateway.invoke(
             signed_identity=replay_identity,
@@ -184,13 +234,13 @@ def run_governance_demo(
     recorder.record_decisions(
         gateway.decisions,
         audit_events=gateway.audit_events,
-        engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
+        engagement_id=engagement,
     )
     recorder.record_chain(
         tracer.chain,
         tenant_id=tenant,
-        engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-        task_id=GOVERNANCE_DEMO_TASK_ID,
+        engagement_id=engagement,
+        task_id=task,
         agent_role=AGENT_ROLE,
     )
 
@@ -205,7 +255,8 @@ def run_governance_demo(
 
     return {
         "tenant_id": tenant,
-        "engagement_id": GOVERNANCE_DEMO_ENGAGEMENT_ID,
+        "engagement_id": engagement,
+        "task_id": task,
         "trace_id": tracer.chain.trace_id,
         "model": result.model_name,
         "status": result.status,
@@ -214,6 +265,9 @@ def run_governance_demo(
         "injection_neutralised": bool(injection),
         "allowed_tool_calls": result.tool_calls,
         "runtime_denials": result.denials,
+        # Empty when the run itself exercised every mechanism, which is what the
+        # deterministic path does. It fills in when a live model does not.
+        "probed_denials": probed,
         "replay_denial": replay_denial,
         "revocation_denial": revocation_denial,
         "gateway_allow_count": sum(1 for d in gateway.decisions if d.allowed),
@@ -228,10 +282,44 @@ def run_governance_demo(
     }
 
 
-def _envelope(package, tenant: str) -> ExecutionEnvelope:
+def _probe(
+    gateway: AgentGateway,
+    issuer: AgentIdentityIssuer,
+    *,
+    package,
+    envelope: ExecutionEnvelope,
+    tracer: AgentTracer,
+    tool_name: str,
+    arguments: dict[str, Any],
+) -> str:
+    """Ask for something that must be refused, under the agent's own identity.
+
+    A control that only fires when the model happens to misbehave has not been
+    demonstrated. "NOT DENIED" is returned rather than raised so the caller
+    records the failure instead of losing the whole run to it — a probe that
+    silently stops the demonstration is how a regression hides.
+    """
+    identity = issuer.issue(package, envelope)
+    try:
+        gateway.invoke(
+            signed_identity=identity,
+            envelope=envelope,
+            package=package,
+            tool_name=tool_name,
+            arguments=arguments,
+            tracer=tracer,
+        )
+    except GatewayDenied as denied:
+        return f"{denied.decision.stage}: {denied.decision.reason}"
+    return "NOT DENIED"
+
+
+def _envelope(
+    package, tenant: str, *, engagement_id: str, task_id: str
+) -> ExecutionEnvelope:
     return ExecutionEnvelope(
-        task_id=GOVERNANCE_DEMO_TASK_ID,
-        engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
+        task_id=task_id,
+        engagement_id=engagement_id,
         tenant_id=tenant,
         agent_role=AGENT_ROLE,
         agent_version=str(package.manifest["version"]),
@@ -244,7 +332,23 @@ def _envelope(package, tenant: str) -> ExecutionEnvelope:
     )
 
 
-def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> None:
+def _reset_and_seed(
+    database: Database,
+    tenant: str,
+    *,
+    engagement_id: str,
+    task_id: str,
+    replay_task_id: str,
+    reset: bool = True,
+) -> None:
+    """Make sure the engagement and both tasks exist, without duplicating any.
+
+    Each record is checked on its own. The engagement existing used to be taken
+    as proof that its tasks did too, which is only true while this demonstration
+    is the thing that created it — point the run at an engagement compiled from
+    an Audit Pack and the tasks it records decisions against would never be
+    written, leaving the decisions pointing at rows that do not exist.
+    """
     if reset:
         with database.transaction() as session:
             existing = TenantRepository(session).get(tenant)
@@ -263,47 +367,86 @@ def _reset_and_seed(database: Database, tenant: str, *, reset: bool = True) -> N
                 )
             )
             session.flush()
-        # Composing onto a tenant another demonstration populated must not
-        # duplicate the records this one owns.
-        if session.get(Engagement, GOVERNANCE_DEMO_ENGAGEMENT_ID) is not None:
-            return
-        session.flush()
-        session.add(
-            Engagement(
-                engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-                tenant_id=tenant,
-                code="SCM-2026-GOV",
-                title="Software change management - governed agent path",
-                status="in_progress",
-                audit_pack_ref="software-change-management@1.0.0",
-                period_start=date(2026, 1, 1),
-                period_end=date(2026, 6, 30),
+        if session.get(Engagement, engagement_id) is None:
+            session.add(
+                Engagement(
+                    engagement_id=engagement_id,
+                    tenant_id=tenant,
+                    code="SCM-2026-GOV",
+                    title="Software change management — evidence capture",
+                    status="in_progress",
+                    audit_pack_ref="software-change-management@1.0.0",
+                    period_start=date(2026, 1, 1),
+                    period_end=date(2026, 6, 30),
+                )
             )
+            session.flush()
+        _ensure_task(
+            session,
+            tenant=tenant,
+            engagement_id=engagement_id,
+            task_id=task_id,
+            task_key="collect-change-evidence",
+            status="running",
         )
         session.flush()
+        # The second task sits beside the first in the plan's own order. Left on
+        # the default priority it sorts ahead of every compiled step, so the
+        # handoff opens on a sampling task nobody has reached yet.
+        primary = session.get(EngagementTask, task_id)
+        _ensure_task(
+            session,
+            tenant=tenant,
+            engagement_id=engagement_id,
+            task_id=replay_task_id,
+            task_key="select-change-sample",
+            status="ready",
+            priority=primary.priority if primary is not None else 100,
+        )
+
+
+def _ensure_task(
+    session,
+    *,
+    tenant: str,
+    engagement_id: str,
+    task_id: str,
+    task_key: str,
+    status: str,
+    priority: int = 100,
+) -> None:
+    """Create the task, or adopt the one already there.
+
+    Adoption never rewrites the role a task was routed to: a decision recorded
+    against a role the plan did not assign is a false delegation record.
+    """
+    existing = session.get(EngagementTask, task_id)
+    if existing is None:
         session.add(
             EngagementTask(
-                task_id=GOVERNANCE_DEMO_TASK_ID,
+                task_id=task_id,
                 tenant_id=tenant,
-                engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-                task_key="collect-change-evidence",
+                engagement_id=engagement_id,
+                task_key=task_key,
                 task_type="agent",
                 definition_version="1.0.0",
-                status="running",
+                status=status,
+                priority=priority,
                 assigned_agent_role=AGENT_ROLE,
-                idempotency_key=f"{GOVERNANCE_DEMO_ENGAGEMENT_ID}:collect-change-evidence",
+                idempotency_key=f"{engagement_id}:{task_key}",
             )
         )
-        session.add(
-            EngagementTask(
-                task_id=GOVERNANCE_DEMO_OTHER_TASK_ID,
-                tenant_id=tenant,
-                engagement_id=GOVERNANCE_DEMO_ENGAGEMENT_ID,
-                task_key="select-change-sample",
-                task_type="agent",
-                definition_version="1.0.0",
-                status="ready",
-                assigned_agent_role=AGENT_ROLE,
-                idempotency_key=f"{GOVERNANCE_DEMO_ENGAGEMENT_ID}:select-change-sample",
-            )
+        return
+    if (existing.assigned_agent_role or AGENT_ROLE) != AGENT_ROLE:
+        raise ValueError(
+            f"task {task_id} is assigned to {existing.assigned_agent_role!r}, "
+            f"and this demonstration runs as {AGENT_ROLE!r}"
         )
+    if existing.engagement_id != engagement_id:
+        raise ValueError(
+            f"task {task_id} belongs to engagement {existing.engagement_id!r}, "
+            f"not {engagement_id!r}"
+        )
+    existing.assigned_agent_role = AGENT_ROLE
+    if existing.status in {"pending", "ready", "blocked"} and status == "running":
+        existing.status = "running"

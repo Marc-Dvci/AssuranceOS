@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from assuranceos.governance.demo import (
     GOVERNANCE_DEMO_TENANT_ID,
     run_governance_demo,
 )
+from assuranceos.governance.models_client import ScriptedClient
 from assuranceos.governance.persistence import GovernanceRecorder
 from assuranceos.product import tenant_cockpit, trace_detail
 
@@ -59,6 +61,52 @@ def test_governance_demo_proves_each_control(database: Database):
     assert result["chain_rebuilt_from_database"]
     assert result["chain_spans"] > 0
     assert "assuranceos.agent.task" in result["chain_render"]
+
+
+def test_the_denial_mechanisms_do_not_depend_on_what_the_model_asked_for(
+    database: Database,
+):
+    """A model that requests nothing must still leave four mechanisms proven.
+
+    The scripted reply asks for a tool outside the envelope and passes a
+    path-traversal locator, so the deterministic run exercises the policy and
+    guardrail stages inside the loop. A competent live model does neither — and
+    the demonstration then recorded no inline-guardrail block anywhere in the
+    tenant, which is exactly the proof it exists to produce.
+    """
+    quiet_model = ScriptedClient(
+        replies=[
+            json.dumps(
+                {
+                    "conclusion": "ineffective",
+                    "summary": "Three changes merged without an approved ticket.",
+                    "evidence_ids": ["ev_policy", "ev_changes"],
+                    "tool_calls": [],
+                    "requires_human_approval": True,
+                }
+            )
+        ]
+    )
+
+    result = run_governance_demo(
+        database=database, repository_root=ROOT, model_client=quiet_model
+    )
+
+    assert result["runtime_denials"] == []
+    assert result["probed_denials"]["undeclared_tool"].startswith("policy:")
+    assert "guardrails" in result["probed_denials"]["poisoned_arguments"]
+    # Same four mechanisms, same block, from a model that asked for nothing.
+    assert result["gateway_deny_count"] == 4
+    assert result["persisted_blocked_findings"] == ["path_traversal"]
+
+
+def test_a_run_that_exercised_a_mechanism_is_not_probed_for_it_again(
+    database: Database,
+):
+    result = run_governance_demo(database=database, repository_root=ROOT)
+
+    assert result["probed_denials"] == {}
+    assert result["gateway_deny_count"] == 4
 
 
 def test_governance_demo_is_deterministic_and_repeatable(database: Database):
