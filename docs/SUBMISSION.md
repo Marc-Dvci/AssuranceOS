@@ -1,5 +1,29 @@
 # AssuranceOS — Devpost submission
 
+## What an audit function costs, and what one costs here
+
+An internal audit function is four people and something near half a million
+dollars a year, and it still cannot cover everything. The plan names the third
+of the universe it will not reach, and a human signs for the residual risk. So a
+two-hundred-person company with real customers and real contractual obligations
+usually has no audit function at all — a team to check the controls it promised
+costs more than the risk feels like it is worth.
+
+One governed agent task in AssuranceOS — read the signed control test over a
+44-change population, conclude, get refused a tool it was never granted, repair
+a citation the output gate rejected — was measured at **4,032 input and 391
+output tokens**. At Gemini 3.7 Flash's published rate that is **$0.009**.
+
+That is the whole argument for building this. At nine tenths of a cent per
+governed task, the constraint on audit coverage stops being budget. It becomes
+trust: if a machine did the audit, why would anyone act on what it concluded?
+
+The platform meters that usage itself rather than asserting it. Every model call
+records its token usage on the reasoning span, the cockpit renders the total on
+a **What this cost to run** card priced at published rates, and the card
+declares when a run was scripted rather than measured — because a cost computed
+from a scripted client's word counts looks exactly like one that was measured.
+
 ## The trust layer for autonomous internal audit
 
 AssuranceOS runs the internal-audit lifecycle end to end—onboard, plan, collect,
@@ -11,13 +35,6 @@ cannot grant itself authority or become canonical evidence. Every agent action
 is constrained by a signed release, a short-lived execution envelope, a
 default-deny gateway, evidence provenance, deterministic tests, and recorded
 human gates.
-
-## Why it matters
-
-It is built for the companies that have no audit function at all. Two hundred
-people, real customers, real contractual obligations, and nobody whose job is to
-check that the controls they promised actually work — because a team to do that
-costs more than the risk feels like it is worth.
 
 Where audit teams do exist, they spend too much time reconciling source systems,
 rebuilding workpapers, and proving how a conclusion was reached. Generic copilots
@@ -45,12 +62,21 @@ coverage without trading away accountability.
   explicit recorded scope statement.
 - Launches recurring audits and converts monitoring signals into review cases,
   never directly into approved findings.
+- Publishes the signed fleet as a **catalogue** a department can adopt from —
+  each agent's mandate, its non-goals, who may call it, the tools its package
+  permits, its human gates and its known limitations, all read from the signed
+  artefact so an entry cannot promise more than the release verifies.
+- Meters what the work cost. Token usage is recorded on every model call and
+  totalled on a **What this cost to run** card against records tested, evidence
+  hashed and human decisions required — priced at published rates, with the
+  model that *served* the tokens named separately from the model the price came
+  from, and with unmetered runs declared rather than quietly counted.
 
 ## Google technology
 
-### Gemini 3.6 Flash
+### Gemini 3.7 Flash
 
-Gemini 3.6 Flash is the mandatory hosted model across runtime configuration,
+Gemini 3.7 Flash is the mandatory hosted model across runtime configuration,
 signed agent profiles, Agent Engine deployment, Memory Bank generation, and
 telemetry. The Google GenAI SDK supports both Vertex AI and Gemini API
 transports. Structured JSON output is validated against task-specific schemas
@@ -110,7 +136,7 @@ make agent-audit-demo                                     # deterministic
 python scripts/run_agent_audit_demo.py --model-mode local \
   --base-url http://127.0.0.1:5000/v1 --model gemma-4-12b-it-IQ4_XS.gguf \
   --context-tokens 16384                                  # Gemma 4 12B decides
-python scripts/run_agent_audit_demo.py --model-mode vertex   # Gemini 3.6 Flash
+python scripts/run_agent_audit_demo.py --model-mode vertex   # Gemini 3.7 Flash
 ```
 
 Thirteen domain tools are bound to real services — evidence query with custody
@@ -149,7 +175,7 @@ are all silent — so `--context-tokens auto` measures it, by observing where
 `usage.prompt_tokens` pins on a deliberately oversized prompt. The measurement
 exists so the refusal can be accurate, and it follows whatever window is served:
 raise the server's `-c` and the same command uses all of it. On Vertex AI, where
-Gemini 3.6 Flash serves a million tokens and rejects an oversized request rather
+Gemini 3.7 Flash serves a million tokens and rejects an oversized request rather
 than trimming it, the check never fires.
 
 ## The golden engagement
@@ -222,7 +248,7 @@ explains the result in business language.
 
 ## Three more Google models, each doing a job the reasoning model should not
 
-Gemini 3.6 Flash reasons. It is not how an auditor *finds* the document that
+Gemini 3.7 Flash reasons. It is not how an auditor *finds* the document that
 matters, it is not what should hear a walkthrough interview, and it is not what
 can run inside a network that evidence may not leave. Three further Google models
 carry those, and each one is deliberately bounded so that adding a model does not
@@ -324,7 +350,7 @@ python scripts/run_model_fleet_demo.py --embedding-mode vertex \
 ### Gemma 4 — the same governed path, inside the auditee's network
 
 The governed runtime holds one model contract with three transports behind it:
-the Google GenAI SDK for Gemini 3.6 Flash on Vertex AI, an OpenAI-compatible
+the Google GenAI SDK for Gemini 3.7 Flash on Vertex AI, an OpenAI-compatible
 client, and a scripted client for tests. The runtime never learns which one it
 is talking to, so model choice is a deployment decision and the governance
 guarantees are not.

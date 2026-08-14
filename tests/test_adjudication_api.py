@@ -60,7 +60,7 @@ def proposal(**overrides) -> dict:
             "severity": "high",
             "confidence": 0.8,
             "criteria": "Change policy v4 requires an approved ticket.",
-            "observed_condition": "2 exception(s) identified: PR-1002, PR-1003",
+            "observed_condition": "2 exceptions identified: PR-1002, PR-1003",
             "risk_statement": "Unauthorised change may reach production.",
             "evidence_ids": ["ev_changes"],
             "exception_keys": ["PR-1002", "PR-1003"],

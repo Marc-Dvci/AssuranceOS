@@ -18,7 +18,7 @@ src/assuranceos/api.py is the authenticated HTTP composition layer.
 
 ## Runtime paths
 
-- Gemini 3.6 Flash through the Google GenAI SDK.
+- Gemini 3.7 Flash through the Google GenAI SDK.
 - Google ADK applications deployed to Vertex AI Agent Engine.
 - VertexAiMemoryBankService for managed long-term context.
 - OpenAI-compatible loopback transport for the local privacy profile.
@@ -26,6 +26,6 @@ src/assuranceos/api.py is the authenticated HTTP composition layer.
 
 ## Verification
 
-Use docs/HANDOFF_NEXT.md as the canonical release checklist. Architecture
+Use docs/runbooks/release-checklist.md as the canonical release checklist. Architecture
 documents under docs/architecture describe the data model, orchestration,
 evidence, standards, governance, review gates, and reporting claim graph.

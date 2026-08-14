@@ -21,6 +21,7 @@ from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from ..text import counted
 
 
 class QualityCheck(StrEnum):
@@ -97,7 +98,7 @@ def evaluate(
             check=QualityCheck.EVIDENCE_CITED,
             passed=bool(evidence_ids),
             detail=(
-                f"{len(evidence_ids)} evidence record(s) cited"
+                f"{counted(len(evidence_ids), 'evidence record')} cited"
                 if evidence_ids
                 else "the finding cites no evidence"
             ),
@@ -112,7 +113,7 @@ def evaluate(
             check=QualityCheck.CONTRADICTIONS_SEARCHED,
             passed=skeptic_ran,
             detail=(
-                f"contradiction search ran and recorded {len(contradictions)} result(s)"
+                f"contradiction search ran and recorded {counted(len(contradictions), 'result')}"
                 if skeptic_ran
                 else "no contradiction search is recorded against this finding"
             ),
@@ -125,7 +126,7 @@ def evaluate(
             check=QualityCheck.POPULATION_RECONCILED,
             passed=reconciled,
             detail=(
-                f"{len(exception_keys)} exception key(s) trace to the tested population"
+                f"{counted(len(exception_keys), 'exception key')} trace to the tested population"
                 if exception_keys
                 else "no exception keys; the finding rests on cited evidence alone"
             ),
@@ -204,9 +205,9 @@ def evaluate(
             check=QualityCheck.LIMITATIONS_DISCLOSED,
             passed=not undisclosed,
             detail=(
-                f"{len(contradictions)} contradiction(s) found but no limitation is disclosed"
+                f"{counted(len(contradictions), 'contradiction')} found but no limitation is disclosed"
                 if undisclosed
-                else f"{len(limitations)} limitation(s) disclosed"
+                else f"{counted(len(limitations), 'limitation')} disclosed"
             ),
         )
     )

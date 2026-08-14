@@ -172,7 +172,7 @@ def test_an_agent_without_a_gateway_carries_only_envelope_validation(
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
     agent = build_adk_agent(
-        package.path, "gemini-3.6-flash", trusted_execution_keys={"cp": public}
+        package.path, "gemini-3.7-flash", trusted_execution_keys={"cp": public}
     )
     assert len(agent.tools) == 1
 
@@ -198,7 +198,7 @@ def test_a_bound_agent_exposes_the_declared_tools(package, wiring, monkeypatch):
     )
     agent = build_adk_agent(
         package.path,
-        "gemini-3.6-flash",
+        "gemini-3.7-flash",
         trusted_execution_keys={"cp": public},
         gateway=gateway,
         identity_issuer=issuer,

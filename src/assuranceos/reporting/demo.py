@@ -20,6 +20,7 @@ by recomputing its digest.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from hashlib import sha256
 from typing import Any
 
 from ..db.models import Engagement, EvidenceRecord, Tenant
@@ -359,7 +360,16 @@ def _reset_and_seed(database: Database, tenant_id: str, *, reset: bool = True) -
             engagement_id=engagement_id,
             source_type="github" if "pr" in evidence_id else "confluence",
             source_locator=locator,
-            content_sha256=f"{abs(hash(evidence_id)):064x}"[:64],
+            # A real SHA-256 over the record's own identity. The previous
+            # `abs(hash(evidence_id))` was wrong twice over: Python randomises
+            # str hashing per process, so a store whose whole premise is content
+            # addressing produced a different digest on every run; and a 64-bit
+            # value printed into 64 hex characters left 48 leading zeros on
+            # screen, which is what a content-addressed evidence vault must
+            # never show a reviewer.
+            content_sha256=sha256(
+                f"assuranceos:evidence:{tenant_id}:{evidence_id}:{locator}".encode()
+            ).hexdigest(),
             accepted=accepted,
             tainted=tainted,
             integrity_status="verified",

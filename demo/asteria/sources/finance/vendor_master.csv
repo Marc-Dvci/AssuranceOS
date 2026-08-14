@@ -1,9 +1,35 @@
-vendor_id,vendor_name,category,status,onboarded_on,bank_account_iban,bank_detail_last_changed,verified_out_of_band
-V-1001,Northbridge Technical Services,Contract engineering,approved,2024-03-11,FR7630001007941234567890185,,
-V-1002,Helvetia Cloud Partners,Cloud reselling,approved,2023-09-02,CH9300762011623852957,2026-05-18,true
-V-1003,Lumen Office Supplies,Facilities,approved,2022-06-14,FR7630004000031234567890143,,
-V-1004,Castellan Legal LLP,Legal,approved,2024-11-20,GB29NWBK60161331926819,,
-V-1005,Meridian Travel,Travel,approved,2023-01-30,DE89370400440532013000,,
-V-1006,Aurora Data Labs,Data enrichment,pending,2026-06-28,FR7630006000011234567890189,,
-V-1007,Pinehurst Facilities,Facilities,approved,2021-04-05,GB94BARC10201530093459,,
-V-1008,Solstice Media,Marketing,approved,2025-02-17,DE02120300000000202051,,
+vendor_id,vendor_name,category,status,onboarded_on,bank_account_iban,bank_detail_last_changed,verified_out_of_band,legacy_cost_centre
+V-1001,Northbridge Technical Services,Contract engineering,approved,2024-03-11,FR7630001007941234567890185,,,CC-4100
+V-1002,Helvetia Cloud Partners,Cloud reselling,approved,2023-09-02,CH9300762011623852957,2026-05-18,true,
+V-1003,Lumen Office Supplies,Facilities,Approved,2022-06-14,FR7630004000031234567890143,,,CC-2200
+V-1004,Castellan Legal LLP,Legal,approved,2024-11-20,GB29NWBK60161331926819,,,
+V-1005,Meridian Travel,Travel,approved,2023-01-30,DE89370400440532013000,,,cc-3050
+V-1006,Aurora Data Labs,Data enrichment,pending,2026-06-28,FR7630006000011234567890189,,,
+V-1007,Pinehurst Facilities,Facilities,approved,2021-04-05,GB94BARC10201530093459,,,CC-2200
+V-1008,Solstice Media,Marketing,approved,2025-02-17,DE02120300000000202051,,,
+V-1009,Vantage Recruitment Ltd,Recruitment,APPROVED,2022-02-28,GB33BUKB20201555555555,,,
+V-1010,Kestrel Security Testing,Security,approved,2023-05-16,NL91ABNA0417164300,,,
+V-1012,Brightpath Learning,Training,approved,2024-08-09,IE29AIBK93115212345678,,,
+V-1013,Orsted Print & Signage,Marketing,inactive,2021-09-30,,,,CC-3100
+V-1014,Calderon Tax Advisory,Professional services,approved,2025-01-13,ES9121000418450200051332,,,
+V-1015,Halcyon Insurance Brokers,Insurance,approved,2022-11-07,FR7612345678901234567890123,,,
+V-1016,Tessera Analytics GmbH,Data enrichment,approved,2024-06-21,DE75512108001245126199,,,
+V-1017,Marlowe Catering,Facilities,approved,2023-03-02,N/A,,,
+V-1018,Ridgeway Hardware Supply,IT hardware,approved,2021-12-15,GB82WEST12345698765432,,,CC-4100 
+V-1019,Aubert & Fils SARL,Facilities,approved,2020-07-24,FR7630003000501234567890189,,,CC-2200
+V-1020,Quillon Software Licensing,Software,approved,2024-02-05,IE64IRCE92050112345678,,,
+V-1021,Northbridge Technical Svcs.,Contract engineering,approved,2025-10-02,FR7630001007941234567890185,,,
+V-1023,Sable Freight Forwarding,Logistics,approved,2023-08-18,BE68539007547034,,,
+V-1024,Empyrean Cloud Storage,Cloud reselling,approved,2025-04-11,CH5604835012345678009,18/05/2026,Y,
+V-1025,Fenwick Legal Search,Legal,blocked,2022-05-09,GB12ABBY09012712345678,,,
+V-1026,Aurelia Translations,Professional services,approved,2024-09-27,PT50000201231234567890154,,,
+V-1027,Braemar Fleet Leasing,Travel,approved,2021-06-11,GB98MIDL07009312345678,,,CC-3050
+V-1028,Corvid Design Studio,Marketing,approved,2025-07-19,-,,,
+V-1029,Thornbury Waste Management,Facilities,approved,2020-10-05,GB42MYMB23058012345678,,,CC-2200
+V-1030,Ianthe Occupational Health,HR services,approved,2023-12-01,IT60X0542811101000000123456,,,
+V-1031,Selwyn Audio Visual,IT hardware,inactive,2022-01-19,GB29NWBK60161331926820,,,
+V-1032,Peregrine Background Checks,HR services,approved,2024-04-14,NL02ABNA0123456789,,,
+V-1033,Vellum Records Storage,Facilities,approved,2021-03-08,GB16BARC20201530093451,,,CC2200
+V-1034,Ostara Renewable Energy,Utilities,approved,2025-11-24,DK5000400440116243,,,
+V-1035,Winterbourne Consulting ,Professional services,approved,2026-01-30,GB77BOFS80200110203345,,,
+V-1036,Halden Interpreting Services,Professional services,pending,2026-07-09,,,,

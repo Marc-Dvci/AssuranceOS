@@ -166,7 +166,7 @@ def open_remediation(service, finding_id, key="rem-1", **overrides):
 def test_observed_condition_is_computed_not_narrated():
     """The count and the population are facts, not something a model asserts."""
     finding = scm_finding()
-    assert "2 exception(s)" in finding.observed_condition
+    assert "2 exceptions" in finding.observed_condition
     assert "PR-42" in finding.observed_condition
     assert finding.affected_population["exception_count"] == 2
 

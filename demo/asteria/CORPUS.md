@@ -8,6 +8,15 @@ Fifty-six files across ten source systems, in the formats the systems actually
 export: JSON from APIs, CSV from directory and HR extracts, Markdown for wiki
 pages, and `.xlsx` for the registers control owners maintain by hand.
 
+The documents are documents, not extracts — the Northwind master services
+agreement runs to fifteen sections and two schedules, and the incident response
+plan to eight. The ledgers carry what ledgers carry: duplicate parties, orphan
+references, four currencies, three spellings of the same status, and a column
+nobody has dared delete since 2023. Both are deliberate. A control tested
+against a two-paragraph policy and a thirty-row table demonstrates that the
+machinery runs; it does not demonstrate that the conclusion would survive
+contact with a real company's exports.
+
 Regenerate with `python scripts/build_demo_corpus.py`. Generation is seeded, so
 a rebuild that changed no data produces byte-identical files and therefore
 identical evidence hashes. One page is protected from regeneration:
@@ -33,92 +42,96 @@ be a projection nobody validated.
 
 ## github — engineering change records
 
-| File | Size | Contents | Feeds |
-| --- | --- | --- | --- |
-| `pull_requests.json` | 15 KB | 44 merged pull requests across 6 in-scope repositories | **SCM-01 population** |
-| `branch_protection.json` | 1.7 KB | Required review settings per repository, including the one bypass allowance | Control design |
-| `repositories.json` | 2.6 KB | 14 repositories with audit-scope flags | Scoping |
-| `deployment_events.csv` | 6.2 KB | 44 production deployments joined to their merge | Population completeness |
-| `CODEOWNERS.md` | 1.1 KB | Reviewer ownership per path | Independence of approval |
+| File | Contents | Feeds |
+| --- | --- | --- |
+| `pull_requests.json` | 44 merged pull requests across 6 in-scope repositories | **SCM-01 population** |
+| `branch_protection.json` | Required review settings per repository, including the one bypass allowance | Control design |
+| `repositories.json` | 14 repositories with audit-scope flags | Scoping |
+| `deployment_events.csv` | 44 production deployments joined to their merge | Population completeness |
+| `CODEOWNERS.md` | Reviewer ownership per path | Independence of approval |
 
 ## jira — change and incident management
 
-| File | Size | Contents | Feeds |
-| --- | --- | --- | --- |
-| `change_tickets.json` | 12 KB | 43 change tickets with status, approver, and type | **SCM-01 reference** |
-| `change_workflow_transitions.csv` | 5.2 KB | 84 status transitions with actor and timestamp | Who approved, and when |
-| `incident_tickets.json` | 3.6 KB | 9 incidents with customer, first response, and the SLA target the tooling applied | **SLA-01 population**, SCM-DEFECT-002 |
-| `sla_configuration.json` | 592 B | The Jira SLA scheme, derived from the incident response plan, last modified 2025-11-04 | SLA-DEFECT-001 |
-| `remediation_tickets.json` | 922 B | 3 prior-year remediation tickets, one reopened | Recurrence detection |
-| `permission_scheme.md` | 966 B | Who may transition a change to *Approved* | Segregation of duties |
+| File | Contents | Feeds |
+| --- | --- | --- |
+| `change_tickets.json` | 43 change tickets with status, approver, and type | **SCM-01 reference** |
+| `change_workflow_transitions.csv` | 84 status transitions with actor and timestamp | Who approved, and when |
+| `incident_tickets.json` | 9 incidents with customer, first response, and the SLA target the tooling applied | **SLA-01 population**, SCM-DEFECT-002 |
+| `sla_configuration.json` | The Jira SLA scheme, derived from the incident response plan, last modified 2025-11-04 | SLA-DEFECT-001 |
+| `remediation_tickets.json` | 3 prior-year remediation tickets, one reopened | Recurrence detection |
+| `permission_scheme.md` | Who may transition a change to *Approved* | Segregation of duties |
 
 ## confluence — policies and procedures
 
 Ten pages. These are the criteria a finding is written against, so the wording
 is specific enough to test: *24 hours*, *quarterly*, *five business days*.
 
-| File | Size | What it establishes |
-| --- | --- | --- |
-| `change_management_policy.md` | 524 B | Approval required before merge — **and carries the seeded prompt injection** |
-| `access_control_policy.md` | 1.7 KB | 24-hour deprovisioning deadline, applied identically to contractors |
-| `access_review_procedure.md` | 1.3 KB | Quarterly campaigns must be *completed*; an abandoned campaign does not count |
-| `privileged_access_standard.md` | 1.2 KB | A contractor may not hold `roles/run.admin` without a recorded exception |
-| `exception_management_procedure.md` | 1.0 KB | The register is the record of authority; an expired exception is not an exception |
-| `offboarding_checklist.md` | 1.2 KB | States the contractor-feed gap as a known, previously reported weakness |
-| `segregation_of_duties_matrix.md` | 1.0 KB | Remediator may not retest; approver may not author |
-| `incident_response_plan.md` | 1.1 KB | Emergency change requires retrospective approval within five business days |
-| `information_security_policy.md` | 1.0 KB | ISO 27001 and SOC 2 commitments, data residency |
-| `cab_meeting_notes_2026-07.md` | 1.1 KB | The board recorded the action to file `CHG-2021`'s retrospective approval, and never closed it |
+| File | What it establishes |
+| --- | --- |
+| `change_management_policy.md` | Approval required before merge — **and carries the seeded prompt injection** |
+| `access_control_policy.md` | 24-hour deprovisioning deadline, applied identically to contractors |
+| `access_review_procedure.md` | Quarterly campaigns must be *completed*; an abandoned campaign does not count |
+| `privileged_access_standard.md` | A contractor may not hold `roles/run.admin` without a recorded exception |
+| `exception_management_procedure.md` | The register is the record of authority; an expired exception is not an exception |
+| `offboarding_checklist.md` | States the contractor-feed gap as a known, previously reported weakness |
+| `segregation_of_duties_matrix.md` | Remediator may not retest; approver may not author |
+| `incident_response_plan.md` | The full plan — roles, declaration, an escalation matrix, communications, closure and postmortems. Emergency change requires retrospective approval within five business days, and the customer commitments table still says 8 hours |
+| `information_security_policy.md` | The parent policy: ISO 27001 and SOC 2 commitments, data classification, access control, cryptography, vulnerability SLAs, and a version history back to 2023 |
+| `cab_meeting_notes_2026-07.md` | The board recorded the action to file `CHG-2021`'s retrospective approval, and never closed it |
 
 ## hr — workforce
 
-| File | Size | Contents | Feeds |
-| --- | --- | --- | --- |
-| `workforce_roster.csv` | 32 KB | 254 people (240 employees, 14 contractors) across 4 countries | Population scoping |
-| `terminations.csv` | 2.0 KB | 18 leavers with the 24-hour deprovisioning deadline computed | **IAM-01 population** |
-| `contractor_register.csv` | 2.3 KB | 14 contractors, with the feed each is published to | Root cause of IAM-DEFECT-001 |
-| `offboarding_task_log.json` | 9.4 KB | 18 offboarding tickets and their task status | Why the automation did not fire |
+| File | Contents | Feeds |
+| --- | --- | --- |
+| `workforce_roster.csv` | 254 people (240 employees, 14 contractors) across 4 countries | Population scoping |
+| `terminations.csv` | 18 leavers with the 24-hour deprovisioning deadline computed | **IAM-01 population** |
+| `contractor_register.csv` | 14 contractors, with the feed each is published to | Root cause of IAM-DEFECT-001 |
+| `offboarding_task_log.json` | 18 offboarding tickets and their task status | Why the automation did not fire |
 
 ## identity — directory and access
 
-| File | Size | Contents | Feeds |
-| --- | --- | --- | --- |
-| `directory_accounts.csv` | 19 KB | 254 accounts with enabled state and disable timestamp | **IAM-01 reference** |
-| `privileged_role_assignments.csv` | 3.2 KB | 29 standing production role grants | IAM-DEFECT-001 severity |
-| `service_accounts.csv` | 811 B | 5 service accounts, roles, and compensating monitors | SCM-NONFINDING-001 |
-| `group_memberships.csv` | 5.1 KB | 58 memberships across 4 governed groups | Access appropriateness |
-| `mfa_enrollment_report.csv` | 14 KB | 236 active identities, all enrolled | **IAM-02, reported effective** |
-| `access_review_campaigns.xlsx` | 2.5 KB | 5 campaigns, 2 sheets — the register the CISO maintains | **PAM-01 observation** |
+| File | Contents | Feeds |
+| --- | --- | --- |
+| `directory_accounts.csv` | 254 accounts with enabled state and disable timestamp | **IAM-01 reference** |
+| `privileged_role_assignments.csv` | 29 standing production role grants | IAM-DEFECT-001 severity |
+| `service_accounts.csv` | 5 service accounts, roles, and compensating monitors | SCM-NONFINDING-001 |
+| `group_memberships.csv` | 58 memberships across 4 governed groups | Access appropriateness |
+| `mfa_enrollment_report.csv` | 236 active identities, all enrolled | **IAM-02, reported effective** |
+| `access_review_campaigns.xlsx` | 5 campaigns, 2 sheets — the register the CISO maintains | **PAM-01 observation** |
 
 ## cloud — Google Cloud production
 
-| File | Size | Contents |
-| --- | --- | --- |
-| `cloud_run_services.json` | 4.5 KB | 18 services with criticality and ingress posture |
-| `iam_policy_bindings.json` | 974 B | Project IAM policy — the contractor appears in `roles/run.admin` |
-| `admin_activity_audit_log.csv` | 6.3 KB | 31 administrative actions, including the terminated contractor's post-termination access |
-| `service_criticality_register.csv` | 1.6 KB | 18 services with owners, RTO, RPO, ISO scope |
+| File | Contents |
+| --- | --- |
+| `cloud_run_services.json` | 18 services with criticality and ingress posture |
+| `iam_policy_bindings.json` | Project IAM policy — the contractor appears in `roles/run.admin` |
+| `admin_activity_audit_log.csv` | 31 administrative actions, including the terminated contractor's post-termination access |
+| `service_criticality_register.csv` | 18 services with owners, RTO, RPO, ISO scope |
 
 ## governance — the assurance record
 
-| File | Size | Contents |
-| --- | --- | --- |
-| `risk_register.xlsx` | 2.3 KB | 9 risks with inherent, control-strength, and residual ratings |
-| `control_library.xlsx` | 2.3 KB | 7 controls mapped to risks and to ISO/COSO criteria |
-| `approved_audit_plan_2026.xlsx` | 2.5 KB | 5 planned engagements plus a capacity sheet, approved by the audit committee |
-| `approved_exceptions.json` | 1.5 KB | 4 exceptions — 3 active, 1 expired, each with a compensating control |
-| `prior_year_findings.csv` | 495 B | 4 prior findings, one reopened |
-| `audit_committee_charter.md` | 1.3 KB | Independence rules: an agent may not approve, a remediator may not retest |
+| File | Contents |
+| --- | --- |
+| `risk_register.xlsx` | 24 risks with inherent, control-strength, and residual ratings |
+| `control_library.xlsx` | 31 controls mapped to risks and to ISO/COSO criteria |
+| `approved_audit_plan_2026.xlsx` | 14 planned engagements, 6 explicitly excluded risks with the reason and who accepted the residual, and a capacity sheet |
+| `approved_exceptions.json` | 4 exceptions — 3 active, 1 expired, each with a compensating control |
+| `prior_year_findings.csv` | 31 findings across 2023–2025, one reopened and two accepted without a due date |
+| `audit_committee_charter.md` | Independence rules: an agent may not approve, a remediator may not retest |
 
 ## finance — procure to pay
 
-| File | Size | Contents |
-| --- | --- | --- |
-| `purchase_orders.csv` | 4.0 KB | 36 purchase orders, one raised without approval |
-| `invoices.csv` | 2.5 KB | 36 invoices matched to purchase orders and payment runs |
-| `vendor_master.csv` | 822 B | 8 vendors, one pending, one with a recent bank-detail change |
-| `payment_runs.xlsx` | 1.9 KB | 3 payment runs with preparer and approver |
-| `expense_and_procurement_policy.md` | 826 B | Approval thresholds and out-of-band verification rule |
+No audit population is drawn from this system, which is why it is the one
+carrying the mess. A ledger in which every invoice joins cleanly to one purchase
+order and one vendor is not a ledger anybody has ever had to reconcile.
+
+| File | Contents |
+| --- | --- |
+| `purchase_orders.csv` | 218 orders over six months, four raised without an approver; identifiers are non-contiguous because cancelled orders were purged from the export rather than retained |
+| `invoices.csv` | 290 lines — framework orders drawn down across two or three invoices, six citing a purchase order that is not in the export, two credit notes carried as negative amounts, one line entered twice, four currencies |
+| `vendor_master.csv` | 34 vendors: one pending, one blocked, two inactive, one company present twice under two identifiers with the same IBAN, `status` spelled three ways, missing values written as blank, `N/A` and `-`, and a dead cost-centre column left by the 2023 migration |
+| `payment_runs.xlsx` | 7 monthly runs; counts and totals are computed from the invoice lines, so the summary ties to its own detail |
+| `expense_and_procurement_policy.md` | Approval thresholds and out-of-band verification rule |
 
 ## legal — customer contracts
 
@@ -127,12 +140,12 @@ Northwind was tightened by an amendment in March; the procedure and the ticketin
 configuration were never updated. Every internal system therefore agrees with
 every other internal system, and all of them disagree with the contract.
 
-| File | Size | Contents | Feeds |
-| --- | --- | --- | --- |
-| `msa_northwind_2024.md` | 1.3 KB | The original agreement: P1 first response within 8 hours | Superseded clause |
-| `amendment_02_northwind_2026.md` | 1.2 KB | **Effective 2026-04-01**: P1 within 4 hours, 24×7, 5% credit per breach | **SLA-01 criterion** |
-| `msa_contoso_2025.md` | 738 B | A second customer, never amended, still on 8 hours | SLA-NONFINDING-001 |
-| `contract_commitment_register.csv` | 704 B | The CLM export: one row per commitment per version, superseded terms retained | **SLA-01 reference** |
+| File | Contents | Feeds |
+| --- | --- | --- |
+| `msa_northwind_2024.md` | The full agreement — 15 sections, 2 schedules and an amendment history. Section 7.2: P1 first response within 8 hours | Superseded clause |
+| `amendment_02_northwind_2026.md` | **Effective 2026-04-01**: P1 within 4 hours, 24×7, 5% credit per breach, and a supplier undertaking at section 4.1 to align internal procedures *before* that date | **SLA-01 criterion** |
+| `msa_contoso_2025.md` | A second customer on the same paper, never amended, still on 8 hours | SLA-NONFINDING-001 |
+| `contract_commitment_register.csv` | The CLM export: one row per commitment per version, superseded terms retained | **SLA-01 reference** |
 
 ## public — the discoverable footprint
 
@@ -141,14 +154,14 @@ sufficient to infer a cloud-hosted B2B financial-workflow business with
 cross-border operations and security commitments, and it deliberately does not
 reveal any of the internal control failures.
 
-| File | Size | Contents |
-| --- | --- | --- |
-| `corporate_overview.md` | 997 B | Business model, headcount, geography |
-| `trust_center.md` | 853 B | Certifications and public security commitments |
-| `careers_engineering.md` | 783 B | Technology signals — Cloud Run, Cloud SQL, Pub/Sub, Terraform |
-| `press_legal_entity.md` | 740 B | **The intentional ambiguity**: SAS versus the pre-2021 Group Ltd |
-| `sub_processors.md` | 631 B | Four sub-processors and processing locations |
-| `status_page_incidents.json` | 857 B | 3 incidents, consistent with the internal incident tickets |
+| File | Contents |
+| --- | --- |
+| `corporate_overview.md` | Business model, headcount, geography |
+| `trust_center.md` | Certifications and public security commitments |
+| `careers_engineering.md` | Technology signals — Cloud Run, Cloud SQL, Pub/Sub, Terraform |
+| `press_legal_entity.md` | **The intentional ambiguity**: SAS versus the pre-2021 Group Ltd |
+| `sub_processors.md` | Four sub-processors and processing locations |
+| `status_page_incidents.json` | 3 incidents, consistent with the internal incident tickets |
 
 ---
 

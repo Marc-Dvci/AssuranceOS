@@ -1,6 +1,6 @@
 """The two supporting Google models, on the corpus, in the order an audit uses them.
 
-Gemini 3.6 Flash reasons and Gemma 4 can stand in for it inside a closed network.
+Gemini 3.7 Flash reasons and Gemma 4 can stand in for it inside a closed network.
 Neither of them is how an auditor *finds* the document that matters, and neither
 of them hears the interview. This demonstration runs the two models that do:
 

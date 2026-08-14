@@ -47,7 +47,7 @@ capabilities:
 # a live activation. `activation` here is an operational fact about one
 # deployment, never a statement about whether the integration is finished.
 google_platform:
-  gemini_3_6_structured_runtime:
+  gemini_3_7_structured_runtime:
     requirement: Gemini 3.5 or newer through the Gemini API or Vertex AI
     implementation: complete
     activation: credentials_pending

@@ -17,6 +17,7 @@ from collections.abc import Mapping, Sequence
 from datetime import date
 from typing import Any
 
+from ..text import counted
 from .definitions import (
     Contradiction,
     ContradictionKind,
@@ -103,7 +104,7 @@ class SkepticReviewer:
                 supported=False,
                 contradictions=contradictions,
                 rationale=(
-                    f"all {len(subjects)} exception(s) behind {finding.code} are "
+                    f"all {counted(len(subjects), 'exception')} behind {finding.code} are "
                     "explained by canonical records"
                 ),
             )
@@ -111,7 +112,7 @@ class SkepticReviewer:
             supported=True,
             contradictions=contradictions,
             rationale=(
-                f"{len(surviving)} of {len(subjects)} exception(s) remain unexplained"
+                f"{len(surviving)} of {counted(len(subjects), 'exception')} remain unexplained"
             ),
         )
 

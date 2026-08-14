@@ -21,6 +21,7 @@ from .db.models import (
 from .db.repositories import new_id
 from .db.session import Database
 from .vault import EvidenceVault
+from .text import counted
 
 
 class OnboardingError(ValueError):
@@ -435,7 +436,7 @@ class OnboardingService:
                 or 0
             )
             if pending:
-                raise OnboardingError(f"profile has {pending} fact(s) awaiting review")
+                raise OnboardingError(f"profile has {counted(pending, 'fact')} awaiting review")
             profile = session.get(OrganizationProfile, workflow.profile_id)
             accepted = int(
                 session.scalar(

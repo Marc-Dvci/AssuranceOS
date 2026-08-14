@@ -4,7 +4,7 @@
     "README.md": "8b85b8ed8601b58394f9ff3320a71a01532aff1bd2e295092013065ca9b03d99",
     "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "adversarial_cases/prompt_injection.yaml": "f66d16ad300a9372a3c827a37fa10adba8845f3cd1659ce0bd148de4db2dc8ad",
-    "agent.py": "9a938d8e2a4082ca9193c02b7492e8f1de7a5130c62652ba91e4d0bd62227c95",
+    "agent.py": "4b9624d849c0f1143d3975b7dcabdf5167b9cbbfff6ada21377ca5ae984bfc6b",
     "company_context.schema.json": "91802397f09791cf72bd454d30ad31523a8f3f9e731d547d4fb9e888a72c66c1",
     "cross_industry_cases/trucking.yaml": "e2cb733f8ae036780fa2f22cd344c54448a12f398cbff2a3f7612e7e3b9fbad3",
     "evaluations.yaml": "bd73bf5164b2e0422e7ab798ad1a06afdbff38ff968d8e0787e8c90ca0a3d7e9",
@@ -13,14 +13,14 @@
     "input.schema.json": "e30a99b4e8eef10bff61836a0a2cce842c410e21a69a63e74dff4308bf96e690",
     "known_limitations.md": "490fa98fcbeefb4ff519874c04118f1e1d949375adff316543f97a0a773d2af4",
     "manifest.yaml": "2deb718bbee5ad109b7eefa05f52eab5dc5a6f67b56c829a953cedb7a5c6ecc9",
-    "model_profiles.yaml": "00e7eb01aa2a2e0d4b2e8ef3080c3aae3adf9b3a1ceb6e36de2ef5329524e8dc",
+    "model_profiles.yaml": "04074ace2e36534e58eb77e882f4fb5f250f42c24a0a479ff51b01fe9eee1bd3",
     "output.schema.json": "142894d2009a299655342e69bcb6620743372858fab7bcd41be5ba362fed9c26",
     "policy.yaml": "26b2c3f64ce20447100dbc7eeb84e69b525f7569dba406cf6403fba6e56a8bf5",
     "system_prompt.md": "f60b5289acf5d20c989bb7a2b64451428f371ac4ff65323201ef118d756e9f3f",
     "tools.yaml": "a7dd40c2b76de244e3bd80d2787d396eea1e88fb67f6fbfed301501569a74b9b"
   },
-  "package_sha256": "3f2fa395ff6c04cd99df9823e632c27079d23fa0119cf082474f1326d159e748",
-  "released_at": "2026-08-09T13:08:19.094363+00:00",
+  "package_sha256": "8e7cb9c0a16794a2413fc9eb819706d4fd315313d62ca7bbaf9a9ff3f08035ee",
+  "released_at": "2026-08-14T19:24:26.365831+00:00",
   "schema": "assurance.agent_release.v1",
   "version": "0.8.0"
 }

@@ -1,5 +1,32 @@
-finding_ref,year,title,severity,status,closed_on,remediation_ticket
-PY-2025-003,2025,Emergency change retrospective approval was undocumented,medium,Closed,2025-11-28,AUD-118
-PY-2025-007,2025,Access review evidence was not retained for the full period,low,Closed,2026-01-20,AUD-124
-PY-2025-011,2025,Contractor identities were absent from the offboarding feed,high,Reopened,,AUD-131
-PY-2024-002,2024,Production deployment approvals were not independently evidenced,high,Closed,2025-02-14,AUD-091
+finding_ref,year,engagement,title,severity,status,raised_on,due_on,closed_on,remediation_ticket,owner
+PY-2025-001,2025,AST-SCM-2025-H1,Change tickets were closed before the deployment they authorised,medium,Closed,2025-04-18,2025-07-31,2025-07-24,AUD-112,cto@asteria.invalid
+PY-2025-002,2025,AST-SCM-2025-H1,Two repositories deploying to production had branch protection disabled,high,Closed,2025-04-18,2025-06-30,2025-06-11,AUD-113,cto@asteria.invalid
+PY-2025-003,2025,AST-SCM-2025-H1,Emergency change retrospective approval was undocumented,medium,Closed,2025-04-18,2025-09-30,2025-11-28,AUD-118,cto@asteria.invalid
+PY-2025-004,2025,AST-SCM-2025-H1,Deployment events could not be traced to a merged commit for one service,low,Closed,2025-04-18,2025-09-30,2025-09-05,AUD-119,cto@asteria.invalid
+PY-2025-005,2025,AST-IAM-2025-H1,Joiner accounts were created ahead of an approved joiner record,medium,Closed,2025-06-06,2025-09-30,2025-09-19,AUD-121,ciso@asteria.invalid
+PY-2025-006,2025,AST-IAM-2025-H1,Three service accounts had no named human owner,medium,Closed,2025-06-06,2025-10-31,2025-10-03,AUD-122,ciso@asteria.invalid
+PY-2025-007,2025,AST-IAM-2025-H1,Access review evidence was not retained for the full period,low,Closed,2025-06-06,2025-12-31,2026-01-20,AUD-124,ciso@asteria.invalid
+PY-2025-008,2025,AST-IAM-2025-H1,MFA was not enforced for two administrative corporate accounts,high,Closed,2025-06-06,2025-08-31,2025-08-22,AUD-125,ciso@asteria.invalid
+PY-2025-009,2025,AST-PAM-2025-H2,Privileged role review for Q3 was completed 41 days late,medium,Closed,2025-10-14,2026-01-31,2026-01-16,AUD-127,ciso@asteria.invalid
+PY-2025-010,2025,AST-PAM-2025-H2,Break-glass access was used twice without a same-day review,high,Closed,2025-10-14,2026-02-28,2026-02-11,AUD-129,ciso@asteria.invalid
+PY-2025-011,2025,AST-IAM-2025-H1,Contractor identities were absent from the offboarding feed,high,Reopened,2025-06-06,2025-11-30,,AUD-131,ciso@asteria.invalid
+PY-2025-012,2025,AST-P2P-2025-H2,A vendor bank detail change was not verified out of band,high,Closed,2025-11-03,2026-02-28,2026-02-24,AUD-133,cfo@asteria.invalid
+PY-2025-013,2025,AST-P2P-2025-H2,Four purchase orders were approved after the invoice date,medium,Closed,2025-11-03,2026-03-31,2026-03-27,AUD-134,cfo@asteria.invalid
+PY-2025-014,2025,AST-P2P-2025-H2,The vendor master contains duplicate records for one supplier,low,Accepted,2025-11-03,,,AUD-135,cfo@asteria.invalid
+PY-2025-015,2025,AST-DPA-2025-H2,One sub-processor addition was notified 11 days in advance,medium,Closed,2025-11-24,2026-03-31,2026-03-05,AUD-137,dpo@asteria.invalid
+PY-2025-016,2025,AST-DPA-2025-H2,Transfer basis documentation was not held for a support vendor,medium,Closed,2025-11-24,2026-04-30,2026-04-28,AUD-138,dpo@asteria.invalid
+PY-2025-017,2025,AST-BCP-2025-H2,The annual restore test was performed on a non-production dataset,medium,Closed,2025-12-08,2026-03-31,2026-02-27,AUD-140,cto@asteria.invalid
+PY-2025-018,2025,AST-BCP-2025-H2,No simulated P1 exercise was run in the second half of the year,low,closed,2025-12-08,2026-06-30,2026-02-27,AUD-141,cto@asteria.invalid
+PY-2024-001,2024,AST-SCM-2024-H1,Change advisory board minutes were not retained,low,Closed,2024-05-20,2024-09-30,2024-09-12,AUD-090,cto@asteria.invalid
+PY-2024-002,2024,AST-SCM-2024-H1,Production deployment approvals were not independently evidenced,high,Closed,2024-05-20,2024-11-30,2025-02-14,AUD-091,cto@asteria.invalid
+PY-2024-003,2024,AST-IAM-2024-H2,Six leaver accounts were disabled between two and nine days late,high,Closed,2024-09-16,2025-01-31,2025-01-29,AUD-096,ciso@asteria.invalid
+PY-2024-004,2024,AST-IAM-2024-H2,The offboarding checklist did not cover cloud IAM bindings,medium,Closed,2024-09-16,2025-01-31,2024-12-19,AUD-097,ciso@asteria.invalid
+PY-2024-005,2024,AST-IAM-2024-H2,Group membership changes were not reviewed by the group owner,medium,Closed,2024-09-16,2025-03-31,2025-03-14,AUD-098,ciso@asteria.invalid
+PY-2024-006,2024,AST-P2P-2024-H2,Expense claims above EUR 500 lacked a receipt in 9 of 60 sampled cases,medium,Closed,2024-10-28,2025-02-28,2025-02-21,AUD-101,cfo@asteria.invalid
+PY-2024-007,2024,AST-P2P-2024-H2,Segregation of duties conflict between requester and approver,high,Closed,2024-10-28,2025-03-31,2025-03-20,AUD-102,cfo@asteria.invalid
+PY-2024-008,2024,AST-VEN-2024-H2,Annual reassessment was not performed for two critical suppliers,medium,Closed,2024-11-18,2025-04-30,2025-04-11,AUD-104,cfo@asteria.invalid
+PY-2024-009,2024,AST-VEN-2024-H2,No tested exit plan existed for the primary cloud provider,high,Accepted,2024-11-18,,,AUD-105,cto@asteria.invalid
+PY-2024-010,2024,AST-LOG-2024-H1,Administrative logs were retained for 90 days against a 400-day policy,high,Closed,2024-03-11,2024-08-31,2024-08-06,AUD-084,ciso@asteria.invalid
+PY-2024-011,2024,AST-LOG-2024-H1,Log storage permitted deletion by the platform administrators,high,Closed,2024-03-11,2024-09-30,2024-10-22,AUD-085,ciso@asteria.invalid
+PY-2023-004,2023,AST-SCM-2023-H2,No formal change management policy existed,high,Closed,2023-10-02,2024-03-31,2024-01-15,AUD-071,cto@asteria.invalid
+PY-2023-005,2023,AST-IAM-2023-H2,Leaver access removal had no defined service level,high,Closed,2023-10-02,2024-03-31,2024-02-28,AUD-072,ciso@asteria.invalid

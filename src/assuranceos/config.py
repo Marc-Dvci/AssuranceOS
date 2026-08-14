@@ -133,7 +133,7 @@ class Settings:
             audit_pack_root=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_ROOT", "./audit-packs")),
             audit_pack_public_key=Path(os.getenv("ASSURANCEOS_AUDIT_PACK_PUBLIC_KEY", "./security/release-keys/audit-pack-release-public.pem")),
             model_mode=os.getenv("ASSURANCEOS_MODEL_MODE", "mock"),
-            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.6-flash"),
+            gemini_model=os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.7-flash"),
             local_privacy_mode=_bool_env("ASSURANCEOS_LOCAL_PRIVACY_MODE", False),
             local_model_url=os.getenv(
                 "ASSURANCEOS_LOCAL_MODEL_URL", "http://127.0.0.1:5000/v1"

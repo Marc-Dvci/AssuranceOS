@@ -81,3 +81,36 @@ def test_the_claim_graph_answers_where_a_record_was_used(result):
 
 def test_the_lifecycle_is_reconstructable_from_audit_events(result):
     assert result["audit_event_types"] == ["report.prepared", "report.issued"]
+
+
+def test_seeded_evidence_digests_are_real_and_reproducible(database, result):
+    """Content addressing has to survive a restart, or it is not addressing.
+
+    These digests were built from ``abs(hash(evidence_id))``. Python randomises
+    string hashing per process, so the same evidence record was addressed
+    differently on every run, and formatting a 64-bit number into 64 hex
+    characters printed 48 leading zeros onto the evidence screen. The assertion
+    is against an independently computed SHA-256 so that reverting to any
+    non-cryptographic hash fails here rather than in front of a reviewer.
+    """
+    from hashlib import sha256
+
+    from assuranceos.db.models import EvidenceRecord
+
+    with database.transaction() as session:
+        records = session.query(EvidenceRecord).all()
+        digests = {
+            record.evidence_id: (record.tenant_id, record.source_locator, record.content_sha256)
+            for record in records
+        }
+
+    assert digests, "the reporting demo seeded no evidence"
+    for evidence_id, (tenant_id, locator, digest) in digests.items():
+        expected = sha256(
+            f"assuranceos:evidence:{tenant_id}:{evidence_id}:{locator}".encode()
+        ).hexdigest()
+        assert digest == expected, f"{evidence_id} is not addressed by its content"
+        assert len(digest) == 64
+        assert not digest.startswith("0" * 12), f"{evidence_id} has a truncated-looking digest"
+
+    assert len({d for _, _, d in digests.values()}) == len(digests)

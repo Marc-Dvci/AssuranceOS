@@ -28,6 +28,7 @@ from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from ..text import counted
 
 #: Bands the residual score maps onto, strongest first.
 DEFAULT_RATING_BANDS: list[tuple[float, str]] = [
@@ -357,7 +358,7 @@ def score(
     ]
     if untested:
         rationale_parts.append(
-            f"{len(untested)} control(s) are asserted but untested and contribute nothing: "
+            f"{counted(len(untested), 'control')} are asserted but untested and contribute nothing: "
             + ", ".join(sorted(untested))
         )
     if reliance_source:

@@ -1,14 +1,30 @@
 # AssuranceOS — a governed, AI-native internal-audit platform
 
-An internal audit is a chain of custody, not a chat. AssuranceOS runs that chain
-end to end — plan, collect, test, conclude, remediate, retest — and makes every
-step attributable, so an autonomous agent can do the work without anyone having
-to take its word for the result.
-
-It is the audit function for a company that does not have one. Two hundred
-people, real customers, real contractual obligations, and nobody whose job is to
-check that the controls they promised actually work — because a team to do that
+**An internal audit function is four people and something near half a million
+dollars a year, and it still cannot cover everything.** The plan names the third
+of the universe it will not reach, and a human signs for the residual risk. So a
+two-hundred-person company with real customers and real contractual obligations
+usually has no audit function at all — a team to check the controls it promised
 costs more than the risk feels like it is worth.
+
+One governed agent task here — read the signed control test over a 44-change
+population, conclude, get refused a tool it was never granted, repair a citation
+the output gate rejected — was measured at **4,032 input and 391 output tokens**.
+At Gemini 3.7 Flash's published rate that is **$0.009**. Nine tenths of a cent.
+
+At that price the constraint on coverage stops being budget and becomes trust:
+if a machine did the audit, why would anyone act on what it concluded?
+
+That is the product. An internal audit is a chain of custody, not a chat.
+AssuranceOS runs that chain end to end — plan, collect, test, conclude,
+remediate, retest — and makes every step attributable, so an autonomous agent
+can do the work without anyone having to take its word for the result.
+
+Those figures are not marketing arithmetic. The platform meters usage on every
+model call and renders it on the cockpit's **What this cost to run** card,
+priced at published rates — and says plainly when a run was scripted rather than
+measured, because a cost computed from a scripted client's word counts looks
+exactly like one that was measured.
 
 ## Run it in three commands
 
@@ -40,7 +56,7 @@ refuses to run rather than pretend when the platform has none.
 
 | Hackathon requirement | What runs | Where it lives |
 | --- | --- | --- |
-| Gemini 3.5 or newer, through the Gemini API or Vertex AI | **Gemini 3.6 Flash** via the Google GenAI SDK. Structured JSON is validated against per-task schemas before it can influence workflow state | [`governance/models_client.py`](src/assuranceos/governance/models_client.py) · [`agents/*/model_profiles.yaml`](agents) |
+| Gemini 3.5 or newer, through the Gemini API or Vertex AI | **Gemini 3.7 Flash** via the Google GenAI SDK. Structured JSON is validated against per-task schemas before it can influence workflow state | [`governance/models_client.py`](src/assuranceos/governance/models_client.py) · [`agents/*/model_profiles.yaml`](agents) |
 | At least one Google agent framework | **Google ADK** and **Vertex AI Agent Engine**. Nineteen signed agent roles; deployment is gated on all 76 release cases passing | [`adk.py`](src/assuranceos/adk.py) · [`managed_fleet.py`](src/assuranceos/managed_fleet.py) · [`scripts/deploy_adk_agent.py`](scripts/deploy_adk_agent.py) |
 | At least one Google Cloud infrastructure service | **Cloud Run** service and jobs, **Cloud SQL**, **Cloud Storage**, **Pub/Sub**, **Secret Manager**, **Cloud Scheduler**, **Cloud Trace** | [`infrastructure/terraform/main.tf`](infrastructure/terraform/main.tf) |
 | Vertex AI Memory Bank | tenant-isolated, generated only from sessions approved for memory, bounded TTL, never authoritative evidence | [`managed_fleet.py`](src/assuranceos/managed_fleet.py) |
@@ -65,7 +81,7 @@ flowchart LR
   User["Auditor / evaluator<br/>browser"] --> API["Cloud Run<br/>FastAPI · cockpit · Judge Mode"]
   API --> Gateway["Agent Gateway<br/>identity · policy · Model Armor · budgets"]
   Gateway --> Fleet["19 ADK agents<br/>Agent Engine + Memory Bank"]
-  Fleet --> Models["Gemini 3.6 Flash<br/>Gemma 4 · EmbeddingGemma · Chirp 3"]
+  Fleet --> Models["Gemini 3.7 Flash<br/>Gemma 4 · EmbeddingGemma · Chirp 3"]
   Models -.->|"proposes only"| Gateway
   Gateway --> Tests["Deterministic control tests<br/>Cloud Run Jobs, network denied"]
   Gateway --> Sources["GitHub · Jira · Confluence · HR<br/>read-only connectors"]
@@ -86,7 +102,7 @@ is under [Architecture](#architecture) below.
 ```bash
 make loop-demo          # deterministic and offline
 python scripts/run_assurance_loop_demo.py --model-mode local --model <your-model>
-python scripts/run_assurance_loop_demo.py --model-mode gemini   # Gemini 3.6 Flash
+python scripts/run_assurance_loop_demo.py --model-mode gemini   # Gemini 3.7 Flash
 ```
 
 A deterministic control test runs over a seeded population. Its exceptions reach
@@ -144,7 +160,7 @@ The interesting part is not that the loop completes. It is what it refuses.
 
 ### Running against a reasoning model
 
-Gemma 4 and Gemini 3.6 Flash deliberate before answering, and that changes what a
+Gemma 4 and Gemini 3.7 Flash deliberate before answering, and that changes what a
 governed runtime has to handle. Measured on `gemma-4-12b-it-IQ4_XS`: with
 deliberation enabled, the governed audit prompt produced 16,602 characters of
 reasoning and **no answer at all** inside a 4096-token ceiling. With
@@ -355,7 +371,7 @@ flowchart LR
   subgraph Agents["Governed agents"]
     Runtime["In-process governed runtime"]
     ADK["Google ADK / Agent Engine"]
-    Model["Gemini 3.6 Flash / local Gemma 4"]
+    Model["Gemini 3.7 Flash / local Gemma 4"]
   end
 
   subgraph Work["Bounded work"]
@@ -662,4 +678,28 @@ delivery only after the canonical state transaction commits.
 - `examples/workflows/`: executable workflow definitions;
 - `demo/asteria/`: synthetic source systems and ground truth;
 - `infrastructure/terraform/`: compact Google Cloud-first foundation;
-- `apps/web/`: the responsive lifecycle cockpit and evaluator proof surface.
+- `apps/web/`: the responsive lifecycle cockpit and evaluator proof surface;
+- `docs/build-history/`: what each component was accepted against while it was
+  built — history, not documentation.
+
+### The frontend is one file, and it asks the network for nothing
+
+`apps/web/judge.html` is the whole product surface — the cockpit, the finding
+review screen and Judge Mode — in Material design, light and dark. Its styles,
+its script and its typeface are inline: the Roboto latin subset is embedded as a
+data URI rather than fetched, so the interface renders identically offline,
+behind a corporate proxy, and in the recorded walkthrough.
+
+That is what lets the response policy name no third-party origin at all:
+
+```
+default-src 'self'; connect-src 'self'; form-action 'self';
+frame-ancestors 'none'; base-uri 'none'; object-src 'none'
+```
+
+`script-src` and `style-src` still permit inline, so this policy is not what
+stops cross-site scripting — output escaping in the page is. What it stops is
+exfiltration to another origin, framing, base-tag hijacking and plugin content.
+`tests/test_product_api.py` asserts each directive separately, because a policy
+that has quietly lost `frame-ancestors` still looks like a policy to any check
+that only tests whether the header is present.

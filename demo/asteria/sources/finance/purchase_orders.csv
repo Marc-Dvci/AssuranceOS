@@ -1,37 +1,219 @@
 po_id,vendor_id,vendor_name,amount,currency,raised_on,approved_on,approved_by,status
-PO-7100,V-1001,Northbridge Technical Services,17090.58,EUR,2026-05-08,2026-05-09,finance.manager@asteria.invalid,open
-PO-7101,V-1002,Helvetia Cloud Partners,28701.58,EUR,2026-06-03,2026-06-05,finance.manager@asteria.invalid,received
-PO-7102,V-1003,Lumen Office Supplies,26876.23,EUR,2026-05-14,2026-05-17,finance.manager@asteria.invalid,received
-PO-7103,V-1004,Castellan Legal LLP,5165.66,EUR,2026-06-09,2026-06-13,finance.manager@asteria.invalid,received
-PO-7104,V-1005,Meridian Travel,3189.42,EUR,2026-05-29,2026-06-01,finance.manager@asteria.invalid,received
-PO-7105,V-1006,Aurora Data Labs,29425.36,EUR,2026-05-31,2026-06-04,finance.manager@asteria.invalid,received
-PO-7106,V-1007,Pinehurst Facilities,33478.29,EUR,2026-06-20,2026-06-23,finance.manager@asteria.invalid,received
-PO-7107,V-1008,Solstice Media,6628.55,EUR,2026-05-04,2026-05-08,finance.manager@asteria.invalid,open
-PO-7108,V-1001,Northbridge Technical Services,30241.21,EUR,2026-06-21,2026-06-23,finance.manager@asteria.invalid,received
-PO-7109,V-1002,Helvetia Cloud Partners,38917.62,EUR,2026-05-26,2026-05-28,finance.manager@asteria.invalid,received
-PO-7110,V-1003,Lumen Office Supplies,31743.28,EUR,2026-05-04,2026-05-07,finance.manager@asteria.invalid,received
-PO-7111,V-1004,Castellan Legal LLP,40123.27,EUR,2026-06-04,2026-06-05,finance.manager@asteria.invalid,received
-PO-7112,V-1005,Meridian Travel,28253.78,EUR,2026-05-02,2026-05-04,finance.manager@asteria.invalid,received
-PO-7113,V-1006,Aurora Data Labs,26623.89,EUR,2026-06-02,2026-06-07,finance.manager@asteria.invalid,received
-PO-7114,V-1007,Pinehurst Facilities,3668.42,EUR,2026-05-12,2026-05-13,finance.manager@asteria.invalid,open
-PO-7115,V-1008,Solstice Media,46707.21,EUR,2026-05-27,2026-05-28,finance.manager@asteria.invalid,received
-PO-7116,V-1001,Northbridge Technical Services,32308.83,EUR,2026-06-08,2026-06-12,finance.manager@asteria.invalid,received
-PO-7117,V-1002,Helvetia Cloud Partners,15163.63,EUR,2026-06-25,2026-06-28,finance.manager@asteria.invalid,received
-PO-7118,V-1003,Lumen Office Supplies,17336.20,EUR,2026-06-17,2026-06-21,finance.manager@asteria.invalid,received
-PO-7119,V-1004,Castellan Legal LLP,3890.46,EUR,2026-05-24,2026-05-25,finance.manager@asteria.invalid,received
-PO-7120,V-1005,Meridian Travel,29358.30,EUR,2026-06-05,2026-06-10,finance.manager@asteria.invalid,received
-PO-7121,V-1006,Aurora Data Labs,1805.16,EUR,2026-05-30,2026-06-01,finance.manager@asteria.invalid,open
-PO-7122,V-1007,Pinehurst Facilities,44379.84,EUR,2026-05-07,2026-05-08,finance.manager@asteria.invalid,received
-PO-7123,V-1008,Solstice Media,41396.64,EUR,2026-05-14,2026-05-15,finance.manager@asteria.invalid,received
-PO-7124,V-1001,Northbridge Technical Services,41663.60,EUR,2026-06-15,2026-06-18,finance.manager@asteria.invalid,received
-PO-7125,V-1002,Helvetia Cloud Partners,5828.71,EUR,2026-05-28,2026-05-29,finance.manager@asteria.invalid,received
-PO-7126,V-1003,Lumen Office Supplies,1794.20,EUR,2026-05-15,2026-05-17,finance.manager@asteria.invalid,received
-PO-7127,V-1004,Castellan Legal LLP,33747.60,EUR,2026-05-20,2026-05-24,finance.manager@asteria.invalid,received
-PO-7128,V-1005,Meridian Travel,23264.62,EUR,2026-06-10,2026-06-12,finance.manager@asteria.invalid,open
-PO-7129,V-1006,Aurora Data Labs,2991.75,EUR,2026-05-28,,,received
-PO-7130,V-1007,Pinehurst Facilities,41959.23,EUR,2026-06-27,2026-07-02,finance.manager@asteria.invalid,received
-PO-7131,V-1008,Solstice Media,12017.43,EUR,2026-05-31,2026-06-05,finance.manager@asteria.invalid,received
-PO-7132,V-1001,Northbridge Technical Services,36365.83,EUR,2026-06-10,2026-06-12,finance.manager@asteria.invalid,received
-PO-7133,V-1002,Helvetia Cloud Partners,47078.12,EUR,2026-06-05,2026-06-08,finance.manager@asteria.invalid,received
-PO-7134,V-1003,Lumen Office Supplies,14044.58,EUR,2026-05-01,2026-05-03,finance.manager@asteria.invalid,received
-PO-7135,V-1004,Castellan Legal LLP,8323.28,EUR,2026-05-15,2026-05-20,finance.manager@asteria.invalid,open
+PO-7100,V-1021,Northbridge Technical Svcs.,8622.42,GBP,2026-03-18,2026-03-26,procurement.lead@asteria.invalid,received
+PO-7101,V-1028,Corvid Design Studio,34532.02,EUR,2026-04-25,2026-04-30,Finance.Manager@asteria.invalid,received
+PO-7102,V-1007,Pinehurst Facilities,2586.78,CHF,2026-02-14,2026-02-17,Finance.Manager@asteria.invalid,received
+PO-7103,V-1032,Peregrine Background Checks,44914.26,EUR,2026-05-07,2026-05-13,cfo@asteria.invalid,received
+PO-7104,V-1009,Vantage Recruitment Ltd,21206.25,EUR,2026-06-13,2026-06-17,cfo@asteria.invalid,received
+PO-7106,V-1012,Brightpath Learning,57158.61,EUR,2026-03-14,2026-03-21,Finance.Manager@asteria.invalid,received
+PO-7107,V-1029,Thornbury Waste Management,34700.59,EUR,2026-06-28,2026-07-02,procurement.lead@asteria.invalid,received
+PO-7108,V-1034,Ostara Renewable Energy,2310.87,EUR,2026-06-01,2026-06-10,finance.manager@asteria.invalid,received
+PO-7109,V-1006,Aurora Data Labs,5726.91,CHF,2026-06-01,2026-06-06,Finance.Manager@asteria.invalid,received
+PO-7110,V-1026,Aurelia Translations,48622.52,EUR,2026-05-11,2026-05-19,procurement.lead@asteria.invalid,received
+PO-7111,V-1015,Halcyon Insurance Brokers,39178.89,EUR,2026-06-17,2026-06-24,procurement.lead@asteria.invalid,open
+PO-7112,V-1004,Castellan Legal LLP,22505.38,EUR,2026-06-05,2026-06-13,finance.manager@asteria.invalid,received
+PO-7113,V-1018,Ridgeway Hardware Supply,8049.52,EUR,2026-02-24,2026-02-25,procurement.lead@asteria.invalid,part-received
+PO-7114,V-1019,Aubert & Fils SARL,7472.63,GBP,2026-07-24,2026-07-29,finance.manager@asteria.invalid,received
+PO-7115,V-1032,Peregrine Background Checks,52977.41,EUR,2026-04-16,2026-04-19,finance.manager@asteria.invalid,received
+PO-7116,V-1003,Lumen Office Supplies,58994.21,EUR,2026-04-11,2026-04-16,finance.manager@asteria.invalid,received
+PO-7117,V-1020,Quillon Software Licensing,42534.32,EUR,2026-05-03,2026-05-10,Finance.Manager@asteria.invalid,received
+PO-7118,V-1021,Northbridge Technical Svcs.,13616.66,GBP,2026-07-29,2026-08-04,finance.manager@asteria.invalid,received
+PO-7119,V-1014,Calderon Tax Advisory,33642.40,EUR,2026-03-20,2026-03-22,finance.manager@asteria.invalid,received
+PO-7120,V-1028,Corvid Design Studio,54507.95,EUR,2026-05-04,2026-05-10,cfo@asteria.invalid,received
+PO-7121,V-1033,Vellum Records Storage,54043.23,EUR,2026-05-14,2026-05-15,cfo@asteria.invalid,received
+PO-7123,V-1028,Corvid Design Studio,20104.91,EUR,2026-07-25,2026-07-26,cfo@asteria.invalid,open
+PO-7124,V-1018,Ridgeway Hardware Supply,25135.95,EUR,2026-03-16,2026-03-18,finance.manager@asteria.invalid,received
+PO-7125,V-1005,Meridian Travel,52979.14,EUR,2026-03-11,2026-03-20,Finance.Manager@asteria.invalid,received
+PO-7126,V-1014,Calderon Tax Advisory,60114.10,GBP,2026-07-19,2026-07-24,Finance.Manager@asteria.invalid,received
+PO-7127,V-1019,Aubert & Fils SARL,35943.60,EUR,2026-05-07,2026-05-15,finance.manager@asteria.invalid,part-received
+PO-7128,V-1015,Halcyon Insurance Brokers,42014.30,EUR,2026-06-22,2026-06-24,finance.manager@asteria.invalid,received
+PO-7129,V-1032,Peregrine Background Checks,59031.85,GBP,2026-06-11,2026-06-16,Finance.Manager@asteria.invalid,received
+PO-7130,V-1036,Halden Interpreting Services,5703.72,EUR,2026-03-31,2026-04-03,Finance.Manager@asteria.invalid,received
+PO-7131,V-1030,Ianthe Occupational Health,49335.43,EUR,2026-06-22,,,received
+PO-7132,V-1027,Braemar Fleet Leasing,13176.03,EUR,2026-07-07,2026-07-10,finance.manager@asteria.invalid,received
+PO-7133,V-1008,Solstice Media,22394.84,GBP,2026-06-18,2026-06-22,cfo@asteria.invalid,received
+PO-7134,V-1012,Brightpath Learning,59238.62,CHF,2026-07-01,2026-07-07,cfo@asteria.invalid,open
+PO-7135,V-1001,Northbridge Technical Services,44447.99,EUR,2026-05-16,2026-05-17,Finance.Manager@asteria.invalid,received
+PO-7136,V-1018,Ridgeway Hardware Supply,52906.17,CHF,2026-05-14,2026-05-21,finance.manager@asteria.invalid,received
+PO-7137,V-1008,Solstice Media,60682.82,EUR,2026-03-30,2026-04-07,finance.manager@asteria.invalid,received
+PO-7138,V-1018,Ridgeway Hardware Supply,29004.23,EUR,2026-07-22,2026-07-29,procurement.lead@asteria.invalid,received
+PO-7140,V-1034,Ostara Renewable Energy,27851.40,EUR,2026-04-19,2026-04-23,procurement.lead@asteria.invalid,received
+PO-7141,V-1035,Winterbourne Consulting ,38254.32,GBP,2026-06-24,2026-07-03,procurement.lead@asteria.invalid,part-received
+PO-7142,V-1001,Northbridge Technical Services,50245.69,CHF,2026-05-25,2026-05-31,Finance.Manager@asteria.invalid,received
+PO-7143,V-1003,Lumen Office Supplies,40453.43,EUR,2026-02-15,2026-02-23,cfo@asteria.invalid,received
+PO-7144,V-1001,Northbridge Technical Services,26267.32,EUR,2026-06-22,2026-07-01,Finance.Manager@asteria.invalid,received
+PO-7145,V-1035,Winterbourne Consulting ,50769.86,EUR,2026-04-22,2026-04-27,finance.manager@asteria.invalid,received
+PO-7146,V-1020,Quillon Software Licensing,23903.02,EUR,2026-03-08,2026-03-16,finance.manager@asteria.invalid,open
+PO-7147,V-1016,Tessera Analytics GmbH,47477.60,EUR,2026-02-22,2026-03-01,Finance.Manager@asteria.invalid,received
+PO-7148,V-1028,Corvid Design Studio,40006.36,EUR,2026-06-16,2026-06-22,cfo@asteria.invalid,received
+PO-7149,V-1002,Helvetia Cloud Partners,17695.54,EUR,2026-02-17,2026-02-21,Finance.Manager@asteria.invalid,received
+PO-7150,V-1015,Halcyon Insurance Brokers,29608.37,CHF,2026-02-18,2026-02-22,procurement.lead@asteria.invalid,received
+PO-7151,V-1034,Ostara Renewable Energy,34098.02,EUR,2026-03-05,2026-03-07,procurement.lead@asteria.invalid,received
+PO-7152,V-1010,Kestrel Security Testing,60597.15,EUR,2026-04-14,2026-04-23,procurement.lead@asteria.invalid,received
+PO-7153,V-1018,Ridgeway Hardware Supply,52080.55,GBP,2026-05-03,2026-05-12,Finance.Manager@asteria.invalid,received
+PO-7154,V-1010,Kestrel Security Testing,46515.93,EUR,2026-06-22,2026-06-24,cfo@asteria.invalid,part-received
+PO-7155,V-1017,Marlowe Catering,37322.04,CHF,2026-06-18,2026-06-24,cfo@asteria.invalid,received
+PO-7157,V-1007,Pinehurst Facilities,39968.44,CHF,2026-04-09,2026-04-16,Finance.Manager@asteria.invalid,received
+PO-7158,V-1004,Castellan Legal LLP,8031.61,EUR,2026-07-21,2026-07-22,procurement.lead@asteria.invalid,open
+PO-7159,V-1016,Tessera Analytics GmbH,51306.95,EUR,2026-02-02,2026-02-08,cfo@asteria.invalid,received
+PO-7160,V-1002,Helvetia Cloud Partners,26219.07,EUR,2026-04-13,2026-04-19,cfo@asteria.invalid,received
+PO-7161,V-1005,Meridian Travel,43237.88,EUR,2026-04-07,2026-04-10,cfo@asteria.invalid,received
+PO-7162,V-1016,Tessera Analytics GmbH,58151.92,GBP,2026-02-02,2026-02-08,Finance.Manager@asteria.invalid,received
+PO-7163,V-1009,Vantage Recruitment Ltd,19223.79,CHF,2026-04-20,2026-04-23,Finance.Manager@asteria.invalid,received
+PO-7164,V-1023,Sable Freight Forwarding,32247.61,EUR,2026-04-18,2026-04-25,procurement.lead@asteria.invalid,received
+PO-7165,V-1032,Peregrine Background Checks,29562.89,EUR,2026-02-12,2026-02-17,cfo@asteria.invalid,received
+PO-7166,V-1006,Aurora Data Labs,44465.42,EUR,2026-06-07,2026-06-16,finance.manager@asteria.invalid,received
+PO-7167,V-1030,Ianthe Occupational Health,38963.78,EUR,2026-02-19,2026-02-21,procurement.lead@asteria.invalid,received
+PO-7168,V-1004,Castellan Legal LLP,14014.84,EUR,2026-03-31,2026-04-01,cfo@asteria.invalid,part-received
+PO-7169,V-1029,Thornbury Waste Management,8109.76,EUR,2026-06-04,2026-06-06,procurement.lead@asteria.invalid,open
+PO-7170,V-1020,Quillon Software Licensing,35783.17,EUR,2026-04-07,2026-04-16,finance.manager@asteria.invalid,received
+PO-7171,V-1015,Halcyon Insurance Brokers,39156.17,EUR,2026-07-23,2026-07-24,Finance.Manager@asteria.invalid,received
+PO-7172,V-1004,Castellan Legal LLP,41923.48,EUR,2026-06-23,2026-07-01,finance.manager@asteria.invalid,received
+PO-7174,V-1029,Thornbury Waste Management,15039.48,EUR,2026-04-20,2026-04-26,Finance.Manager@asteria.invalid,received
+PO-7175,V-1019,Aubert & Fils SARL,38998.52,EUR,2026-07-19,,,received
+PO-7176,V-1034,Ostara Renewable Energy,51843.17,EUR,2026-07-24,2026-07-30,procurement.lead@asteria.invalid,received
+PO-7177,V-1017,Marlowe Catering,20075.53,GBP,2026-07-29,2026-07-31,Finance.Manager@asteria.invalid,received
+PO-7178,V-1033,Vellum Records Storage,26677.45,EUR,2026-03-02,2026-03-05,finance.manager@asteria.invalid,received
+PO-7179,V-1024,Empyrean Cloud Storage,14857.58,EUR,2026-05-16,2026-05-21,procurement.lead@asteria.invalid,received
+PO-7180,V-1029,Thornbury Waste Management,8476.87,EUR,2026-05-28,2026-06-04,cfo@asteria.invalid,received
+PO-7181,V-1027,Braemar Fleet Leasing,47992.84,EUR,2026-02-09,2026-02-16,finance.manager@asteria.invalid,open
+PO-7182,V-1033,Vellum Records Storage,49195.64,EUR,2026-07-24,2026-08-01,Finance.Manager@asteria.invalid,part-received
+PO-7183,V-1036,Halden Interpreting Services,11745.67,EUR,2026-05-18,2026-05-27,finance.manager@asteria.invalid,received
+PO-7184,V-1012,Brightpath Learning,31300.68,EUR,2026-07-20,2026-07-27,procurement.lead@asteria.invalid,received
+PO-7185,V-1012,Brightpath Learning,3338.84,EUR,2026-06-24,2026-06-28,finance.manager@asteria.invalid,received
+PO-7186,V-1005,Meridian Travel,3699.76,EUR,2026-05-11,2026-05-16,finance.manager@asteria.invalid,received
+PO-7187,V-1016,Tessera Analytics GmbH,39215.75,GBP,2026-02-12,2026-02-20,cfo@asteria.invalid,received
+PO-7188,V-1027,Braemar Fleet Leasing,29967.02,GBP,2026-07-25,2026-07-26,Finance.Manager@asteria.invalid,received
+PO-7189,V-1027,Braemar Fleet Leasing,42603.67,EUR,2026-05-09,2026-05-15,finance.manager@asteria.invalid,received
+PO-7191,V-1023,Sable Freight Forwarding,7075.14,EUR,2026-05-22,2026-05-27,cfo@asteria.invalid,received
+PO-7192,V-1021,Northbridge Technical Svcs.,40791.88,EUR,2026-03-21,2026-03-30,procurement.lead@asteria.invalid,received
+PO-7193,V-1005,Meridian Travel,45368.63,EUR,2026-03-17,2026-03-18,procurement.lead@asteria.invalid,open
+PO-7194,V-1026,Aurelia Translations,18664.28,EUR,2026-03-23,2026-03-26,procurement.lead@asteria.invalid,received
+PO-7195,V-1021,Northbridge Technical Svcs.,39626.06,CHF,2026-04-16,2026-04-19,Finance.Manager@asteria.invalid,received
+PO-7196,V-1028,Corvid Design Studio,44755.81,EUR,2026-06-22,2026-06-29,procurement.lead@asteria.invalid,part-received
+PO-7197,V-1001,Northbridge Technical Services,44005.49,EUR,2026-02-22,2026-02-23,procurement.lead@asteria.invalid,received
+PO-7198,V-1003,Lumen Office Supplies,25854.77,EUR,2026-07-18,2026-07-23,procurement.lead@asteria.invalid,received
+PO-7199,V-1010,Kestrel Security Testing,33272.09,EUR,2026-07-24,2026-08-02,cfo@asteria.invalid,received
+PO-7200,V-1020,Quillon Software Licensing,8626.09,EUR,2026-07-27,2026-07-31,Finance.Manager@asteria.invalid,received
+PO-7201,V-1032,Peregrine Background Checks,41320.15,EUR,2026-05-06,2026-05-07,Finance.Manager@asteria.invalid,received
+PO-7202,V-1029,Thornbury Waste Management,2530.28,EUR,2026-03-03,2026-03-11,finance.manager@asteria.invalid,received
+PO-7203,V-1035,Winterbourne Consulting ,20012.96,EUR,2026-07-25,2026-08-02,finance.manager@asteria.invalid,received
+PO-7204,V-1024,Empyrean Cloud Storage,16774.91,EUR,2026-03-01,2026-03-02,procurement.lead@asteria.invalid,open
+PO-7205,V-1036,Halden Interpreting Services,31578.50,EUR,2026-03-22,2026-03-30,finance.manager@asteria.invalid,received
+PO-7206,V-1016,Tessera Analytics GmbH,26451.76,EUR,2026-05-17,2026-05-18,finance.manager@asteria.invalid,received
+PO-7208,V-1028,Corvid Design Studio,38221.23,EUR,2026-04-26,2026-05-04,cfo@asteria.invalid,received
+PO-7209,V-1028,Corvid Design Studio,572.44,GBP,2026-06-16,2026-06-24,Finance.Manager@asteria.invalid,received
+PO-7210,V-1035,Winterbourne Consulting ,21527.77,EUR,2026-06-03,2026-06-11,cfo@asteria.invalid,part-received
+PO-7211,V-1021,Northbridge Technical Svcs.,36094.34,GBP,2026-06-18,2026-06-20,Finance.Manager@asteria.invalid,received
+PO-7212,V-1018,Ridgeway Hardware Supply,2055.19,GBP,2026-07-01,2026-07-07,Finance.Manager@asteria.invalid,received
+PO-7213,V-1017,Marlowe Catering,53102.80,EUR,2026-06-12,2026-06-16,finance.manager@asteria.invalid,received
+PO-7214,V-1015,Halcyon Insurance Brokers,9985.05,GBP,2026-07-22,2026-07-29,cfo@asteria.invalid,received
+PO-7215,V-1027,Braemar Fleet Leasing,6707.36,EUR,2026-05-16,2026-05-23,finance.manager@asteria.invalid,received
+PO-7216,V-1024,Empyrean Cloud Storage,25044.22,EUR,2026-03-31,2026-04-02,cfo@asteria.invalid,open
+PO-7217,V-1016,Tessera Analytics GmbH,17938.03,EUR,2026-04-06,2026-04-14,finance.manager@asteria.invalid,received
+PO-7218,V-1029,Thornbury Waste Management,18302.90,EUR,2026-06-12,2026-06-15,finance.manager@asteria.invalid,received
+PO-7219,V-1008,Solstice Media,41535.72,EUR,2026-05-06,2026-05-07,finance.manager@asteria.invalid,received
+PO-7220,V-1036,Halden Interpreting Services,1456.05,CHF,2026-05-03,2026-05-09,finance.manager@asteria.invalid,received
+PO-7221,V-1002,Helvetia Cloud Partners,48336.07,GBP,2026-03-04,2026-03-13,procurement.lead@asteria.invalid,received
+PO-7222,V-1008,Solstice Media,39410.90,EUR,2026-04-22,2026-04-27,procurement.lead@asteria.invalid,received
+PO-7223,V-1016,Tessera Analytics GmbH,4726.05,EUR,2026-02-24,2026-03-05,Finance.Manager@asteria.invalid,part-received
+PO-7225,V-1015,Halcyon Insurance Brokers,7911.92,EUR,2026-05-14,2026-05-21,cfo@asteria.invalid,received
+PO-7226,V-1012,Brightpath Learning,31267.85,EUR,2026-04-28,2026-05-04,Finance.Manager@asteria.invalid,received
+PO-7227,V-1004,Castellan Legal LLP,13670.07,EUR,2026-02-13,2026-02-22,finance.manager@asteria.invalid,received
+PO-7228,V-1004,Castellan Legal LLP,2240.88,EUR,2026-03-05,2026-03-07,Finance.Manager@asteria.invalid,open
+PO-7229,V-1007,Pinehurst Facilities,21707.80,CHF,2026-05-25,2026-05-27,finance.manager@asteria.invalid,received
+PO-7230,V-1026,Aurelia Translations,10994.32,EUR,2026-06-30,2026-07-09,procurement.lead@asteria.invalid,received
+PO-7231,V-1008,Solstice Media,60425.16,EUR,2026-07-15,2026-07-24,cfo@asteria.invalid,received
+PO-7232,V-1033,Vellum Records Storage,52010.23,EUR,2026-03-23,2026-03-24,Finance.Manager@asteria.invalid,received
+PO-7233,V-1016,Tessera Analytics GmbH,57341.16,EUR,2026-03-03,2026-03-12,finance.manager@asteria.invalid,received
+PO-7234,V-1007,Pinehurst Facilities,49248.20,EUR,2026-04-09,2026-04-13,finance.manager@asteria.invalid,received
+PO-7235,V-1007,Pinehurst Facilities,3463.17,EUR,2026-04-15,2026-04-19,procurement.lead@asteria.invalid,received
+PO-7236,V-1023,Sable Freight Forwarding,19981.69,EUR,2026-02-28,2026-03-05,procurement.lead@asteria.invalid,received
+PO-7237,V-1009,Vantage Recruitment Ltd,38426.15,GBP,2026-07-13,2026-07-15,finance.manager@asteria.invalid,part-received
+PO-7238,V-1010,Kestrel Security Testing,48475.18,EUR,2026-07-28,2026-08-06,cfo@asteria.invalid,received
+PO-7239,V-1036,Halden Interpreting Services,44077.29,EUR,2026-03-22,2026-03-31,Finance.Manager@asteria.invalid,open
+PO-7240,V-1008,Solstice Media,42890.76,EUR,2026-04-09,2026-04-11,Finance.Manager@asteria.invalid,received
+PO-7242,V-1008,Solstice Media,29143.26,EUR,2026-03-20,2026-03-25,cfo@asteria.invalid,received
+PO-7243,V-1032,Peregrine Background Checks,7595.99,CHF,2026-06-13,2026-06-14,procurement.lead@asteria.invalid,received
+PO-7244,V-1027,Braemar Fleet Leasing,21873.44,USD,2026-05-09,2026-05-10,finance.manager@asteria.invalid,received
+PO-7245,V-1029,Thornbury Waste Management,28239.73,GBP,2026-03-12,2026-03-17,finance.manager@asteria.invalid,received
+PO-7246,V-1014,Calderon Tax Advisory,47210.59,EUR,2026-02-12,2026-02-21,Finance.Manager@asteria.invalid,received
+PO-7247,V-1002,Helvetia Cloud Partners,24566.99,CHF,2026-06-29,2026-07-01,procurement.lead@asteria.invalid,received
+PO-7248,V-1007,Pinehurst Facilities,43536.25,EUR,2026-04-13,2026-04-16,Finance.Manager@asteria.invalid,received
+PO-7249,V-1008,Solstice Media,8055.49,EUR,2026-02-12,2026-02-13,Finance.Manager@asteria.invalid,received
+PO-7250,V-1002,Helvetia Cloud Partners,30960.44,EUR,2026-03-23,2026-03-30,procurement.lead@asteria.invalid,received
+PO-7251,V-1014,Calderon Tax Advisory,53166.85,CHF,2026-07-14,2026-07-19,Finance.Manager@asteria.invalid,open
+PO-7252,V-1036,Halden Interpreting Services,46322.40,EUR,2026-04-26,2026-05-01,procurement.lead@asteria.invalid,received
+PO-7253,V-1035,Winterbourne Consulting ,29707.07,EUR,2026-07-16,2026-07-25,cfo@asteria.invalid,received
+PO-7254,V-1014,Calderon Tax Advisory,60171.53,EUR,2026-07-08,2026-07-17,Finance.Manager@asteria.invalid,received
+PO-7255,V-1036,Halden Interpreting Services,12816.84,EUR,2026-06-01,2026-06-08,finance.manager@asteria.invalid,received
+PO-7256,V-1008,Solstice Media,54312.32,EUR,2026-05-04,2026-05-09,cfo@asteria.invalid,received
+PO-7257,V-1035,Winterbourne Consulting ,39668.18,EUR,2026-02-19,2026-02-21,Finance.Manager@asteria.invalid,received
+PO-7259,V-1033,Vellum Records Storage,37461.36,EUR,2026-03-16,2026-03-17,procurement.lead@asteria.invalid,received
+PO-7260,V-1001,Northbridge Technical Services,48330.08,EUR,2026-04-05,2026-04-06,cfo@asteria.invalid,received
+PO-7261,V-1001,Northbridge Technical Services,48927.06,EUR,2026-07-22,2026-07-30,cfo@asteria.invalid,received
+PO-7262,V-1026,Aurelia Translations,28982.56,EUR,2026-03-18,2026-03-22,Finance.Manager@asteria.invalid,received
+PO-7263,V-1002,Helvetia Cloud Partners,35200.91,EUR,2026-03-14,,,open
+PO-7264,V-1001,Northbridge Technical Services,19661.16,EUR,2026-03-29,2026-04-04,finance.manager@asteria.invalid,received
+PO-7265,V-1036,Halden Interpreting Services,47713.78,EUR,2026-04-20,2026-04-25,procurement.lead@asteria.invalid,part-received
+PO-7266,V-1027,Braemar Fleet Leasing,29452.46,EUR,2026-05-30,2026-06-07,procurement.lead@asteria.invalid,received
+PO-7267,V-1002,Helvetia Cloud Partners,60263.43,EUR,2026-07-29,2026-08-01,cfo@asteria.invalid,received
+PO-7268,V-1029,Thornbury Waste Management,58323.56,EUR,2026-04-22,2026-04-24,finance.manager@asteria.invalid,received
+PO-7269,V-1003,Lumen Office Supplies,60429.90,EUR,2026-04-24,2026-05-02,procurement.lead@asteria.invalid,received
+PO-7270,V-1021,Northbridge Technical Svcs.,19118.79,EUR,2026-04-26,2026-04-27,procurement.lead@asteria.invalid,received
+PO-7271,V-1014,Calderon Tax Advisory,4112.35,EUR,2026-04-22,2026-04-23,procurement.lead@asteria.invalid,received
+PO-7272,V-1032,Peregrine Background Checks,29126.02,EUR,2026-06-17,2026-06-25,cfo@asteria.invalid,received
+PO-7273,V-1009,Vantage Recruitment Ltd,31034.61,EUR,2026-06-03,2026-06-08,finance.manager@asteria.invalid,received
+PO-7274,V-1009,Vantage Recruitment Ltd,50907.00,EUR,2026-03-23,2026-03-29,finance.manager@asteria.invalid,open
+PO-7276,V-1029,Thornbury Waste Management,26712.45,EUR,2026-07-25,2026-07-31,cfo@asteria.invalid,received
+PO-7277,V-1018,Ridgeway Hardware Supply,32618.94,EUR,2026-03-31,2026-04-01,finance.manager@asteria.invalid,received
+PO-7278,V-1029,Thornbury Waste Management,58268.43,EUR,2026-06-27,2026-07-03,cfo@asteria.invalid,received
+PO-7279,V-1020,Quillon Software Licensing,39118.90,EUR,2026-05-03,2026-05-08,Finance.Manager@asteria.invalid,part-received
+PO-7280,V-1020,Quillon Software Licensing,34791.85,EUR,2026-04-24,2026-04-30,cfo@asteria.invalid,received
+PO-7281,V-1008,Solstice Media,23164.32,EUR,2026-05-25,2026-05-28,procurement.lead@asteria.invalid,received
+PO-7282,V-1026,Aurelia Translations,22781.08,GBP,2026-07-18,2026-07-19,finance.manager@asteria.invalid,received
+PO-7283,V-1030,Ianthe Occupational Health,44988.79,EUR,2026-06-19,2026-06-24,procurement.lead@asteria.invalid,received
+PO-7284,V-1027,Braemar Fleet Leasing,4319.23,EUR,2026-06-15,2026-06-22,cfo@asteria.invalid,received
+PO-7285,V-1017,Marlowe Catering,27451.34,CHF,2026-03-30,2026-04-02,Finance.Manager@asteria.invalid,received
+PO-7286,V-1016,Tessera Analytics GmbH,37033.26,GBP,2026-04-05,2026-04-10,procurement.lead@asteria.invalid,open
+PO-7287,V-1021,Northbridge Technical Svcs.,43724.26,EUR,2026-06-05,2026-06-08,Finance.Manager@asteria.invalid,received
+PO-7288,V-1036,Halden Interpreting Services,49811.63,EUR,2026-06-25,2026-06-26,cfo@asteria.invalid,received
+PO-7289,V-1034,Ostara Renewable Energy,60029.86,CHF,2026-04-18,2026-04-26,cfo@asteria.invalid,received
+PO-7290,V-1005,Meridian Travel,23161.98,EUR,2026-02-19,2026-02-20,cfo@asteria.invalid,received
+PO-7291,V-1002,Helvetia Cloud Partners,46179.90,EUR,2026-04-25,2026-04-29,procurement.lead@asteria.invalid,received
+PO-7293,V-1016,Tessera Analytics GmbH,14280.18,EUR,2026-04-09,2026-04-14,procurement.lead@asteria.invalid,part-received
+PO-7294,V-1018,Ridgeway Hardware Supply,22187.83,USD,2026-07-10,2026-07-14,cfo@asteria.invalid,received
+PO-7295,V-1018,Ridgeway Hardware Supply,25798.59,GBP,2026-04-13,2026-04-19,procurement.lead@asteria.invalid,received
+PO-7296,V-1036,Halden Interpreting Services,17352.45,EUR,2026-06-02,2026-06-07,procurement.lead@asteria.invalid,received
+PO-7297,V-1034,Ostara Renewable Energy,47407.91,USD,2026-07-19,2026-07-25,finance.manager@asteria.invalid,received
+PO-7298,V-1017,Marlowe Catering,23828.22,EUR,2026-04-30,2026-05-02,Finance.Manager@asteria.invalid,open
+PO-7299,V-1003,Lumen Office Supplies,55674.41,EUR,2026-03-08,2026-03-16,cfo@asteria.invalid,received
+PO-7300,V-1027,Braemar Fleet Leasing,32156.58,EUR,2026-02-12,2026-02-19,finance.manager@asteria.invalid,received
+PO-7301,V-1015,Halcyon Insurance Brokers,54976.77,EUR,2026-06-23,2026-06-29,finance.manager@asteria.invalid,received
+PO-7302,V-1030,Ianthe Occupational Health,18248.58,EUR,2026-07-11,2026-07-12,Finance.Manager@asteria.invalid,received
+PO-7303,V-1035,Winterbourne Consulting ,55594.16,EUR,2026-05-13,2026-05-18,finance.manager@asteria.invalid,received
+PO-7304,V-1007,Pinehurst Facilities,29151.16,EUR,2026-06-02,2026-06-11,cfo@asteria.invalid,received
+PO-7305,V-1006,Aurora Data Labs,31334.19,EUR,2026-02-25,2026-03-03,Finance.Manager@asteria.invalid,received
+PO-7306,V-1008,Solstice Media,31733.48,EUR,2026-07-21,2026-07-22,cfo@asteria.invalid,part-received
+PO-7307,V-1014,Calderon Tax Advisory,8143.67,USD,2026-05-21,2026-05-25,procurement.lead@asteria.invalid,received
+PO-7308,V-1034,Ostara Renewable Energy,14335.23,EUR,2026-04-16,2026-04-17,finance.manager@asteria.invalid,received
+PO-7310,V-1036,Halden Interpreting Services,55155.18,GBP,2026-07-04,2026-07-12,Finance.Manager@asteria.invalid,open
+PO-7311,V-1035,Winterbourne Consulting ,5136.25,EUR,2026-02-15,,,received
+PO-7312,V-1021,Northbridge Technical Svcs.,577.38,EUR,2026-05-18,2026-05-22,cfo@asteria.invalid,received
+PO-7313,V-1019,Aubert & Fils SARL,31016.81,EUR,2026-03-06,2026-03-11,Finance.Manager@asteria.invalid,received
+PO-7314,V-1029,Thornbury Waste Management,30232.29,GBP,2026-05-31,2026-06-05,cfo@asteria.invalid,received
+PO-7315,V-1032,Peregrine Background Checks,58218.34,EUR,2026-02-28,2026-03-06,Finance.Manager@asteria.invalid,received
+PO-7316,V-1014,Calderon Tax Advisory,41540.46,EUR,2026-03-25,2026-03-31,cfo@asteria.invalid,received
+PO-7317,V-1020,Quillon Software Licensing,48863.09,EUR,2026-06-10,2026-06-15,Finance.Manager@asteria.invalid,received
+PO-7318,V-1021,Northbridge Technical Svcs.,38807.26,EUR,2026-02-20,2026-02-24,cfo@asteria.invalid,received
+PO-7319,V-1016,Tessera Analytics GmbH,1974.00,EUR,2026-04-09,2026-04-17,procurement.lead@asteria.invalid,received
+PO-7320,V-1014,Calderon Tax Advisory,38232.66,EUR,2026-02-16,2026-02-20,procurement.lead@asteria.invalid,part-received
+PO-7321,V-1023,Sable Freight Forwarding,1962.31,EUR,2026-04-16,2026-04-25,finance.manager@asteria.invalid,open
+PO-7322,V-1018,Ridgeway Hardware Supply,52733.00,CHF,2026-05-20,2026-05-27,procurement.lead@asteria.invalid,received
+PO-7323,V-1034,Ostara Renewable Energy,41324.76,EUR,2026-06-26,2026-07-05,finance.manager@asteria.invalid,received
+PO-7324,V-1032,Peregrine Background Checks,57030.72,EUR,2026-06-10,2026-06-15,procurement.lead@asteria.invalid,received
+PO-7325,V-1034,Ostara Renewable Energy,26724.59,EUR,2026-07-20,2026-07-28,cfo@asteria.invalid,received
+PO-7327,V-1010,Kestrel Security Testing,40660.95,EUR,2026-07-13,2026-07-18,procurement.lead@asteria.invalid,received
+PO-7328,V-1009,Vantage Recruitment Ltd,12990.38,EUR,2026-07-08,2026-07-15,Finance.Manager@asteria.invalid,received
+PO-7329,V-1029,Thornbury Waste Management,32092.74,EUR,2026-02-13,2026-02-22,procurement.lead@asteria.invalid,received
+PO-7330,V-1007,Pinehurst Facilities,54996.47,EUR,2026-02-28,2026-03-06,finance.manager@asteria.invalid,received
+PO-7331,V-1008,Solstice Media,22526.02,EUR,2026-03-16,2026-03-19,procurement.lead@asteria.invalid,received

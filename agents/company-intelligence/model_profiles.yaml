@@ -3,7 +3,7 @@ agent_id: company-intelligence
 profiles:
 - profile_id: vertex-standard
   deployment_mode: google_cloud
-  model: ${ASSURANCEOS_GEMINI_MODEL:-gemini-3.6-flash}
+  model: ${ASSURANCEOS_GEMINI_MODEL:-gemini-3.7-flash}
   structured_output_required: true
   release_status: qualification_required
 - profile_id: local-qualified

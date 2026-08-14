@@ -43,6 +43,27 @@ paths:
                 title: Response List Agents Api V1 Agents Get
       security:
       - HTTPBearer: []
+  /api/v1/agents/catalogue:
+    get:
+      summary: Product Agent Catalogue
+      description: 'The signed fleet as something a department can shop from.
+
+
+        The evaluator inventory answers "are these real". This answers the question
+
+        an organisation adopting the fleet asks instead: what is each agent for,
+
+        what may it touch, where does it stop, and what is it known not to do.'
+      operationId: product_agent_catalogue_api_v1_agents_catalogue_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentCatalogueResponse'
+      security:
+      - HTTPBearer: []
   /api/v1/agents/{agent_id}:
     get:
       summary: Get Agent
@@ -4313,6 +4334,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/economics:
+    get:
+      summary: Product Economics
+      description: 'What one engagement consumed, and what that costs at published
+        rates.
+
+
+        Metered from the model-call spans and the signed control-test runs, never
+
+        estimated. The payload names the model that served the tokens separately
+
+        from the model whose price was applied, and carries the sentence a surface
+
+        has to print when the two differ.'
+      operationId: product_economics_api_v1_tenants__tenant_id__economics_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      - name: engagement_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engagement Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EconomicsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/judge/overview:
     get:
       summary: Judge Overview
@@ -4508,6 +4574,26 @@ components:
       - reason
       - idempotency_key
       title: AdjudicateFindingRequest
+    AgentCatalogueResponse:
+      properties:
+        agents:
+          items:
+            $ref: '#/components/schemas/CatalogueAgent'
+          type: array
+          title: Agents
+        totals:
+          $ref: '#/components/schemas/CatalogueTotals'
+        domains:
+          items:
+            $ref: '#/components/schemas/CatalogueDomain'
+          type: array
+          title: Domains
+      type: object
+      required:
+      - agents
+      - totals
+      - domains
+      title: AgentCatalogueResponse
     AgentReleaseProof:
       properties:
         agent_id:
@@ -4938,6 +5024,210 @@ components:
       title: CapacityPolicy
       description: What the audit function can actually deliver, and what it must
         cover.
+    CatalogueAgent:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        display_name:
+          type: string
+          title: Display Name
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        status:
+          type: string
+          title: Status
+        domain:
+          type: string
+          title: Domain
+        accountable_owner:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accountable Owner
+        mandate:
+          type: string
+          title: Mandate
+        non_goals:
+          items:
+            type: string
+          type: array
+          title: Non Goals
+        trigger_conditions:
+          items:
+            type: string
+          type: array
+          title: Trigger Conditions
+        permitted_callers:
+          items:
+            type: string
+          type: array
+          title: Permitted Callers
+        evidence_boundaries:
+          items:
+            type: string
+          type: array
+          title: Evidence Boundaries
+        human_gates:
+          items:
+            type: string
+          type: array
+          title: Human Gates
+        tools:
+          items:
+            $ref: '#/components/schemas/CatalogueTool'
+          type: array
+          title: Tools
+        read_only:
+          type: boolean
+          title: Read Only
+        budgets:
+          $ref: '#/components/schemas/CatalogueBudgets'
+        known_limitations:
+          items:
+            type: string
+          type: array
+          title: Known Limitations
+        release:
+          $ref: '#/components/schemas/CatalogueRelease'
+      type: object
+      required:
+      - agent_id
+      - display_name
+      - status
+      - domain
+      - mandate
+      - non_goals
+      - trigger_conditions
+      - permitted_callers
+      - evidence_boundaries
+      - human_gates
+      - tools
+      - read_only
+      - budgets
+      - known_limitations
+      - release
+      title: CatalogueAgent
+    CatalogueBudgets:
+      properties:
+        token_budget:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Token Budget
+        cost_budget_usd:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost Budget Usd
+        latency_seconds:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Latency Seconds
+        max_concurrency:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Concurrency
+      type: object
+      title: CatalogueBudgets
+    CatalogueDomain:
+      properties:
+        domain:
+          type: string
+          title: Domain
+        agents:
+          type: integer
+          title: Agents
+      type: object
+      required:
+      - domain
+      - agents
+      title: CatalogueDomain
+    CatalogueRelease:
+      properties:
+        package_sha256:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Package Sha256
+        prompt_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompt Hash
+        release_key_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Key Id
+        reviewers:
+          items:
+            type: string
+          type: array
+          title: Reviewers
+          default: []
+        released_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Released At
+      type: object
+      title: CatalogueRelease
+    CatalogueTool:
+      properties:
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        side_effect:
+          type: string
+          title: Side Effect
+        writes:
+          type: boolean
+          title: Writes
+        requires_human_confirmation:
+          type: boolean
+          title: Requires Human Confirmation
+      type: object
+      required:
+      - name
+      - description
+      - side_effect
+      - writes
+      - requires_human_confirmation
+      title: CatalogueTool
+    CatalogueTotals:
+      properties:
+        agents:
+          type: integer
+          title: Agents
+        released:
+          type: integer
+          title: Released
+        directly_callable:
+          type: integer
+          title: Directly Callable
+        with_human_gates:
+          type: integer
+          title: With Human Gates
+        read_only:
+          type: integer
+          title: Read Only
+      type: object
+      required:
+      - agents
+      - released
+      - directly_callable
+      - with_human_gates
+      - read_only
+      title: CatalogueTotals
     ClaimInput:
       properties:
         key:
@@ -5888,6 +6178,198 @@ components:
         change voids the quality review and the approval it was granted under, because
 
         both were given for text that no longer stands.'
+    EconomicsComparison:
+      properties:
+        annual_function_cost_usd:
+          type: number
+          title: Annual Function Cost Usd
+        headcount:
+          type: integer
+          title: Headcount
+        assumption:
+          type: string
+          title: Assumption
+        equivalent_runs:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Equivalent Runs
+      type: object
+      required:
+      - annual_function_cost_usd
+      - headcount
+      - assumption
+      title: EconomicsComparison
+    EconomicsCost:
+      properties:
+        priced_as:
+          type: string
+          title: Priced As
+        price_basis:
+          type: string
+          title: Price Basis
+        input_usd_per_million:
+          type: number
+          title: Input Usd Per Million
+        output_usd_per_million:
+          type: number
+          title: Output Usd Per Million
+        usd:
+          type: number
+          title: Usd
+        introductory_usd:
+          type: number
+          title: Introductory Usd
+        introductory_note:
+          type: string
+          title: Introductory Note
+      type: object
+      required:
+      - priced_as
+      - price_basis
+      - input_usd_per_million
+      - output_usd_per_million
+      - usd
+      - introductory_usd
+      - introductory_note
+      title: EconomicsCost
+    EconomicsEngagement:
+      properties:
+        engagement_id:
+          type: string
+          title: Engagement Id
+        code:
+          type: string
+          title: Code
+        title:
+          type: string
+          title: Title
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - engagement_id
+      - code
+      - title
+      - status
+      title: EconomicsEngagement
+    EconomicsMeasured:
+      properties:
+        model_calls:
+          type: integer
+          title: Model Calls
+        input_tokens:
+          type: integer
+          title: Input Tokens
+        output_tokens:
+          type: integer
+          title: Output Tokens
+        wall_clock_seconds:
+          type: number
+          title: Wall Clock Seconds
+        agent_seconds:
+          type: number
+          title: Agent Seconds
+        tasks:
+          type: integer
+          title: Tasks
+        task_attempts:
+          type: integer
+          title: Task Attempts
+        population_records:
+          type: integer
+          title: Population Records
+        control_tests:
+          type: integer
+          title: Control Tests
+        evidence_records:
+          type: integer
+          title: Evidence Records
+        human_decisions:
+          type: integer
+          title: Human Decisions
+      type: object
+      required:
+      - model_calls
+      - input_tokens
+      - output_tokens
+      - wall_clock_seconds
+      - agent_seconds
+      - tasks
+      - task_attempts
+      - population_records
+      - control_tests
+      - evidence_records
+      - human_decisions
+      title: EconomicsMeasured
+    EconomicsModelUsage:
+      properties:
+        model:
+          type: string
+          title: Model
+        calls:
+          type: integer
+          title: Calls
+        input_tokens:
+          type: integer
+          title: Input Tokens
+        output_tokens:
+          type: integer
+          title: Output Tokens
+        metered:
+          type: boolean
+          title: Metered
+      type: object
+      required:
+      - model
+      - calls
+      - input_tokens
+      - output_tokens
+      - metered
+      title: EconomicsModelUsage
+    EconomicsResponse:
+      properties:
+        engagement:
+          anyOf:
+          - $ref: '#/components/schemas/EconomicsEngagement'
+          - type: 'null'
+        scope:
+          type: string
+          title: Scope
+        engagements:
+          type: integer
+          title: Engagements
+        measured:
+          $ref: '#/components/schemas/EconomicsMeasured'
+        models:
+          items:
+            $ref: '#/components/schemas/EconomicsModelUsage'
+          type: array
+          title: Models
+        cost:
+          $ref: '#/components/schemas/EconomicsCost'
+        measurement:
+          type: string
+          title: Measurement
+        caveat:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Caveat
+        comparison:
+          $ref: '#/components/schemas/EconomicsComparison'
+      type: object
+      required:
+      - engagement
+      - scope
+      - engagements
+      - measured
+      - models
+      - cost
+      - measurement
+      - comparison
+      title: EconomicsResponse
     EvaluationSummaryResponse:
       properties:
         passed:

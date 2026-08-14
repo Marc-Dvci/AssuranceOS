@@ -89,6 +89,7 @@ from .materiality import (
 from .repository import AdjudicationRepository
 from .skeptic import SkepticReviewer
 from .ticketing import NullTicketWriter, TicketRequest, TicketWriter
+from ..text import counted
 
 #: Decisions that move a finding forward, and the state each produces.
 _DECISION_TARGET: dict[HumanDecision, FindingStatus] = {
@@ -1525,7 +1526,7 @@ def finding_from_exceptions(
     """
     subjects = [str(row.get("subject_ref") or row.get("exception_key")) for row in exceptions]
     condition = (
-        f"{len(subjects)} exception(s) identified: " + ", ".join(sorted(subjects)[:20])
+        f"{counted(len(subjects), 'exception')} identified: " + ", ".join(sorted(subjects)[:20])
         if subjects
         else "no exceptions identified"
     )

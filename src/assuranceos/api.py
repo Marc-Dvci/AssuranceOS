@@ -126,7 +126,9 @@ from .portfolio import (
     ScoringPolicy,
 )
 from .delegation import engagement_delegation
+from .economics import engagement_economics
 from .product import (
+    agent_catalogue,
     evaluator_overview,
     finding_detail,
     ground_truth,
@@ -134,7 +136,9 @@ from .product import (
     trace_detail,
 )
 from .product_schemas import (
+    AgentCatalogueResponse,
     DelegationResponse,
+    EconomicsResponse,
     EvaluationSummaryResponse,
     GroundTruthResponse,
     IdempotencyProofResponse,
@@ -322,6 +326,40 @@ def _standards_service() -> StandardsService:
     return StandardsService(database, registry=audit_pack_registry, compiler=_pack_compiler)
 
 
+# The product frontend is a single self-contained document: its styles, its
+# script and its font are all inline, and it loads nothing over the network.
+# That buys a policy with no third-party origin in it at all — but it also means
+# script-src and style-src must permit inline, so this policy is not the control
+# that stops cross-site scripting. Output escaping in the frontend is. What the
+# policy does stop is exfiltration to another origin, framing, base-tag
+# hijacking, plugin content, and form posts to anywhere but this service.
+CONTENT_SECURITY_POLICY = "; ".join(
+    (
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data:",
+        "font-src 'self' data:",
+        "connect-src 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+        "object-src 'none'",
+    )
+)
+
+SECURITY_HEADERS = {
+    "content-security-policy": CONTENT_SECURITY_POLICY,
+    "x-content-type-options": "nosniff",
+    # Redundant with frame-ancestors on a current browser, and the only
+    # protection on an old one.
+    "x-frame-options": "DENY",
+    "referrer-policy": "no-referrer",
+    "permissions-policy": "geolocation=(), camera=(), microphone=(), payment=()",
+    "cross-origin-opener-policy": "same-origin",
+}
+
+
 @app.middleware("http")
 async def request_context(request: Request, call_next):
     request_id = request.headers.get("x-request-id") or f"req_{uuid4().hex[:20]}"
@@ -331,8 +369,15 @@ async def request_context(request: Request, call_next):
     except Exception:
         raise
     response.headers["x-request-id"] = request_id
-    response.headers["x-content-type-options"] = "nosniff"
     response.headers["cache-control"] = "no-store"
+    for header, value in SECURITY_HEADERS.items():
+        response.headers[header] = value
+    # HSTS only where the connection actually was TLS. Asserting it over plain
+    # HTTP pins a scheme the local runtime does not serve, and a header that is
+    # wrong in development is a header nobody trusts in production.
+    forwarded = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
+    if (forwarded or request.url.scheme) == "https":
+        response.headers["strict-transport-security"] = "max-age=31536000; includeSubDomains"
     return response
 
 
@@ -678,6 +723,24 @@ def list_agents() -> list[dict]:
         }
         for package in _registry().values()
     ]
+
+
+# Declared before ``/api/v1/agents/{agent_id}`` on purpose. Routes resolve in
+# registration order, so a literal segment defined after the parameterised one
+# is never reached — "catalogue" would arrive as an agent id and 404.
+@app.get(
+    "/api/v1/agents/catalogue",
+    response_model=AgentCatalogueResponse,
+    dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
+)
+def product_agent_catalogue() -> dict:
+    """The signed fleet as something a department can shop from.
+
+    The evaluator inventory answers "are these real". This answers the question
+    an organisation adopting the fleet asks instead: what is each agent for,
+    what may it touch, where does it stop, and what is it known not to do.
+    """
+    return agent_catalogue(_registry())
 
 
 @app.get(
@@ -3035,6 +3098,22 @@ def product_delegation(tenant_id: str, engagement_id: str | None = None) -> dict
 
 
 @app.get(
+    "/api/v1/tenants/{tenant_id}/economics",
+    response_model=EconomicsResponse,
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))],
+)
+def product_economics(tenant_id: str, engagement_id: str | None = None) -> dict:
+    """What one engagement consumed, and what that costs at published rates.
+
+    Metered from the model-call spans and the signed control-test runs, never
+    estimated. The payload names the model that served the tokens separately
+    from the model whose price was applied, and carries the sentence a surface
+    has to print when the two differ.
+    """
+    return engagement_economics(database, tenant_id, engagement_id=engagement_id)
+
+
+@app.get(
     "/api/v1/judge/overview",
     response_model=JudgeOverviewResponse,
     dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
@@ -3199,7 +3278,15 @@ def get_correlated_trace(tenant_id: str, trace_id: str) -> dict:
     return result
 
 
+@lru_cache(maxsize=1)
 def _product_template() -> str:
+    """The single-file frontend, read once.
+
+    It is a static asset that embeds its own font, so it is well over 100 KB and
+    it cannot change while the process is running. Reading it from disk on every
+    page request put a synchronous file read in front of every navigation for no
+    benefit whatsoever.
+    """
     template = Path("apps/web/judge.html")
     if not template.exists():
         template = Path(__file__).resolve().parents[2] / "apps/web/judge.html"

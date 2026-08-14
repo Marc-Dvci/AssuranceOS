@@ -1,62 +1,218 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
   <title id="title">AssuranceOS Google Cloud architecture</title>
-  <desc id="desc">Auditors use a Cloud Run API and Judge Mode. Governed agent work passes through signed task authority, application guardrails, Google Model Armor, managed Agent Identity, ADK agents on Agent Engine, Memory Bank, and Gemini. Durable state uses Cloud SQL, Cloud Storage, Pub/Sub, Cloud Run Jobs, Cloud Scheduler, and Cloud Trace.</desc>
+  <desc id="desc">Ten source systems are read through purpose-bound read-only connectors into a content-addressed evidence vault on Cloud Storage. A Cloud Run API serves the cockpit and Judge Mode. Every agent call passes one gateway that computes authority as the intersection of a signed release package and a lease-bound execution envelope, screened by Google Model Armor under a managed Agent Identity. Nineteen signed Google ADK agents run on Vertex AI Agent Engine with Vertex AI Memory Bank, split across six lifecycle stages. Four Google models serve the fleet and none may conclude: Gemini 3.7 Flash reasons, Gemma 4 runs the same loop on loopback, EmbeddingGemma retrieves candidates, Chirp 3 transcribes walkthrough interviews. Conclusions come from signed deterministic control tests executed in network-denied Cloud Run Jobs. Canonical state, audit events, reasoning chains and the transactional outbox live in Cloud SQL. A human gate stands between every proposal and consequential state.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f7f9ff"/>
-      <stop offset="1" stop-color="#eef8f4"/>
-    </linearGradient>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#43546a"/>
+      <path d="M0,0 L0,6 L9,3 z" fill="#3d4c62"/>
+    </marker>
+    <marker id="arrow-soft" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8496ad"/>
     </marker>
     <style>
-      .title{font:700 30px system-ui,sans-serif;fill:#172235}.subtitle{font:400 15px system-ui,sans-serif;fill:#526174}
-      .group{fill:none;stroke:#8ba1bd;stroke-width:2;stroke-dasharray:8 7}.group-title{font:700 17px system-ui,sans-serif;fill:#335272}
-      .box{fill:#fff;stroke:#476789;stroke-width:2;rx:16}.managed{fill:#eef4ff;stroke:#3973c6}.data{fill:#effaf5;stroke:#27865e}.security{fill:#fff5e9;stroke:#b97019}
-      .label{font:700 17px system-ui,sans-serif;fill:#1e3045;text-anchor:middle}.small{font:400 13px system-ui,sans-serif;fill:#526174;text-anchor:middle}
-      .line{fill:none;stroke:#43546a;stroke-width:2.3;marker-end:url(#arrow)}.event{fill:none;stroke:#778ca5;stroke-width:2;stroke-dasharray:5 5;marker-end:url(#arrow)}
+      /* Light is the base palette; dark redefines only the tokens, so no colour
+         is ever defined in one theme and missing in the other. Markers cannot
+         take a variable fill in every renderer, so they use the mid-tone that
+         reads on both grounds. */
+      svg{
+        --bg:#f6f8fc; --ink:#111a28; --muted:#53627a; --edge:#3d4c62; --edge-soft:#8496ad;
+        --group:#93a6c0; --card:#ffffff; --card-line:#42607f;
+        --managed:#eaf2ff; --managed-line:#2f6fc4; --managed-ink:#12365f;
+        --data:#eafaf3; --data-line:#1f7d57; --data-ink:#0d4531;
+        --guard:#fff4e6; --guard-line:#b06a12; --guard-ink:#5e390a;
+        --human:#f9ecff; --human-line:#8b3fc0; --human-ink:#4a1c6b;
+      }
+      @media (prefers-color-scheme: dark){
+        svg{
+          --bg:#0e131b; --ink:#e8eef7; --muted:#9fb0c6; --edge:#8ba0ba; --edge-soft:#5d708a;
+          --group:#43566f; --card:#161d28; --card-line:#4e6b8c;
+          --managed:#12233a; --managed-line:#4f92e0; --managed-ink:#bcd8ff;
+          --data:#0f2a20; --data-line:#3fa47a; --data-ink:#a9e8cb;
+          --guard:#2c1f0e; --guard-line:#d59234; --guard-ink:#f2d19b;
+          --human:#241333; --human-line:#b070e0; --human-ink:#e5c6f8;
+        }
+      }
+      .title{font:700 30px system-ui,-apple-system,Segoe UI,sans-serif;fill:var(--ink)}
+      .subtitle{font:400 15px system-ui,-apple-system,Segoe UI,sans-serif;fill:var(--muted)}
+      .group{fill:none;stroke:var(--group);stroke-width:1.6;stroke-dasharray:9 7}
+      .group-title{font:700 14px system-ui,sans-serif;fill:var(--muted);letter-spacing:.09em}
+      .box{fill:var(--card);stroke:var(--card-line);stroke-width:1.8}
+      .managed{fill:var(--managed);stroke:var(--managed-line)}
+      .data{fill:var(--data);stroke:var(--data-line)}
+      .guard{fill:var(--guard);stroke:var(--guard-line)}
+      .human{fill:var(--human);stroke:var(--human-line)}
+      .label{font:700 16px system-ui,sans-serif;fill:var(--ink);text-anchor:middle}
+      .label-m{fill:var(--managed-ink)}.label-d{fill:var(--data-ink)}
+      .label-g{fill:var(--guard-ink)}.label-h{fill:var(--human-ink)}
+      .small{font:400 12.5px system-ui,sans-serif;fill:var(--muted);text-anchor:middle}
+      .small-l{text-anchor:start}
+      .stage{font:700 12px system-ui,sans-serif;fill:var(--managed-ink);text-anchor:middle}
+      .count{font:700 19px system-ui,sans-serif;fill:var(--managed-ink);text-anchor:middle}
+      .line{fill:none;stroke:var(--edge);stroke-width:2.2;marker-end:url(#arrow)}
+      .soft{fill:none;stroke:var(--edge-soft);stroke-width:1.9;stroke-dasharray:6 5;marker-end:url(#arrow-soft)}
+      .note{font:italic 13px system-ui,sans-serif;fill:var(--muted);text-anchor:middle}
     </style>
   </defs>
-  <rect width="1400" height="820" fill="url(#bg)"/>
-  <text x="54" y="52" class="title">AssuranceOS · governed audit agents on Google Cloud</text>
-  <text x="54" y="80" class="subtitle">Every model proposal is bounded by signed authority; canonical evidence and decisions remain outside model memory.</text>
 
-  <rect x="38" y="112" width="1324" height="392" rx="24" class="group"/>
-  <text x="62" y="143" class="group-title">Synchronous governed path</text>
+  <rect width="1600" height="1000" fill="var(--bg)"/>
+  <text x="48" y="50" class="title">AssuranceOS — governed audit agents on Google Cloud</text>
+  <text x="48" y="78" class="subtitle">A model may propose. It may never authorise. Every arrow into canonical state passes the gateway, and every conclusion resolves to hashed bytes.</text>
 
-  <rect x="74" y="190" width="190" height="110" class="box"/>
-  <text x="169" y="232" class="label">Auditor / Judge</text><text x="169" y="257" class="small">browser · JWT tenant scope</text>
+  <!-- ============ COLLECTION ============ -->
+  <rect x="36" y="108" width="322" height="470" rx="18" class="group"/>
+  <text x="56" y="134" class="group-title">COLLECTION</text>
 
-  <rect x="330" y="174" width="225" height="142" class="box managed"/>
-  <text x="442" y="215" class="label">Cloud Run API</text><text x="442" y="241" class="small">cockpit · workflows · Judge Mode</text><text x="442" y="263" class="small">live readiness and proof endpoints</text>
+  <rect x="60" y="152" width="274" height="150" rx="14" class="box"/>
+  <text x="197" y="180" class="label">Ten source systems</text>
+  <text x="80" y="208" class="small small-l">GitHub · Jira · Confluence · HR</text>
+  <text x="80" y="230" class="small small-l">Identity · Cloud · Finance · Legal</text>
+  <text x="80" y="252" class="small small-l">Governance · public web</text>
+  <text x="80" y="282" class="small small-l">CSV · JSON · Markdown · xlsx</text>
 
-  <rect x="622" y="164" width="250" height="162" class="box security"/>
-  <text x="747" y="203" class="label">Governed boundary</text><text x="747" y="231" class="small">signed lease-bound envelope</text><text x="747" y="253" class="small">default-deny tool gateway</text><text x="747" y="275" class="small">local deterministic guardrails</text><text x="747" y="297" class="small">Google Model Armor</text>
+  <rect x="60" y="336" width="274" height="112" rx="14" class="box guard"/>
+  <text x="197" y="366" class="label label-g">Read-only connectors</text>
+  <text x="197" y="392" class="small">purpose-bound collection grants</text>
+  <text x="197" y="414" class="small">checkpointed · schema drift surfaced</text>
+  <text x="197" y="436" class="small">no write path exists</text>
 
-  <rect x="940" y="153" width="368" height="184" class="box managed"/>
-  <text x="1124" y="193" class="label">Vertex AI Agent Engine</text><text x="1124" y="221" class="small">19 signed Google ADK agent applications</text><text x="1124" y="245" class="small">managed Agent Identity · API read-back proof</text><text x="1124" y="269" class="small">Vertex AI Memory Bank · tenant-qualified user_id</text><text x="1124" y="293" class="small">Gemini 3.6 Flash · structured output</text>
+  <rect x="60" y="482" width="274" height="76" rx="14" class="box data"/>
+  <text x="197" y="512" class="label label-d">Cloud Storage</text>
+  <text x="197" y="538" class="small">content-addressed evidence · sha256</text>
 
-  <path d="M264 245 H330" class="line"/><path d="M555 245 H622" class="line"/><path d="M872 245 H940" class="line"/>
-  <path d="M940 310 C900 392 580 395 552 300" class="event"/><text x="748" y="379" class="subtitle" text-anchor="middle">typed proposal only · human gates before consequential state changes</text>
+  <path d="M197 302 V336" class="line"/>
+  <path d="M197 448 V482" class="line"/>
 
-  <rect x="38" y="536" width="1324" height="232" rx="24" class="group"/>
-  <text x="62" y="567" class="group-title">Durable control plane, evidence, and operations</text>
+  <!-- ============ SERVING + BOUNDARY ============ -->
+  <rect x="392" y="108" width="330" height="470" rx="18" class="group"/>
+  <text x="412" y="134" class="group-title">SERVING AND AUTHORITY</text>
 
-  <rect x="74" y="610" width="202" height="102" class="box data"/>
-  <text x="175" y="650" class="label">Cloud SQL</text><text x="175" y="675" class="small">canonical audit state</text><text x="175" y="696" class="small">leases · decisions · custody</text>
+  <rect x="416" y="152" width="282" height="122" rx="14" class="box managed"/>
+  <text x="557" y="182" class="label label-m">Cloud Run — API</text>
+  <text x="557" y="208" class="small">operator cockpit · Judge Mode</text>
+  <text x="557" y="230" class="small">JWT · tenant-scoped RBAC</text>
+  <text x="557" y="252" class="small">min instances 0 · scales to zero</text>
 
-  <rect x="330" y="610" width="202" height="102" class="box data"/>
-  <text x="431" y="650" class="label">Cloud Storage</text><text x="431" y="675" class="small">content-addressed evidence</text><text x="431" y="696" class="small">retention · versions · exports</text>
+  <rect x="416" y="308" width="282" height="250" rx="14" class="box guard"/>
+  <text x="557" y="340" class="label label-g">Agent Gateway</text>
+  <text x="557" y="362" class="small">the single enforcement point</text>
+  <text x="436" y="396" class="small small-l">authority = signed package ∩ envelope</text>
+  <text x="436" y="422" class="small small-l">managed Agent Identity, lease-bound</text>
+  <text x="436" y="448" class="small small-l">default-deny tools · token and cost budgets</text>
+  <text x="436" y="474" class="small small-l">Google Model Armor on context, arguments,</text>
+  <text x="436" y="496" class="small small-l">output and retained reasoning</text>
+  <text x="436" y="528" class="small small-l">every allow and deny is an audit event</text>
 
-  <rect x="586" y="610" width="202" height="102" class="box managed"/>
-  <text x="687" y="650" class="label">Cloud Run Jobs</text><text x="687" y="675" class="small">migrate · seed · control tests</text><text x="687" y="696" class="small">scheduler · transactional outbox</text>
+  <path d="M557 274 V308" class="line"/>
+  <path d="M334 394 H416" class="line"/>
 
-  <rect x="842" y="610" width="202" height="102" class="box managed"/>
-  <text x="943" y="650" class="label">Pub/Sub + Scheduler</text><text x="943" y="675" class="small">durable events · retries</text><text x="943" y="696" class="small">minute-level job triggers</text>
+  <!-- ============ FLEET ============ -->
+  <rect x="756" y="108" width="452" height="470" rx="18" class="group"/>
+  <text x="776" y="134" class="group-title">THE FLEET</text>
 
-  <rect x="1098" y="610" width="210" height="102" class="box managed"/>
-  <text x="1203" y="650" class="label">Cloud Trace + Logging</text><text x="1203" y="675" class="small">OpenTelemetry export</text><text x="1203" y="696" class="small">join on assuranceos.trace_id</text>
+  <rect x="780" y="152" width="404" height="110" rx="14" class="box managed"/>
+  <text x="982" y="180" class="label label-m">Vertex AI Agent Engine</text>
+  <text x="982" y="204" class="small">19 signed Google ADK applications · read back by API</text>
+  <text x="982" y="226" class="small">Vertex AI Memory Bank · tenant-qualified, TTL-bounded,</text>
+  <text x="982" y="248" class="small">generated only from sessions approved for memory</text>
 
-  <path d="M442 316 V590 H175 V610" class="line"/><path d="M442 590 H431 V610" class="line"/><path d="M747 326 V610" class="line"/><path d="M943 610 V590 H687 V610" class="event"/><path d="M1124 337 V575 H1203 V610" class="event"/>
-  <text x="700" y="798" class="subtitle" text-anchor="middle">Release-qualified locally; managed components become operational in Judge Mode only after provider-backed proof exists.</text>
+  <text x="982" y="290" class="small">delegation across the lifecycle — who touches the work, in compiled order</text>
+
+  <rect x="780" y="302" width="122" height="76" rx="12" class="box managed"/>
+  <text x="841" y="330" class="count">3</text><text x="841" y="352" class="stage">ONBOARDING</text><text x="841" y="370" class="small">profile · sources</text>
+
+  <rect x="922" y="302" width="122" height="76" rx="12" class="box managed"/>
+  <text x="983" y="330" class="count">3</text><text x="983" y="352" class="stage">PLANNING</text><text x="983" y="370" class="small">risk · scope</text>
+
+  <rect x="1064" y="302" width="120" height="76" rx="12" class="box managed"/>
+  <text x="1124" y="330" class="count">7</text><text x="1124" y="352" class="stage">FIELDWORK</text><text x="1124" y="370" class="small">evidence · testing</text>
+
+  <rect x="780" y="396" width="122" height="76" rx="12" class="box managed"/>
+  <text x="841" y="424" class="count">3</text><text x="841" y="446" class="stage">ADJUDICATION</text><text x="841" y="464" class="small">skeptic · quality</text>
+
+  <rect x="922" y="396" width="122" height="76" rx="12" class="box managed"/>
+  <text x="983" y="424" class="count">2</text><text x="983" y="446" class="stage">CLOSURE</text><text x="983" y="464" class="small">remediate · retest</text>
+
+  <rect x="1064" y="396" width="120" height="76" rx="12" class="box managed"/>
+  <text x="1124" y="424" class="count">1</text><text x="1124" y="446" class="stage">MONITORING</text><text x="1124" y="464" class="small">review cases</text>
+
+  <text x="982" y="506" class="small">each agent carries a mandate, its non-goals, the tools its package permits,</text>
+  <text x="982" y="528" class="small">its human gates and its known limitations — published as a catalogue</text>
+  <text x="982" y="556" class="small">an agent cannot approve, close, or retest its own work</text>
+
+  <path d="M698 400 H756" class="line"/>
+  <text x="727" y="386" class="small">tool call</text>
+
+  <!-- ============ MODELS ============ -->
+  <rect x="1242" y="108" width="322" height="470" rx="18" class="group"/>
+  <text x="1262" y="134" class="group-title">MODELS — PROPOSERS ONLY</text>
+
+  <rect x="1266" y="152" width="274" height="94" rx="14" class="box managed"/>
+  <text x="1403" y="182" class="label label-m">Gemini 3.7 Flash</text>
+  <text x="1403" y="206" class="small">Vertex AI · Google GenAI SDK</text>
+  <text x="1403" y="228" class="small">structured output, schema-validated</text>
+
+  <rect x="1266" y="266" width="274" height="88" rx="14" class="box"/>
+  <text x="1403" y="294" class="label">Gemma 4 12B</text>
+  <text x="1403" y="318" class="small">the identical governed loop on loopback,</text>
+  <text x="1403" y="338" class="small">egress denied, for data that cannot leave</text>
+
+  <rect x="1266" y="374" width="274" height="84" rx="14" class="box"/>
+  <text x="1403" y="402" class="label">EmbeddingGemma</text>
+  <text x="1403" y="426" class="small">finds candidate evidence · grants no</text>
+  <text x="1403" y="446" class="small">authority · access filter before ranking</text>
+
+  <rect x="1266" y="478" width="274" height="80" rx="14" class="box"/>
+  <text x="1403" y="506" class="label">Chirp 3</text>
+  <text x="1403" y="530" class="small">walkthrough interviews become claims</text>
+  <text x="1403" y="550" class="small">about what was said, never facts</text>
+
+  <path d="M1184 200 H1266" class="line"/>
+  <path d="M1266 300 C1210 300 1210 240 1188 224" class="soft"/>
+
+  <!-- proposal returns, bounded -->
+  <path d="M1242 616 C1000 650 700 650 560 610" class="soft"/>
+  <text x="900" y="602" class="note">typed proposal only — no model output becomes evidence, authority, or an approval</text>
+
+  <!-- ============ CONCLUSIONS AND STATE ============ -->
+  <rect x="36" y="660" width="1528" height="292" rx="18" class="group"/>
+  <text x="56" y="686" class="group-title">CONCLUSIONS, CANONICAL STATE AND PROOF</text>
+
+  <rect x="60" y="706" width="300" height="128" rx="14" class="box managed"/>
+  <text x="210" y="734" class="label label-m">Cloud Run Jobs</text>
+  <text x="210" y="758" class="small">signed deterministic control tests</text>
+  <text x="210" y="780" class="small">network denied · CPU and memory capped</text>
+  <text x="210" y="802" class="small">whole populations, never samples</text>
+  <text x="210" y="824" class="small">the conclusion comes from here</text>
+
+  <rect x="404" y="706" width="300" height="128" rx="14" class="box human"/>
+  <text x="554" y="734" class="label label-h">Human gate</text>
+  <text x="554" y="758" class="small">an agent cannot approve its own finding</text>
+  <text x="554" y="780" class="small">remediation opens exactly once, under replay</text>
+  <text x="554" y="802" class="small">a retest by the author is refused, and the</text>
+  <text x="554" y="824" class="small">independence basis is persisted</text>
+
+  <rect x="748" y="706" width="316" height="128" rx="14" class="box data"/>
+  <text x="906" y="734" class="label label-d">Cloud SQL</text>
+  <text x="906" y="758" class="small">canonical audit state · immutable events</text>
+  <text x="906" y="780" class="small">hash-chained custody · gateway decisions</text>
+  <text x="906" y="802" class="small">reasoning chains · transactional outbox</text>
+  <text x="906" y="824" class="small">idempotency keys on external effects</text>
+
+  <rect x="1108" y="706" width="456" height="128" rx="14" class="box managed"/>
+  <text x="1336" y="734" class="label label-m">Platform services</text>
+  <text x="1132" y="762" class="small small-l">Pub/Sub — outbox delivery</text>
+  <text x="1132" y="784" class="small small-l">Cloud Scheduler — recurring audits</text>
+  <text x="1132" y="806" class="small small-l">Secret Manager — signing keys</text>
+  <text x="1352" y="762" class="small small-l">Cloud Trace + OpenTelemetry</text>
+  <text x="1352" y="784" class="small small-l">Artifact Registry — image by digest</text>
+  <text x="1352" y="806" class="small small-l">Terraform — 34 resources and IAM</text>
+
+  <path d="M557 558 V706" class="line"/>
+  <path d="M197 558 V706" class="line"/>
+  <text x="252" y="646" class="small">hashed bytes</text>
+  <path d="M360 770 H404" class="line"/>
+  <path d="M704 770 H748" class="line"/>
+  <path d="M1064 770 H1108" class="line"/>
+
+  <text x="800" y="896" class="small">Judge Mode re-validates the signed fleet, the deployment receipt, the published ground truth and the guardrail replays against the running release — and reports “attention”, never “operational”, for anything not activated.</text>
+  <text x="800" y="926" class="small">Ed25519 signatures cover agent packages, Audit Packs, control tests, execution envelopes, reports and evidence exports.</text>
 </svg>

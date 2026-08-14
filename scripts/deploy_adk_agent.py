@@ -145,7 +145,7 @@ def main() -> None:
     args = parser.parse_args()
 
     packages, selected = _selection(args.agent)
-    model = os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.6-flash")
+    model = os.getenv("ASSURANCEOS_GEMINI_MODEL", "gemini-3.7-flash")
     project = os.getenv("GOOGLE_CLOUD_PROJECT")
     region = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
     staging_bucket = os.getenv("ASSURANCEOS_AGENT_ENGINE_STAGING_BUCKET")

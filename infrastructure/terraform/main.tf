@@ -408,7 +408,7 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name  = "ASSURANCEOS_GEMINI_MODEL"
-        value = "gemini-3.6-flash"
+        value = "gemini-3.7-flash"
       }
 
       env {
@@ -804,7 +804,7 @@ resource "google_cloud_run_v2_job" "operations" {
 
         env {
           name  = "ASSURANCEOS_GEMINI_MODEL"
-          value = "gemini-3.6-flash"
+          value = "gemini-3.7-flash"
         }
 
         env {

@@ -599,7 +599,7 @@ def evaluator_overview(
             ),
             _component(
                 "Agent Runtime",
-                model_name == "gemini-3.6-flash"
+                model_name == "gemini-3.7-flash"
                 and model_mode == "vertex"
                 and deployment_target == "Google Cloud",
                 f"{model_name} via {model_mode} execution policy",
@@ -692,6 +692,160 @@ def ground_truth(repository_root: Path) -> dict[str, Any]:
     return yaml.safe_load(
         (repository_root / "demo" / "asteria" / "ground_truth.yaml").read_text(encoding="utf-8")
     )
+
+
+#: Tools whose declared side effect changes something outside the platform. A
+#: catalogue that lists tool names without this reads a read-only agent and a
+#: writing one identically, which is the one distinction an adopting department
+#: needs before it grants anything.
+_WRITING_SIDE_EFFECTS = frozenset({"write", "external", "irreversible"})
+
+
+def agent_catalogue(packages: dict[str, Any]) -> dict[str, Any]:
+    """The signed fleet as a catalogue, not an inventory.
+
+    The evaluator surface lists agents to prove they exist and verify. That
+    answers a judge. It does not answer the question an organisation adopting
+    the fleet asks, which is the one the track calls discovery: *what is this
+    agent for, who is allowed to call it, what may it touch, where does it stop,
+    and what is it known not to do?*
+
+    Every field here is read from the signed package. Nothing is written for the
+    catalogue, so an entry cannot describe an agent more generously than the
+    artefact a deployment actually verifies — the mandate, the non-goals, the
+    permitted callers and the human gates are the same bytes the release
+    signature covers.
+    """
+    entries = [_catalogue_entry(package) for _, package in sorted(packages.items())]
+    domains: dict[str, int] = {}
+    for entry in entries:
+        domains[entry["domain"]] = domains.get(entry["domain"], 0) + 1
+    return {
+        "agents": entries,
+        "totals": {
+            "agents": len(entries),
+            "released": sum(1 for entry in entries if entry["status"] == "released"),
+            # An agent nobody can call directly is reachable only through the
+            # orchestrator, which is a meaningful thing for a department to know
+            # before it plans around one.
+            "directly_callable": sum(1 for entry in entries if entry["permitted_callers"]),
+            "with_human_gates": sum(1 for entry in entries if entry["human_gates"]),
+            "read_only": sum(1 for entry in entries if entry["read_only"]),
+        },
+        "domains": [
+            {"domain": domain, "agents": count} for domain, count in sorted(domains.items())
+        ],
+    }
+
+
+def _catalogue_entry(package: Any) -> dict[str, Any]:
+    manifest = package.manifest or {}
+    tools = _catalogue_tools(package)
+    budgets = manifest.get("budgets") or {}
+    return {
+        "agent_id": package.agent_id,
+        "display_name": manifest.get("display_name", package.agent_id),
+        "version": manifest.get("version"),
+        "status": manifest.get("status", "draft"),
+        "domain": _catalogue_domain(package.agent_id),
+        "accountable_owner": manifest.get("accountable_owner"),
+        # What it is for, in the package author's words.
+        "mandate": manifest.get("mandate", ""),
+        # What it will not do. Published as prominently as the mandate, because
+        # a catalogue that only lists capabilities invites a department to
+        # assume the rest.
+        "non_goals": list(manifest.get("non_goals") or []),
+        "trigger_conditions": list(manifest.get("trigger_conditions") or []),
+        "permitted_callers": list(manifest.get("permitted_callers") or []),
+        "evidence_boundaries": list(manifest.get("evidence_boundaries") or []),
+        "human_gates": list(manifest.get("human_gates") or []),
+        "tools": tools,
+        "read_only": all(not tool["writes"] for tool in tools),
+        "budgets": {
+            "token_budget": budgets.get("token_budget"),
+            "cost_budget_usd": budgets.get("cost_budget_usd"),
+            "latency_seconds": budgets.get("latency_seconds"),
+            "max_concurrency": budgets.get("max_concurrency"),
+        },
+        "known_limitations": _known_limitations(package),
+        "release": {
+            "package_sha256": (package.release or {}).get("package_sha256"),
+            "prompt_hash": (manifest.get("release") or {}).get("prompt_hash"),
+            "release_key_id": (manifest.get("release") or {}).get("release_key_id"),
+            "reviewers": list((manifest.get("release") or {}).get("reviewers") or []),
+            "released_at": (package.release or {}).get("released_at"),
+        },
+    }
+
+
+def _catalogue_tools(package: Any) -> list[dict[str, Any]]:
+    declared = (package.tools or {}).get("tools", []) or []
+    rows = []
+    for tool in declared:
+        if not isinstance(tool, dict) or not tool.get("name"):
+            continue
+        side_effect = str(tool.get("side_effect") or "none")
+        rows.append(
+            {
+                "name": str(tool["name"]),
+                "description": str(tool.get("description") or ""),
+                "side_effect": side_effect,
+                "writes": side_effect in _WRITING_SIDE_EFFECTS,
+                "requires_human_confirmation": bool(
+                    tool.get("requires_human_confirmation", False)
+                ),
+            }
+        )
+    return sorted(rows, key=lambda row: row["name"])
+
+
+def _catalogue_domain(agent_id: str) -> str:
+    """The part of the audit lifecycle a department would look under.
+
+    Derived from the role rather than declared, because adding a taxonomy field
+    to nineteen signed manifests would require re-releasing all of them to
+    change a label that is presentation, not authority.
+    """
+    for prefix, domain in (
+        ("onboarding", "Onboarding"),
+        ("organization", "Onboarding"),
+        ("company", "Onboarding"),
+        ("risk", "Planning"),
+        ("scope", "Planning"),
+        ("engagement", "Planning"),
+        ("control-design", "Fieldwork"),
+        ("operating", "Fieldwork"),
+        ("evidence", "Fieldwork"),
+        ("process", "Fieldwork"),
+        ("transaction", "Fieldwork"),
+        ("policy", "Fieldwork"),
+        ("interview", "Fieldwork"),
+        ("skeptic", "Adjudication"),
+        ("finding", "Adjudication"),
+        ("quality", "Adjudication"),
+        ("remediation", "Closure"),
+        ("retest", "Closure"),
+        ("continuous", "Monitoring"),
+    ):
+        if agent_id.startswith(prefix):
+            return domain
+    return "Platform"
+
+
+def _known_limitations(package: Any) -> list[str]:
+    """The package's own limitations file, as bullets.
+
+    Read from disk rather than restated, so the catalogue cannot present a
+    softer version of what the signed package says about itself.
+    """
+    path = package.path / "known_limitations.md"
+    if not path.exists():
+        return []
+    return [
+        line.lstrip("- ").strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.startswith("- ")
+    ]
 
 
 def trace_detail(database: Database, tenant_id: str, trace_id: str) -> dict[str, Any] | None:

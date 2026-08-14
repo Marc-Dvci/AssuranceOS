@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from assuranceos.adjudication.demo import run_assurance_loop_demo  # noqa: E402
+from assuranceos.agent_audit_demo import run_agent_audit_demo  # noqa: E402
 from assuranceos.config import settings  # noqa: E402
 from assuranceos.connectors.demo import run_connector_demo  # noqa: E402
 from assuranceos.control_testing.demo import run_control_test_demo  # noqa: E402
@@ -206,6 +207,20 @@ def main() -> None:
                 model_client=client,
                 tenant_id=tenant,
                 reset=False,
+            ),
+        ),
+        # Last, and the only stage where the model decides what it needs rather
+        # than following a script. It is also the only stage that produces
+        # metered token usage against a real endpoint, which is what the
+        # engagement economics view has to read to say anything true.
+        (
+            "agent runs the audit",
+            lambda: run_agent_audit_demo(
+                database=database,
+                repository_root=ROOT,
+                model_client=client,
+                tenant_id=tenant,
+                vault=vault,
             ),
         ),
     ]

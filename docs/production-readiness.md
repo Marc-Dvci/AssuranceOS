@@ -26,7 +26,7 @@ and evaluator paths share the same code and signed artifacts.
 ## Managed fleet proof
 
 Agent Engine deployment emits a versioned proof document. The product verifies
-the resource-name shape, complete 19-agent coverage, Gemini 3.6 model, and exact
+the resource-name shape, complete 19-agent coverage, Gemini 3.7 model, and exact
 signed package digest for every resource. Memory Bank configuration is embedded
 in both the deployment plan and result.
 

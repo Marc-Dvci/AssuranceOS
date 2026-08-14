@@ -17,7 +17,7 @@ from assuranceos.managed_fleet import (
 
 def test_memory_bank_config_is_gemini_36_revisioned_and_tenant_scoped():
     config = memory_bank_config(project="assurance-project", location="us-central1")
-    assert config["generation_config"]["model"].endswith("/gemini-3.6-flash")
+    assert config["generation_config"]["model"].endswith("/gemini-3.7-flash")
     assert config["similarity_search_config"]["embedding_model"].endswith(
         "/text-embedding-005"
     )
@@ -73,7 +73,7 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
     result = {
         "schema": "assurance.agent_engine_deployment_result.v2",
         "complete": True,
-        "model": "gemini-3.6-flash",
+        "model": "gemini-3.7-flash",
         "project": "assurance-project",
         "region": "us-central1",
         "deployed_at": "2026-08-08T00:00:00Z",
@@ -123,7 +123,7 @@ def test_managed_fleet_proof_validates_resources_and_release_digests(
     proof = managed_fleet_proof(
         repository_root=tmp_path,
         expected_packages=packages,
-        model="gemini-3.6-flash",
+        model="gemini-3.7-flash",
     )
     assert proof["cloud_verified"] is True
     assert proof["deployed_count"] == 2
@@ -142,7 +142,7 @@ def test_release_qualification_is_not_reported_as_a_cloud_deployment(
     proof = managed_fleet_proof(
         repository_root=tmp_path,
         expected_packages=packages,
-        model="gemini-3.6-flash",
+        model="gemini-3.7-flash",
     )
 
     assert proof["status"] == "release_qualified"
@@ -172,7 +172,7 @@ def test_managed_fleet_rejects_duplicate_or_unread_deployment_receipts(
             {
                 "schema": "assurance.agent_engine_deployment_result.v2",
                 "complete": True,
-                "model": "gemini-3.6-flash",
+                "model": "gemini-3.7-flash",
                 "project": "assurance-project",
                 "region": "us-central1",
                 "deployed": [item, item],
@@ -188,7 +188,7 @@ def test_managed_fleet_rejects_duplicate_or_unread_deployment_receipts(
     proof = managed_fleet_proof(
         repository_root=tmp_path,
         expected_packages=packages,
-        model="gemini-3.6-flash",
+        model="gemini-3.7-flash",
     )
 
     assert proof["status"] == "proof_invalid"

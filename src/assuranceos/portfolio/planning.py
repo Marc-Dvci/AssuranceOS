@@ -28,6 +28,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .scoring import RiskScore
+from ..text import counted
 
 
 class Candidate(BaseModel):
@@ -327,7 +328,7 @@ def recommend(
 
     if blind_spots:
         notes.append(
-            f"{len(blind_spots)} risk(s) have no assurance from any source and no place "
+            f"{counted(len(blind_spots), 'risk')} have no assurance from any source and no place "
             "in this plan"
         )
     if not notes:

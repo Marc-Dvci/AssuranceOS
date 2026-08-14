@@ -1,7 +1,7 @@
 {
   "algorithm": "Ed25519",
   "key_id": "assuranceos-agent-release-2026-v1",
-  "public_key_sha256": "e6e5e719ca4c16179b3a29ee6e7682f625a6ff257df6ddf5fa803f39afef1f16",
+  "public_key_sha256": "6eda56f2022661c0c7b4560b9a40bdf6813be9d83464d20286293cec9d3d265e",
   "schema": "assurance.agent_release_signature.v1",
-  "signature_base64": "wSJactui1/MS6J6RwpZyb1EPLtmuo5LHQEwrhMcGsBbR0UH+wAdFxih6tf3zekacH7FM84gx+9gZcgXc2rKXAg=="
+  "signature_base64": "BrXU6hGF4mCeCLpOI3qcDQOtGV26vvx5hckwWVgEIhiEJHtrYhVqg84xYIjK7I/UpfmCu9PkEFgSsCoLa4mZDg=="
 }

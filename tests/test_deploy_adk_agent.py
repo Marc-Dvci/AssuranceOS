@@ -16,7 +16,7 @@ def test_agent_engine_config_enables_managed_identity_and_memory_bank(tmp_path: 
 
     config = _agent_engine_config(
         package=package,
-        model="gemini-3.6-flash",
+        model="gemini-3.7-flash",
         project="assurance-project",
         region="us-central1",
         staging_bucket="gs://agent-staging",

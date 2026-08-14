@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
 
-DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.7-flash"
 DEFAULT_MEMORY_TTL_SECONDS = 365 * 24 * 60 * 60
 
 

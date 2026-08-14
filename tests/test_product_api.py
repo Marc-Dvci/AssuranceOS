@@ -87,3 +87,87 @@ def test_prompt_injection_proof_replays_the_published_source(product_client):
 def test_trace_navigation_fails_closed_for_unknown_trace(product_client):
     response = product_client.get(f"/api/v1/tenants/{TENANT_ID}/traces/not-a-trace")
     assert response.status_code == 404
+
+
+def test_every_response_carries_the_baseline_security_headers(product_client):
+    """A guard is only worth having if it fails when it is removed.
+
+    Asserting the exact policy rather than its presence, because a policy that
+    quietly loses `frame-ancestors` still looks like a Content-Security-Policy
+    to any check that only tests for the header's existence.
+    """
+    for route in ("/", "/judge", f"/api/v1/tenants/{TENANT_ID}/cockpit"):
+        headers = product_client.get(route).headers
+        assert headers["x-content-type-options"] == "nosniff"
+        assert headers["x-frame-options"] == "DENY"
+        assert headers["referrer-policy"] == "no-referrer"
+        assert headers["cross-origin-opener-policy"] == "same-origin"
+        policy = headers["content-security-policy"]
+        for directive in (
+            "default-src 'self'",
+            "frame-ancestors 'none'",
+            "base-uri 'none'",
+            "object-src 'none'",
+            "connect-src 'self'",
+            "form-action 'self'",
+        ):
+            assert directive in policy, f"{route} lost {directive!r}"
+
+
+def test_transport_security_is_asserted_only_over_tls(product_client):
+    """Claiming HTTPS-only on a plaintext local runtime would be a false claim."""
+    plain = product_client.get("/")
+    assert "strict-transport-security" not in plain.headers
+
+    behind_proxy = product_client.get("/", headers={"x-forwarded-proto": "https"})
+    assert behind_proxy.headers["strict-transport-security"].startswith("max-age=31536000")
+
+
+def test_the_frontend_is_self_contained(product_client):
+    """No external origin, so the policy above can name none.
+
+    The font is embedded rather than fetched. If that ever regresses to a CDN
+    link the page silently falls back to a system font behind a corporate proxy,
+    and the Content-Security-Policy blocks it outright.
+    """
+    body = product_client.get("/").text
+    assert "@font-face" in body
+    assert "src:url(data:font/woff2;base64," in body
+    for external in ("https://fonts.googleapis.com", "https://fonts.gstatic.com", "//cdn."):
+        assert external not in body
+
+
+def test_the_economics_route_is_scoped_to_the_programme_by_default(product_client):
+    response = product_client.get(f"/api/v1/tenants/{TENANT_ID}/economics")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["scope"] == "programme"
+    assert payload["cost"]["priced_as"] == "gemini-3.7-flash"
+    assert payload["comparison"]["headcount"] == 4
+    assert "planning assumption" in payload["comparison"]["assumption"]
+
+
+def test_the_economics_route_never_hides_an_unmetered_basis(product_client):
+    """The caveat is part of the payload, not something a caller may add.
+
+    A cost figure computed from a scripted client's word counts looks exactly
+    like one measured against a model. The distinction has to travel with the
+    number or it will be dropped by whoever renders it.
+    """
+    payload = product_client.get(f"/api/v1/tenants/{TENANT_ID}/economics").json()
+    assert payload["measurement"] in {"metered", "scripted", "mixed", "none"}
+    if payload["measurement"] != "metered":
+        assert payload["caveat"]
+        assert payload["comparison"]["equivalent_runs"] is None
+
+
+def test_the_agent_catalogue_publishes_what_each_agent_will_not_do(product_client):
+    response = product_client.get("/api/v1/agents/catalogue")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["totals"]["agents"] == 19
+    assert len(payload["domains"]) > 1
+    for entry in payload["agents"]:
+        assert entry["mandate"]
+        assert entry["non_goals"]
+        assert entry["known_limitations"]

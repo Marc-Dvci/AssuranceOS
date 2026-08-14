@@ -58,7 +58,7 @@ python scripts/run_governance_demo.py \
   --render-chain
 ```
 
-Use `--model-mode gemini` for Gemini 3.6 Flash through the Google GenAI SDK.
+Use `--model-mode gemini` for Gemini 3.7 Flash through the Google GenAI SDK.
 
 ## The product surfaces
 

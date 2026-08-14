@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 # The hackathon mandates Gemini 3.5 or newer.
-DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.7-flash"
 
 
 @dataclass
@@ -160,7 +160,7 @@ class GeminiClient:
         response = client.models.generate_content(
             model=self.model_name,
             contents=prompt,
-            # Gemini 3.6 no longer accepts temperature/top-p/top-k. Keep the
+            # Gemini 3.7 no longer accepts temperature/top-p/top-k. Keep the
             # protocol argument for other transports, but deliberately omit it
             # for the stable Gemini transport.
             config=types.GenerateContentConfig(

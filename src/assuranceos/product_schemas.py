@@ -153,6 +153,142 @@ class DelegationResponse(BaseModel):
     totals: DelegationTotals
 
 
+class CatalogueTool(BaseModel):
+    name: str
+    description: str
+    side_effect: str
+    #: Whether the declared side effect changes anything outside the platform.
+    #: A catalogue listing tool names alone reads a read-only agent and a
+    #: writing one identically.
+    writes: bool
+    requires_human_confirmation: bool
+
+
+class CatalogueBudgets(BaseModel):
+    token_budget: int | None = None
+    cost_budget_usd: float | None = None
+    latency_seconds: int | None = None
+    max_concurrency: int | None = None
+
+
+class CatalogueRelease(BaseModel):
+    package_sha256: str | None = None
+    prompt_hash: str | None = None
+    release_key_id: str | None = None
+    reviewers: list[str] = []
+    released_at: str | None = None
+
+
+class CatalogueAgent(BaseModel):
+    agent_id: str
+    display_name: str
+    version: str | None = None
+    status: str
+    domain: str
+    accountable_owner: str | None = None
+    #: What the agent is for, in the signed manifest's own words.
+    mandate: str
+    #: What it will not do. Carried as prominently as the mandate.
+    non_goals: list[str]
+    trigger_conditions: list[str]
+    permitted_callers: list[str]
+    evidence_boundaries: list[str]
+    human_gates: list[str]
+    tools: list[CatalogueTool]
+    read_only: bool
+    budgets: CatalogueBudgets
+    known_limitations: list[str]
+    release: CatalogueRelease
+
+
+class CatalogueDomain(BaseModel):
+    domain: str
+    agents: int
+
+
+class CatalogueTotals(BaseModel):
+    agents: int
+    released: int
+    directly_callable: int
+    with_human_gates: int
+    read_only: int
+
+
+class AgentCatalogueResponse(BaseModel):
+    agents: list[CatalogueAgent]
+    totals: CatalogueTotals
+    domains: list[CatalogueDomain]
+
+
+class EconomicsEngagement(BaseModel):
+    engagement_id: str
+    code: str
+    title: str
+    status: str
+
+
+class EconomicsMeasured(BaseModel):
+    model_calls: int
+    input_tokens: int
+    output_tokens: int
+    #: Elapsed time for the audit, including waiting on leases and on people.
+    wall_clock_seconds: float
+    #: Time the fleet spent generating. The gap to wall clock is what an
+    #: asynchronous engagement buys back.
+    agent_seconds: float
+    tasks: int
+    task_attempts: int
+    population_records: int
+    control_tests: int
+    evidence_records: int
+    human_decisions: int
+
+
+class EconomicsModelUsage(BaseModel):
+    model: str
+    calls: int
+    input_tokens: int
+    output_tokens: int
+    #: False when the counts came from the scripted client, whose "tokens" are
+    #: words. A surface that renders an unmetered figure without saying so is
+    #: reporting arithmetic as a measurement.
+    metered: bool
+
+
+class EconomicsCost(BaseModel):
+    priced_as: str
+    price_basis: str
+    input_usd_per_million: float
+    output_usd_per_million: float
+    usd: float
+    introductory_usd: float
+    introductory_note: str
+
+
+class EconomicsComparison(BaseModel):
+    annual_function_cost_usd: float
+    headcount: int
+    #: The comparison is only as good as this line, so it travels with it.
+    assumption: str
+    equivalent_runs: int | None = None
+
+
+class EconomicsResponse(BaseModel):
+    engagement: EconomicsEngagement | None
+    #: ``programme`` (the whole tenant, the default) or ``engagement``.
+    scope: str
+    engagements: int
+    measured: EconomicsMeasured
+    models: list[EconomicsModelUsage]
+    cost: EconomicsCost
+    #: ``metered`` | ``scripted`` | ``mixed`` | ``none``.
+    measurement: str
+    #: The sentence a surface must print beside the number. Text rather than a
+    #: flag so a caller cannot render the figure and drop the qualification.
+    caveat: str | None = None
+    comparison: EconomicsComparison
+
+
 class GroundTruthCondition(BaseModel):
     id: str
     expected: str
