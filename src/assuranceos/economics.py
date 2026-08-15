@@ -179,7 +179,8 @@ def engagement_economics(
             "cost": _cost([], priced_as=priced_as),
             "measurement": "none",
             "caveat": f"No engagement {engagement_id!r} in this tenant.",
-            "comparison": _comparison(0.0, function_cost_usd, basis="none"),
+            "comparison": _comparison({}, function_cost_usd, basis="none"),
+            "projection": _projection([], [], priced_as=priced_as, basis="none"),
         }
 
     def _in_scope(value: str | None) -> bool:
@@ -197,6 +198,7 @@ def engagement_economics(
     usage = _usage(scoped_spans)
     cost = _cost(usage, priced_as=priced_as)
     basis = _measurement_basis(usage)
+    projection = _projection(scoped_spans, scoped_evidence, priced_as=priced_as, basis=basis)
     return {
         "engagement": (
             {
@@ -224,7 +226,8 @@ def engagement_economics(
         "cost": cost,
         "measurement": basis,
         "caveat": _caveat(basis, usage, priced_as),
-        "comparison": _comparison(cost["usd"], function_cost_usd, basis=basis),
+        "comparison": _comparison(projection, function_cost_usd, basis=basis),
+        "projection": projection,
     }
 
 
@@ -372,30 +375,159 @@ def _caveat(basis: str, usage: list[ModelUsage], priced_as: str) -> str | None:
     return None
 
 
-def _comparison(
-    cost_usd: float, function_cost_usd: float, *, basis: str
+#: The sizes an audit is quoted at. Fifty documents is a small control walkthrough;
+#: five thousand is a year of a mid-size company's change tickets, contracts and
+#: access reviews. Both are the *analysed* count, not the collected one.
+PROJECTION_POINTS: tuple[int, ...] = (50, 500, 5_000)
+
+#: How many times a document is read. A governed task puts its evidence in
+#: context once per round of the gather-then-conclude loop, so a document in a
+#: two-round task is billed twice. Measured below where there is a metered run to
+#: measure; this is the floor used when there is not.
+_MINIMUM_PASSES = 2.0
+
+#: Bytes per token for audit source material. Deliberately conservative in the
+#: direction that makes the quote *higher*: CSV rows, JSON keys and hashes
+#: tokenize far denser than prose, and a quote that comes in under what the run
+#: actually costs is the only error a buyer will remember.
+_BYTES_PER_TOKEN = 3.5
+
+#: What one audit costs beyond its documents: the system prompt, the composed
+#: briefing, the tool catalogue and the tool results, once per round per task,
+#: plus the reply. Substituted from measurement when there is a metered run.
+_ASSUMED_OVERHEAD_INPUT_TOKENS = 6_000
+_ASSUMED_OUTPUT_TOKENS = 1_500
+
+
+def _projection(
+    spans: list[ReasoningSpanRecord],
+    evidence: list[EvidenceRecord],
+    *,
+    priced_as: str,
+    basis: str,
 ) -> dict[str, Any]:
-    """One year of a small audit function, expressed in audit runs.
+    """What an audit of *n* documents would cost, from this tenant's own numbers.
+
+    The measured figure answers "what did this run cost". A buyer is asking a
+    different question — "what will *mine* cost" — and their audit is not this
+    one. So this scales the measured unit costs to a document count, and states
+    every input it used, because a projection whose basis is hidden is a
+    marketing number.
+
+    Two inputs are measured from canonical state where it exists: the mean size
+    of this tenant's evidence records, and the output tokens the fleet actually
+    produced per model call. The rest are declared constants above, each one
+    biased to overstate rather than understate.
+    """
+    sizes = [record.size_bytes or 0 for record in evidence if (record.size_bytes or 0) > 0]
+    mean_bytes = (sum(sizes) / len(sizes)) if sizes else 0.0
+    tokens_per_document = round(mean_bytes / _BYTES_PER_TOKEN) if mean_bytes else 0
+
+    model_spans = [span for span in spans if span.name == _MODEL_SPAN]
+    measured_output = (
+        sum(_tokens(span, "output") for span in model_spans) / len(model_spans)
+        if model_spans and basis == "metered"
+        else 0
+    )
+    output_per_audit = round(measured_output * _MINIMUM_PASSES) or _ASSUMED_OUTPUT_TOKENS
+
+    list_in, list_out = LIST_PRICE_USD_PER_MILLION.get(priced_as, (0.0, 0.0))
+    intro_in, intro_out = INTRODUCTORY_PRICE_USD_PER_MILLION.get(priced_as, (0.0, 0.0))
+
+    points = []
+    for documents in PROJECTION_POINTS:
+        input_tokens = round(
+            documents * tokens_per_document * _MINIMUM_PASSES + _ASSUMED_OVERHEAD_INPUT_TOKENS
+        )
+        points.append(
+            {
+                "documents": documents,
+                "input_tokens": input_tokens,
+                "output_tokens": output_per_audit,
+                "usd": round(
+                    (input_tokens / 1e6) * list_in + (output_per_audit / 1e6) * list_out, 4
+                ),
+                "introductory_usd": round(
+                    (input_tokens / 1e6) * intro_in + (output_per_audit / 1e6) * intro_out, 4
+                ),
+            }
+        )
+
+    return {
+        "priced_as": priced_as,
+        "points": points,
+        "measured_inputs": {
+            "mean_document_bytes": round(mean_bytes),
+            "tokens_per_document": tokens_per_document,
+            "documents_measured": len(sizes),
+            "output_tokens_per_model_call": round(measured_output) or None,
+        },
+        "assumptions": [
+            f"Each document is read {_MINIMUM_PASSES:g} times — once per round of the "
+            "gather-then-conclude loop a governed task runs.",
+            f"{_BYTES_PER_TOKEN} bytes per token, which understates nothing: audit "
+            "sources tokenize denser than prose.",
+            f"{_ASSUMED_OVERHEAD_INPUT_TOKENS:,} tokens of instruction, briefing, tool "
+            "catalogue and tool results per audit, independent of document count.",
+            "Model inference only. It excludes the platform's own compute, storage "
+            "and the human review time that every audit still ends in.",
+        ],
+        "caveat": (
+            "A projection, not a measurement: the document count is yours and the "
+            "unit costs are this tenant's."
+            + (
+                ""
+                if tokens_per_document
+                else " No evidence has been collected here, so the per-document size "
+                "could not be measured and the figures below are overhead only."
+            )
+        ),
+    }
+
+
+#: Which projection point the headline comparison is drawn at. Five hundred
+#: documents is a recognisable engagement — a quarter of change tickets, or a
+#: year of access reviews — rather than the largest number available.
+COMPARISON_RUN_DOCUMENTS = 500
+
+
+def _comparison(
+    projection: dict[str, Any], function_cost_usd: float, *, basis: str
+) -> dict[str, Any]:
+    """One year of a small audit function, expressed in audits of a stated size.
 
     Deliberately the weaker direction of the comparison. It does not claim the
     software replaces the team — the plan screen already says a third of the
     universe stays uncovered and a human signed for it. It says what a year of
-    that budget buys in complete, evidenced runs, which is a fact about scale
-    rather than a claim about substitution.
+    that budget buys, which is a fact about scale rather than a claim about
+    substitution.
 
-    Computed only against metered usage. Dividing a real salary budget by
-    arithmetic on a scripted client's word counts produces a very large number
-    that means nothing, and a very large number that means nothing is worse on
-    a page like this than no number at all.
+    **Divided by a projected audit, not by the measured run.** The measured
+    figure is what *this tenant* spent, and what this tenant spent is three
+    governed model calls on a demonstration — dividing a salary budget by that
+    produced "33 million audits", a number that is arithmetically correct, wildly
+    uninformative, and reads as a lie. The projection is scoped to a named
+    document count, so the quotient is "audits of five hundred documents" and the
+    reader can see both halves. That the honest number is smaller is the point.
+
+    Still computed only against metered usage: a projection whose unit costs came
+    from a scripted client's word counts is arithmetic about nothing.
     """
-    runs = (
-        int(function_cost_usd // cost_usd)
-        if cost_usd > 0 and basis == "metered"
-        else None
+    point = next(
+        (
+            item
+            for item in projection.get("points", [])
+            if item["documents"] == COMPARISON_RUN_DOCUMENTS
+        ),
+        None,
     )
+    per_run = float(point["usd"]) if point else 0.0
+    runs = int(function_cost_usd // per_run) if per_run > 0 and basis == "metered" else None
     return {
         "annual_function_cost_usd": function_cost_usd,
         "headcount": ASSUMED_FUNCTION_HEADCOUNT,
         "assumption": ASSUMED_FUNCTION_BASIS,
         "equivalent_runs": runs,
+        "run_size_documents": COMPARISON_RUN_DOCUMENTS,
+        "run_cost_usd": per_run or None,
     }

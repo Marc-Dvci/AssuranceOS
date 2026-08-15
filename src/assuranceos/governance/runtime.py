@@ -43,6 +43,39 @@ class EvidenceItem:
     tainted: bool = False
 
 
+@dataclass(frozen=True)
+class QualityContext:
+    """What the task's methodology entitles this reply to say.
+
+    The output gate already refuses a conclusion whose citations do not resolve.
+    That catches fabrication, and it is blind to the failure that matters more in
+    an audit: a conclusion that is *internally* inconsistent with what the run
+    actually did. Concluding on a control without executing the signed procedure
+    the pack pins to the step, or calling a control effective in the same breath
+    as a signed run that returned exceptions, are both well-formed replies with
+    resolvable citations and both are inadmissible.
+
+    So this is the auto-review, and it is deliberately deterministic. A model
+    asked to check its own work will agree with itself; these three rules are
+    machine-decidable from canonical state and the model does not get a vote.
+    The *professional* review — was the conclusion sound, was the contradiction
+    search real — is performed by a different agent identity in a later step of
+    the pack, because self-review by the same identity is not review.
+
+    Populated from the compiled task's execution policy, and never from the
+    model. When it is absent, only the citation gate applies, which is what keeps
+    the low-level runtime usable on tasks that carry no methodology.
+    """
+
+    #: The signed control test the pack pinned to this step, if any.
+    required_control_test: str | None = None
+    #: The pack's quality rules, carried for the refusal message rather than
+    #: enforced individually — most are not machine-decidable, and pretending
+    #: otherwise would be the same failure as an index that ranks without
+    #: semantics.
+    quality_rules: tuple[str, ...] = ()
+
+
 def estimate_tokens(text: str) -> int:
     """A deliberately pessimistic token estimate for a context-budget decision.
 
@@ -215,6 +248,7 @@ class GovernedAgentRuntime:
         release_id: str | None = None,
         independence_subject: str | None = None,
         independence_constraints: tuple[str, ...] = (),
+        quality: QualityContext | None = None,
         tracer: AgentTracer | None = None,
     ) -> AgentRunResult:
         tracer = tracer or AgentTracer(self.telemetry)
@@ -507,6 +541,8 @@ class GovernedAgentRuntime:
                 # still never completes.
                 citable = supplied_evidence_ids | self._observed_evidence_ids(observations)
                 valid, problem = self._validate_output(package, parsed, frozenset(citable))
+                if valid:
+                    valid, problem = self._review_output(parsed, observations, quality)
                 first_problem = first_problem or problem
                 if valid or final_round or repairs_left <= 0:
                     break
@@ -520,7 +556,7 @@ class GovernedAgentRuntime:
                         "rendered": (
                             f"Your previous reply was refused: {problem}. Keep the same "
                             "conclusion if the evidence still supports it and correct "
-                            "only the citations. Copy evidence ids exactly as they "
+                            "only what was refused. Copy evidence ids exactly as they "
                             "appear above, including case."
                         ),
                     }
@@ -564,6 +600,8 @@ class GovernedAgentRuntime:
             # was sent to find.
             citable = supplied_evidence_ids | self._observed_evidence_ids(observations)
             valid, problem = self._validate_output(package, parsed, frozenset(citable))
+            if valid:
+                valid, problem = self._review_output(parsed, observations, quality)
             if not valid:
                 reported = first_problem or problem
                 attempted = (
@@ -685,8 +723,12 @@ class GovernedAgentRuntime:
                 '"insufficient_evidence".\n\nReply with the final object:\n'
             )
 
+        # The instruction is a composed briefing (see assuranceos.briefing), which
+        # runs to several labelled sections. Prefixing it with "Task: " read as a
+        # one-line field whose value happened to be long; a fenced block keeps the
+        # briefing's own headings legible as headings.
         return (
-            f"Task: {instruction}\n\n"
+            f"=== YOUR BRIEFING ===\n{instruction.strip()}\n=== END OF BRIEFING ===\n\n"
             f"Engagement: {envelope.engagement_id}\n"
             f"Purpose: {envelope.purpose}\n"
             f"{self._tool_catalogue(envelope, granted_tools)}"
@@ -920,6 +962,68 @@ class GovernedAgentRuntime:
                         f"conclusion {conclusion!r} cites evidence that was never "
                         f"supplied to this task: {', '.join(unresolved)}"
                     )
+        return True, ""
+
+    @staticmethod
+    def _review_output(
+        parsed: Mapping[str, Any],
+        observations: Sequence[Mapping[str, Any]],
+        quality: QualityContext | None,
+    ) -> tuple[bool, str]:
+        """Check the conclusion against what the run actually did.
+
+        See :class:`QualityContext` for why this is deterministic rather than a
+        second model call. Each refusal names the specific inconsistency, because
+        the reply comes back to the model through the repair channel and "your
+        answer was poor" is not something a model can act on.
+        """
+        if quality is None:
+            return True, ""
+
+        conclusion = str(parsed.get("conclusion") or "").strip().lower()
+        runs = [
+            observation.get("result")
+            for observation in observations
+            if observation.get("outcome") == "allowed"
+            and str(observation.get("tool")) == "tests.execute"
+            and isinstance(observation.get("result"), Mapping)
+        ]
+
+        # 1. A methodology that pins a signed procedure to this step is not
+        #    satisfied by reasoning about the population. The pack chose the
+        #    procedure precisely so the answer does not depend on the model.
+        if quality.required_control_test and not runs:
+            if conclusion in {"effective", "ineffective"}:
+                return False, (
+                    f"this step is pinned to the signed procedure "
+                    f"{quality.required_control_test}, and it was never executed. "
+                    "Call tests.execute and conclude from its result, or conclude "
+                    "'insufficient_evidence' and say the procedure did not run."
+                )
+
+        # 2. A signed run that returned exceptions contradicts an effective
+        #    conclusion outright. Either the exceptions are explained away, in
+        #    which case the conclusion is still ineffective until a human accepts
+        #    the explanation, or the control did not operate.
+        if conclusion == "effective":
+            exceptions = sum(int(run.get("exception_count") or 0) for run in runs)
+            if exceptions:
+                return False, (
+                    f"the signed procedure returned {exceptions} exception(s) and you "
+                    "concluded 'effective'. An exception is not a finding, but it is "
+                    "also not nothing: conclude 'ineffective' and classify them, or "
+                    "conclude 'insufficient_evidence' if you cannot."
+                )
+
+        # 3. The platform does not conclude against a control on its own behalf.
+        #    An adverse conclusion is a proposal to a person, and a reply that
+        #    does not say so has claimed an authority the envelope never granted.
+        if conclusion == "ineffective" and parsed.get("requires_human_approval") is not True:
+            return False, (
+                "an adverse conclusion is a proposal, not a decision. Set "
+                "requires_human_approval to true."
+            )
+
         return True, ""
 
     def _failed(

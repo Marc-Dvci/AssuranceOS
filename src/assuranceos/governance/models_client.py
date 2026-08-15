@@ -109,13 +109,37 @@ class ScriptedClient:
         )
 
 
+def gemini_location() -> str:
+    """Where to *call* Gemini, which is not where the service is deployed.
+
+    ``GOOGLE_CLOUD_LOCATION`` was doing two incompatible jobs. Cloud Run, Cloud
+    SQL and Agent Engine need a real region — ``us-central1``. **Gemini 3.x is
+    served only from the ``global`` endpoint on Vertex**, and asking a region for
+    it returns a bare 404 that reads exactly like a typo in the model id:
+
+        Publisher model `projects/<p>/locations/us-central1/publishers/google/
+        models/gemini-3.7-flash` was not found
+
+    It is listed by ``models.list`` in that region, which makes the failure worse
+    than confusing — the model appears to exist and refuses to answer. So the
+    model endpoint gets its own variable, defaulting to ``global`` because that
+    is where every model this platform pins actually lives, and the deployment
+    region is left alone.
+    """
+    return (
+        os.getenv("ASSURANCEOS_GEMINI_LOCATION")
+        or os.getenv("GOOGLE_CLOUD_LOCATION_MODELS")
+        or "global"
+    )
+
+
 @dataclass
 class GeminiClient:
     """Gemini through the Google GenAI SDK, on Vertex AI or the Gemini API."""
 
     model_name: str = DEFAULT_GEMINI_MODEL
     project: str | None = None
-    location: str = "us-central1"
+    location: str = ""
     use_vertex: bool | None = None
     # Gemini 3.x Flash serves a one-million-token window and the API rejects a
     # prompt that exceeds it rather than silently trimming, so this is a pre-flight
@@ -140,7 +164,7 @@ class GeminiClient:
             self._client = genai.Client(
                 vertexai=True,
                 project=self.project or os.getenv("GOOGLE_CLOUD_PROJECT"),
-                location=self.location or os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
+                location=self.location or gemini_location(),
             )
         else:
             self._client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -452,7 +476,7 @@ def build_client(
         client = GeminiClient(
             model_name=model or DEFAULT_GEMINI_MODEL,
             project=project,
-            location=location or "us-central1",
+            location=location or gemini_location(),
             use_vertex=normalized == "vertex" or None,
         )
         if window := (context_window_tokens or _optional_int_env("ASSURANCEOS_MODEL_CONTEXT_TOKENS")):

@@ -27,7 +27,7 @@ from .gateway import AgentGateway
 from .identity import AgentIdentityIssuer
 from .models_client import ModelClient
 from .persistence import GovernanceRecorder
-from .runtime import AgentRunResult, EvidenceItem, GovernedAgentRuntime
+from .runtime import AgentRunResult, EvidenceItem, GovernedAgentRuntime, QualityContext
 from .telemetry import AgentTracer, TelemetryConfig
 
 #: How a governed run's status maps onto the orchestrator's retry semantics.
@@ -120,8 +120,22 @@ class GovernedAgentTaskHandler:
         self.model_client = model_client
         self.recorder = recorder
         self.evidence_loader = evidence_loader or (lambda _: ())
+        # The fallback is deliberately inadequate, and says so in the prompt. A
+        # task key and an engagement id tell a model nothing about what a good
+        # answer looks like, so a default that reads like a real instruction is
+        # worse than one that names its own emptiness: the first produces a
+        # confident answer to a question nobody asked. Anything running the
+        # orchestrated path passes `briefing.DatabaseInstructionLoader`, which
+        # composes the briefing from the compiled pack step and the company
+        # profile.
         self.instruction_loader = instruction_loader or (
-            lambda lease: f"Execute task {lease.task_key} for engagement {lease.engagement_id}."
+            lambda lease: (
+                f"Execute the {lease.task_key!r} step of engagement "
+                f"{lease.engagement_id}. No methodology briefing was supplied with "
+                "this task, so you have not been told the criteria, the period or "
+                "the company. Treat anything that depends on them as a scope "
+                "limitation rather than assuming it."
+            )
         )
         self.telemetry = telemetry or TelemetryConfig()
         self.max_output_tokens = max_output_tokens
@@ -144,11 +158,7 @@ class GovernedAgentTaskHandler:
             # The envelope grants what the package declares; the identity issuer
             # narrows it further to the package/envelope intersection. Widening
             # here would be silently undone there, which is the intended order.
-            allowed_tools=[
-                str(item.get("name"))
-                for item in (package.tools or {}).get("tools", [])
-                if item.get("name")
-            ],
+            allowed_tools=self._callable_tools(package),
             allowed_evidence_scopes=list(package.manifest.get("evidence_boundaries", [])),
             forbidden_actions=list(policy.get("forbidden_actions", [])),
             purpose=str(package.manifest.get("mandate", lease.task_type)),
@@ -182,6 +192,19 @@ class GovernedAgentTaskHandler:
             envelope=envelope,
             instruction=self.instruction_loader(lease),
             evidence=self.evidence_loader(lease),
+            # Read from the compiled task, so what the reply is checked against is
+            # what the signed pack pinned to this step — not a rule the runtime
+            # invented and not anything the model can influence.
+            quality=QualityContext(
+                required_control_test=(
+                    str(lease.execution_policy.get("control_test"))
+                    if lease.execution_policy.get("control_test")
+                    else None
+                ),
+                quality_rules=tuple(
+                    str(item) for item in (lease.execution_policy.get("quality_rules") or ())
+                ),
+            ),
             tracer=tracer,
         )
 
@@ -196,6 +219,37 @@ class GovernedAgentTaskHandler:
         )
 
     # -- internals -------------------------------------------------------------
+
+    def _callable_tools(self, package: Any) -> list[str]:
+        """The tools this agent may request — and that something can answer.
+
+        A package's ``tools.yaml`` is a statement of the authority the role is
+        designed to hold, and the fleet declares far more of it than this
+        deployment implements: nineteen packages name about seventy distinct
+        tools, and seventeen have handlers. Passing the declared list straight
+        into the envelope put every one of those names into the prompt's tool
+        catalogue, so an agent could spend a round asking for ``workpapers.verify``
+        and be refused — and the refusal reads as a *policy* denial when it is
+        really a missing feature. That is the worst possible way to express an
+        unimplemented capability: it teaches the model that its authority is
+        narrower than it is, and it teaches an operator reading the decision log
+        that a control fired when none did.
+
+        So the envelope grants the intersection with what is actually registered
+        for this role. When nothing is registered — a gateway with no domain
+        tools bound, which is how the unit tests construct one — the declared
+        list stands, because narrowing to an empty set there would silently
+        disarm the agent rather than describe it.
+        """
+        declared = [
+            str(item.get("name"))
+            for item in (package.tools or {}).get("tools", [])
+            if item.get("name")
+        ]
+        registered = set(self.gateway.registered_tools(package.agent_id))
+        if not registered:
+            return declared
+        return [name for name in declared if name in registered]
 
     def _persist(
         self,

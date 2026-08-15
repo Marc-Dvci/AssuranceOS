@@ -100,6 +100,12 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         # Local quickstarts use .env; deployed variables always win.
+        #
+        # .env.local is read first and is not tracked by git, which is where a
+        # real credential belongs. Loading it before .env matters: load_dotenv
+        # with override=False keeps whatever is already set, so the untracked
+        # file wins over the committed template rather than the other way round.
+        load_dotenv(".env.local", override=False)
         load_dotenv(override=False)
         environment = os.getenv("ASSURANCEOS_ENV", "local").strip().lower()
         auth_mode = os.getenv("ASSURANCEOS_AUTH_MODE", "disabled").strip().lower()

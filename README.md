@@ -654,7 +654,9 @@ ADK and Vertex AI Agent Engine adapter:
 ```bash
 pip install -e '.[cloud]'
 export GOOGLE_CLOUD_PROJECT=your-project
-export GOOGLE_CLOUD_LOCATION=us-central1
+export GOOGLE_CLOUD_LOCATION=us-central1   # where it deploys
+export ASSURANCEOS_GEMINI_LOCATION=global  # where Gemini 3.x is served
+python scripts/check_gemini.py             # prove the credential before anything else
 python scripts/run_agent_evaluations.py --mode contract
 python scripts/deploy_adk_agent.py --plan --output var/agent-engine-plan.json
 python scripts/deploy_adk_agent.py --agent engagement-director

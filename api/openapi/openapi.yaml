@@ -4379,6 +4379,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tenants/{tenant_id}/risk-discovery:
+    get:
+      summary: Product Risk Discovery
+      description: 'The risk universe derived from the approved company profile.
+
+
+        A proposal, not a register: nothing here is registered until a person accepts
+
+        it, and the payload marks which ones they already have. Derived by declared
+
+        rules rather than by a model, so an auditor who disagrees with an entry can
+        be
+
+        shown the fact and the rule that put it there.'
+      operationId: product_risk_discovery_api_v1_tenants__tenant_id__risk_discovery_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Product Risk Discovery Api V1 Tenants  Tenant Id  Risk
+                  Discovery Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/judge/overview:
     get:
       summary: Judge Overview
@@ -6194,6 +6234,16 @@ components:
           - type: integer
           - type: 'null'
           title: Equivalent Runs
+        run_size_documents:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Run Size Documents
+        run_cost_usd:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Run Cost Usd
       type: object
       required:
       - annual_function_cost_usd
@@ -6328,6 +6378,90 @@ components:
       - output_tokens
       - metered
       title: EconomicsModelUsage
+    EconomicsProjection:
+      properties:
+        priced_as:
+          type: string
+          title: Priced As
+        points:
+          items:
+            $ref: '#/components/schemas/EconomicsProjectionPoint'
+          type: array
+          title: Points
+        measured_inputs:
+          $ref: '#/components/schemas/EconomicsProjectionInputs'
+        assumptions:
+          items:
+            type: string
+          type: array
+          title: Assumptions
+        caveat:
+          type: string
+          title: Caveat
+      type: object
+      required:
+      - priced_as
+      - points
+      - measured_inputs
+      - assumptions
+      - caveat
+      title: EconomicsProjection
+      description: 'What an audit of a given size would cost, scaled from measured
+        unit costs.
+
+
+        Separate from ``cost``, which is a measurement, because the two answer
+
+        different questions and a surface that renders them alike would let a
+
+        projection borrow a measurement''s authority.'
+    EconomicsProjectionInputs:
+      properties:
+        mean_document_bytes:
+          type: integer
+          title: Mean Document Bytes
+        tokens_per_document:
+          type: integer
+          title: Tokens Per Document
+        documents_measured:
+          type: integer
+          title: Documents Measured
+        output_tokens_per_model_call:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Output Tokens Per Model Call
+      type: object
+      required:
+      - mean_document_bytes
+      - tokens_per_document
+      - documents_measured
+      title: EconomicsProjectionInputs
+    EconomicsProjectionPoint:
+      properties:
+        documents:
+          type: integer
+          title: Documents
+        input_tokens:
+          type: integer
+          title: Input Tokens
+        output_tokens:
+          type: integer
+          title: Output Tokens
+        usd:
+          type: number
+          title: Usd
+        introductory_usd:
+          type: number
+          title: Introductory Usd
+      type: object
+      required:
+      - documents
+      - input_tokens
+      - output_tokens
+      - usd
+      - introductory_usd
+      title: EconomicsProjectionPoint
     EconomicsResponse:
       properties:
         engagement:
@@ -6359,6 +6493,8 @@ components:
           title: Caveat
         comparison:
           $ref: '#/components/schemas/EconomicsComparison'
+        projection:
+          $ref: '#/components/schemas/EconomicsProjection'
       type: object
       required:
       - engagement
@@ -6369,6 +6505,7 @@ components:
       - cost
       - measurement
       - comparison
+      - projection
       title: EconomicsResponse
     EvaluationSummaryResponse:
       properties:

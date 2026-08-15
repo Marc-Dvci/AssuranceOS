@@ -242,9 +242,15 @@ class AuditPackCompiler:
                     ],
                     assigned_agent_role=procedure.agent,
                     input_refs=input_refs,
+                    # Everything a briefing for this step is composed from, carried
+                    # on the task itself. The compiler is the only place holding
+                    # the pack open, so a value it omits is one the runtime would
+                    # later have to re-derive from a pack it cannot prove is the
+                    # one this engagement was compiled against.
                     execution_policy={
                         "pack_reference": manifest.reference,
                         "package_sha256": pack.package_sha256,
+                        "objective": manifest.objective,
                         "action": procedure.action,
                         "criteria": criteria_refs,
                         "citations": [
@@ -252,8 +258,32 @@ class AuditPackCompiler:
                             for code in criteria_refs
                             if code in criteria_by_id
                         ],
+                        # The criteria in full, not only their codes. An agent told
+                        # to test against "AST-POL-SCM-02" and nothing else is being
+                        # asked to recall a standard it was never shown, and a model
+                        # that recalls one is guessing.
+                        "criteria_detail": [
+                            {
+                                "criteria_id": code,
+                                "text": criteria_by_id[code].text,
+                                "citation": criteria_by_id[code].citation,
+                                "strength": criteria_by_id[code].strength,
+                            }
+                            for code in criteria_refs
+                            if code in criteria_by_id
+                        ],
+                        "control": (
+                            {
+                                "control_id": control.control_id,
+                                "risk": control.risk,
+                                "expected": control.expected,
+                            }
+                            if control
+                            else None
+                        ),
                         "quality_rules": list(manifest.quality_rules),
                         "control_test": str(procedure.test_ref) if procedure.test_ref else None,
+                        "depends_on": sorted(procedure.depends_on),
                     },
                     model_policy=procedure.model_policy,
                     tool_policy=procedure.tool_policy,

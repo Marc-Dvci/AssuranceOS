@@ -39,6 +39,7 @@ from ..db.models import (
     Engagement,
     EngagementTask,
     EvidenceRecord,
+    OrganizationFact,
     OrganizationProfile,
     Risk,
 )
@@ -509,6 +510,17 @@ def _risks_read(context: DomainToolContext):
 
 
 def _organization_context_read(context: DomainToolContext):
+    """What the platform knows about the company, with each claim's provenance.
+
+    The profile header alone — name, domain, country, industry — is not enough to
+    adapt an audit to a company. What changes the work is the rest: whether it
+    processes personal data, where it operates, what it has publicly committed to,
+    and which of those the platform *inferred* rather than observed. Returning
+    facts without their claim type would let a model cite an inference as though
+    the company had asserted it, which is the one thing the whole taxonomy exists
+    to prevent, so the class travels with every value.
+    """
+
     def handler(*, arguments: Mapping[str, Any], identity: AgentIdentity, envelope: ExecutionEnvelope):
         with context.database.read_session() as session:
             profile = session.scalar(
@@ -516,8 +528,19 @@ def _organization_context_read(context: DomainToolContext):
                 .where(OrganizationProfile.tenant_id == envelope.tenant_id)
                 .order_by(OrganizationProfile.version.desc())
             )
-        if profile is None:
-            return {"profile": None, "reason": "no approved organization profile in this tenant"}
+            if profile is None:
+                return {
+                    "profile": None,
+                    "reason": "no approved organization profile in this tenant",
+                }
+            facts = list(
+                session.scalars(
+                    select(OrganizationFact).where(
+                        OrganizationFact.tenant_id == envelope.tenant_id,
+                        OrganizationFact.profile_id == profile.profile_id,
+                    )
+                )
+            )
         return {
             "profile": {
                 "profile_id": profile.profile_id,
@@ -527,7 +550,30 @@ def _organization_context_read(context: DomainToolContext):
                 "primary_domain": profile.primary_domain,
                 "headquarters_country": profile.headquarters_country,
                 "industry": profile.industry,
-            }
+            },
+            "facts": [
+                {
+                    "key": fact.fact_key,
+                    "value": fact.value_json,
+                    "claim_type": fact.claim_type,
+                    "source_type": fact.source_type,
+                    "confidence": fact.confidence,
+                }
+                for fact in facts
+                if fact.status == "accepted"
+            ],
+            # A fact a human overruled is more informative than one nobody
+            # questioned: it is the platform being wrong, on the record.
+            "overruled": [
+                {"key": fact.fact_key, "proposed_value": fact.value_json}
+                for fact in facts
+                if fact.status == "corrected"
+            ],
+            "claim_type_note": (
+                "'observed' was read from a source; 'assertion' was stated by the "
+                "company; 'inference' is this platform's reading and is not "
+                "evidence on its own."
+            ),
         }
 
     return handler

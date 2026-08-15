@@ -5,6 +5,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .env
+# Real credentials live here, never in .env, which is committed as a template.
+.env.local
+.env.*.local
 *.db
 *.sqlite3
 build/

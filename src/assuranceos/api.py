@@ -127,6 +127,7 @@ from .portfolio import (
 )
 from .delegation import engagement_delegation
 from .economics import engagement_economics
+from .risk_discovery import discovered_universe
 from .product import (
     agent_catalogue,
     evaluator_overview,
@@ -3114,6 +3115,21 @@ def product_economics(tenant_id: str, engagement_id: str | None = None) -> dict:
 
 
 @app.get(
+    "/api/v1/tenants/{tenant_id}/risk-discovery",
+    dependencies=[Depends(require_permission(Permission.ENGAGEMENT_READ))],
+)
+def product_risk_discovery(tenant_id: str) -> dict:
+    """The risk universe derived from the approved company profile.
+
+    A proposal, not a register: nothing here is registered until a person accepts
+    it, and the payload marks which ones they already have. Derived by declared
+    rules rather than by a model, so an auditor who disagrees with an entry can be
+    shown the fact and the rule that put it there.
+    """
+    return discovered_universe(database, tenant_id)
+
+
+@app.get(
     "/api/v1/judge/overview",
     response_model=JudgeOverviewResponse,
     dependencies=[Depends(require_permission(Permission.AGENTS_READ))],
@@ -3299,6 +3315,7 @@ def judge_mode() -> str:
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/onboarding", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/plan-proposals", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/audits", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/findings", response_class=HTMLResponse, include_in_schema=False)

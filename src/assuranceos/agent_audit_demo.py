@@ -30,11 +30,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from sqlalchemy import select
 
+from .briefing import brief_from_lease, organization_brief, render_briefing
 from .control_testing.demo import build_service as build_control_test_service
 from .corpus import PERIOD_END, PERIOD_START
 from .db.models import Engagement, EngagementTask, Tenant
@@ -50,7 +53,7 @@ from .governance.identity import AgentIdentityIssuer, AgentIdentityVerifier
 from .governance.managed_armor import build_model_armor
 from .governance.models_client import ModelClient, ScriptedClient
 from .governance.persistence import DatabaseRevocationChecker, GovernanceRecorder
-from .governance.runtime import EvidenceItem, GovernedAgentRuntime
+from .governance.runtime import EvidenceItem, GovernedAgentRuntime, QualityContext
 from .governance.telemetry import AgentTracer, TelemetryConfig
 from .models import ExecutionEnvelope
 from .registry import AgentRegistry
@@ -72,12 +75,83 @@ GRANTED_TOOLS = [
     "exceptions.classify",
 ]
 
+#: What this step is, in the pack author's voice. It is the *fallback* action:
+#: when the task is the compiled plan's own control-testing step — which is how
+#: the composed demo tenant runs it — the action comes from the signed Audit Pack
+#: instead, and so do the criteria, the control's expectation and the quality
+#: rules. Either way the agent is briefed by :mod:`assuranceos.briefing` rather
+#: than handed a task key.
 INSTRUCTION = (
     "Determine whether control SCM-01 operated effectively over the July 2026 "
     "production change population. Execute the signed control test rather than "
     "reasoning about a sample, then read the exceptions it produced and explain "
     "what they mean. Cite the run and the evidence you used."
 )
+
+#: The signed procedure this demonstration is pinned to. Declared so the quality
+#: gate can refuse a conclusion reached without running it, even on the
+#: standalone engagement whose task carries no compiled execution policy.
+CONTROL_TEST = "SCM-01@2.0.0"
+
+
+def _brief_the_agent(
+    database: Database, tenant_id: str, engagement_id: str, task_id: str
+) -> tuple[str, QualityContext]:
+    """Compose this task's briefing from whatever canonical state exists.
+
+    Run inside the compiled plan, the task carries the pack's own step: the
+    action, the criteria it tests against, the control's expectation, and the
+    quality rules a later agent reviews it under. Run standalone, none of that
+    exists and the fallback supplies only what is true of the standalone task. So
+    the two runs differ in how *much* the agent is told, which is honest, rather
+    than in whether it was told anything at all.
+    """
+    with database.read_session() as session:
+        task = session.scalar(
+            select(EngagementTask).where(
+                EngagementTask.tenant_id == tenant_id,
+                EngagementTask.task_id == task_id,
+            )
+        )
+        engagement = session.scalar(
+            select(Engagement).where(
+                Engagement.tenant_id == tenant_id,
+                Engagement.engagement_id == engagement_id,
+            )
+        )
+        policy = dict(task.execution_policy_json or {}) if task is not None else {}
+        task_key = task.task_key if task is not None else "execute-population-test"
+        task_type = task.task_type if task is not None else "control_test"
+        human_gate = task.human_gate if task is not None else None
+        engagement_view = {
+            "code": engagement.code if engagement is not None else None,
+            "title": engagement.title if engagement is not None else None,
+            "period": (
+                (engagement.period_start, engagement.period_end)
+                if engagement is not None
+                else (PERIOD_START, PERIOD_END)
+            ),
+        }
+
+    policy.setdefault("action", INSTRUCTION)
+    policy.setdefault("control_test", CONTROL_TEST)
+
+    brief = brief_from_lease(
+        SimpleNamespace(
+            task_key=task_key,
+            task_type=task_type,
+            assigned_agent_role=AGENT_ROLE,
+            engagement_id=engagement_id,
+            execution_policy=policy,
+            human_gate=human_gate,
+        ),
+        organization=organization_brief(database, tenant_id),
+        engagement=engagement_view,
+    )
+    return render_briefing(brief), QualityContext(
+        required_control_test=str(policy.get("control_test") or "") or None,
+        quality_rules=tuple(str(item) for item in (policy.get("quality_rules") or ())),
+    )
 
 # The scripted path takes exactly the route a competent model takes, so the
 # deterministic run and the live run exercise the same code: gather first,
@@ -326,11 +400,13 @@ def run_agent_audit_demo(
         telemetry=TelemetryConfig(environment="demo"),
         max_tool_rounds=max_tool_rounds,
     )
+    instruction, quality = _brief_the_agent(database, tenant, engagement, task)
     result = runtime.run(
         package=package,
         envelope=envelope,
-        instruction=INSTRUCTION,
+        instruction=instruction,
         evidence=evidence,
+        quality=quality,
         tracer=tracer,
     )
     recorder.record_chain(

@@ -271,6 +271,40 @@ class EconomicsComparison(BaseModel):
     #: The comparison is only as good as this line, so it travels with it.
     assumption: str
     equivalent_runs: int | None = None
+    #: The size of audit the quotient is drawn at. Without it "N audits" is a
+    #: number divided by whatever this tenant happened to run.
+    run_size_documents: int | None = None
+    run_cost_usd: float | None = None
+
+
+class EconomicsProjectionPoint(BaseModel):
+    documents: int
+    input_tokens: int
+    output_tokens: int
+    usd: float
+    introductory_usd: float
+
+
+class EconomicsProjectionInputs(BaseModel):
+    mean_document_bytes: int
+    tokens_per_document: int
+    documents_measured: int
+    output_tokens_per_model_call: int | None = None
+
+
+class EconomicsProjection(BaseModel):
+    """What an audit of a given size would cost, scaled from measured unit costs.
+
+    Separate from ``cost``, which is a measurement, because the two answer
+    different questions and a surface that renders them alike would let a
+    projection borrow a measurement's authority.
+    """
+
+    priced_as: str
+    points: list[EconomicsProjectionPoint]
+    measured_inputs: EconomicsProjectionInputs
+    assumptions: list[str]
+    caveat: str
 
 
 class EconomicsResponse(BaseModel):
@@ -287,6 +321,7 @@ class EconomicsResponse(BaseModel):
     #: flag so a caller cannot render the figure and drop the qualification.
     caveat: str | None = None
     comparison: EconomicsComparison
+    projection: EconomicsProjection
 
 
 class GroundTruthCondition(BaseModel):
