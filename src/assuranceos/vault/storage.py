@@ -19,6 +19,22 @@ _SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 #: The only shape a stored object key takes, produced by `key_for_digest` and by
 #: nothing else. Pinning it here means the path built from a key cannot leave the
 #: object tree even before the containment check below runs.
+# Why the two path constructions below carry a `codeql[py/path-injection]`
+# suppression, rather than the threshold being lowered to hide them.
+#
+# The query is right that a caller-supplied string reaches a path. What it does
+# not model is that neither string survives to the join: `_tenant_root` matches
+# `_SEGMENT` and builds from the matched text, and `_path` matches `_OBJECT_KEY`
+# and rebuilds the path from the sixty-four hex characters it captured, so the
+# result is a function of validated text and of nothing the caller wrote.
+# Containment is then re-checked against the root after `resolve()`.
+#
+# Three independent controls, and each one is observed refusing in
+# `tests/test_vault.py`: a key that is not content-addressed, a tenant that is
+# not one safe segment, and a path that escapes its root. A suppression that
+# rests on tested refusals is a different thing from one that rests on a
+# reading of the code, and the checker counts suppressions separately so this
+# stays visible in the log rather than disappearing.
 _OBJECT_KEY = re.compile(r"^objects/[0-9a-f]{2}/[0-9a-f]{2}/(?P<digest>[0-9a-f]{64})$")
 
 
@@ -97,7 +113,7 @@ class LocalObjectStore:
         # something a pattern produced, which is what makes the validation
         # visible to a reader and to static analysis instead of being a check
         # standing next to an unrelated join.
-        path = (self.root / match.group(0)).resolve()
+        path = (self.root / match.group(0)).resolve()  # codeql[py/path-injection]
         if self.root not in path.parents:
             raise ValueError("tenant storage path escapes vault root")
         return path
@@ -116,7 +132,7 @@ class LocalObjectStore:
         # Reassembled from the digest the pattern captured, so the path is a
         # function of sixty-four validated hex characters and nothing else.
         digest = match.group("digest")
-        path = (tenant_root / "objects" / digest[:2] / digest[2:4] / digest).resolve()
+        path = (tenant_root / "objects" / digest[:2] / digest[2:4] / digest).resolve()  # codeql[py/path-injection]
         if tenant_root not in path.parents:
             raise ValueError("storage key escapes tenant root")
         return path
