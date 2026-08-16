@@ -1565,8 +1565,13 @@ def export_evidence(
     tenant_id: str, payload: EvidenceExportRequest, http_request: Request
 ) -> FileResponse:
     settings.evidence_export_root.mkdir(parents=True, exist_ok=True)
+    # The tenant is deliberately absent from the temporary file name. It used to
+    # be the prefix, which puts a path segment the caller controls into a path
+    # the server creates: a tenant id carrying a separator escapes the export
+    # root. The tenant is inside the package manifest, where it is signed, and
+    # the file itself lives for one response.
     descriptor, raw_path = tempfile.mkstemp(
-        prefix=f"{tenant_id}-evidence-", suffix=".zip", dir=settings.evidence_export_root
+        prefix="evidence-", suffix=".zip", dir=settings.evidence_export_root
     )
     os.close(descriptor)
     path = Path(raw_path)

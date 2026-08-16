@@ -84,8 +84,8 @@ DEFAULT_PRICED_AS = "gemini-3.7-flash"
 ASSUMED_FUNCTION_COST_USD = 480_000.0
 ASSUMED_FUNCTION_HEADCOUNT = 4
 ASSUMED_FUNCTION_BASIS = (
-    "four fully-loaded internal-audit FTEs at USD 120,000 each — a declared "
-    "planning assumption, not a measurement"
+    "four fully-loaded internal-audit FTEs at USD 120,000 each, a declared "
+    "planning assumption rather than a measurement"
 )
 
 #: The runtime opens this span for every generation, and it is the only place
@@ -463,7 +463,7 @@ def _projection(
             "output_tokens_per_model_call": round(measured_output) or None,
         },
         "assumptions": [
-            f"Each document is read {_MINIMUM_PASSES:g} times — once per round of the "
+            f"Each document is read {_MINIMUM_PASSES:g} times, once per round of the "
             "gather-then-conclude loop a governed task runs.",
             f"{_BYTES_PER_TOKEN} bytes per token, which understates nothing: audit "
             "sources tokenize denser than prose.",

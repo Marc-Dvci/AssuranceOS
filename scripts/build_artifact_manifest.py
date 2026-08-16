@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
+# git is invoked below with a fixed argument list and no shell.
+import subprocess  # nosec B404
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +35,37 @@ EXCLUDED_NAMES = {".coverage", ".DS_Store"}
 EXCLUDED_SUFFIXES = {".db", ".sqlite3", ".pyc", ".pyo"}
 
 
+@functools.lru_cache(maxsize=1)
+def _git_ignored() -> frozenset[str]:
+    """Every path in the tree that git is already ignoring.
+
+    A hardcoded exclusion list only excludes what someone thought of. Following
+    this repository's *own* cloud runbook writes `terraform.tfstate` next to the
+    module — gitignored, holding the generated database password, and hashed
+    straight into the release manifest, which then fails the gate that asserts
+    the manifest equals `git ls-files`. The exclusions above stay as a fallback
+    for a checkout without git; git's own answer is the authority when it is
+    available.
+
+    This deliberately does not switch to listing `git ls-files` instead: the
+    manifest is built by walking the tree so that an untracked file which is
+    *not* ignored still breaks the gate. That is the check working, not failing.
+    """
+    try:
+        # Fixed argument list, no shell, no interpolation.
+        result = subprocess.run(  # nosec B603 B607
+            ["git", "ls-files", "--others", "--ignored", "--exclude-standard"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return frozenset()
+    return frozenset(line.strip() for line in result.stdout.splitlines() if line.strip())
+
+
 def _is_local_environment_file(name: str) -> bool:
     """A populated .env is developer-local and may hold secrets.
 
@@ -59,6 +93,8 @@ def included_files() -> list[Path]:
             continue
         relative = path.relative_to(ROOT)
         if any(part in EXCLUDED_PARTS for part in relative.parts):
+            continue
+        if relative.as_posix() in _git_ignored():
             continue
         if _is_build_artifact(relative):
             continue

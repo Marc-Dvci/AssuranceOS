@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
   security-events: write
+  # CodeQL reads the workflow run it is analysing, and on a private repository
+  # the default token cannot. Without this, analyze uploads its SARIF and then
+  # fails the job on "Resource not accessible by integration".
+  actions: read
 
 jobs:
   python-and-container:
@@ -57,4 +61,15 @@ jobs:
         with:
           languages: python,actions
           queries: security-extended
+      # Uploading to the code-scanning API needs code scanning enabled, which a
+      # private repository without Advanced Security does not have. So the
+      # upload follows the repository's visibility and the SARIF is always
+      # written to disk, where the next step decides the outcome. The gate is
+      # then the analysis itself rather than the feature flag, and it behaves
+      # the same whichever side of public the repository is on.
       - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          upload: ${{ github.event.repository.private && 'never' || 'always' }}
+          output: var/codeql-results
+      - name: Fail on high or critical CodeQL findings
+        run: python3 scripts/check_codeql_sarif.py var/codeql-results

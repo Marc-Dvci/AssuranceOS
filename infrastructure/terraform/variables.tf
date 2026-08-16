@@ -51,8 +51,19 @@ variable "auth_jwks_url" {
 }
 
 variable "trusted_hosts" {
-  description = "Comma-separated application host allowlist."
+  description = "Comma-separated application host allowlist. Must include var.probe_host, or Cloud Run's health probes are refused by TrustedHostMiddleware and no revision ever serves traffic."
   type        = string
+
+  validation {
+    condition     = can(regex("(^|,)\\s*cloudrun\\.probe\\.internal\\s*($|,)", var.trusted_hosts)) || var.probe_host != "cloudrun.probe.internal"
+    error_message = "trusted_hosts must include the probe host (default cloudrun.probe.internal); the health probes send it as their Host header"
+  }
+}
+
+variable "probe_host" {
+  description = "Host header the Cloud Run startup and liveness probes send. It exists because the probes otherwise address the container by its instance IP, which the application's trusted-host allowlist refuses."
+  type        = string
+  default     = "cloudrun.probe.internal"
 }
 
 variable "export_signing_secret_id" {

@@ -253,6 +253,17 @@ resource "google_project_iam_member" "runtime_model_armor" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+# The API enables Cloud Trace and exports spans, so without this every request
+# writes a PERMISSION_DENIED on cloudtrace.traces.patch into the log. The first
+# deployment did exactly that: an observability claim producing an access error
+# on every call is worse than no tracing at all, because the log is the thing an
+# auditor reads.
+resource "google_project_iam_member" "runtime_trace" {
+  project = var.project_id
+  role    = "roles/cloudtrace.agent"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
 resource "google_storage_bucket_iam_member" "runtime_agent_staging" {
   bucket = google_storage_bucket.agent_staging.name
   role   = "roles/storage.objectAdmin"
@@ -512,6 +523,18 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
 
+      # Both probes send an explicit Host header, and it is not decoration.
+      #
+      # The application runs TrustedHostMiddleware and production refuses a
+      # wildcard allowlist on purpose. Cloud Run addresses the container by its
+      # instance address, so a probe's Host header is an internal IP — which the
+      # middleware rejects with 400 "Invalid host header" while the process is
+      # perfectly healthy. The first deployment of this module failed exactly
+      # that way: twelve consecutive startup probes refused, the revision never
+      # served traffic, and the logs showed `Application startup complete`
+      # directly above the refusals. So the probe identifies itself with a name
+      # the deployment can allowlist, and `trusted_hosts` must contain
+      # `probe_host`.
       startup_probe {
         initial_delay_seconds = 5
         timeout_seconds       = 5
@@ -523,6 +546,11 @@ resource "google_cloud_run_v2_service" "api" {
           # registry synchronization are separately visible through /ready.
           path = "/health"
           port = 8080
+
+          http_headers {
+            name  = "Host"
+            value = var.probe_host
+          }
         }
       }
 
@@ -534,6 +562,11 @@ resource "google_cloud_run_v2_service" "api" {
         http_get {
           path = "/health"
           port = 8080
+
+          http_headers {
+            name  = "Host"
+            value = var.probe_host
+          }
         }
       }
     }
@@ -607,6 +640,16 @@ resource "google_cloud_run_v2_job" "migrate" {
         env {
           name  = "ASSURANCEOS_AUTH_JWKS_URL"
           value = var.auth_jwks_url
+        }
+        # Not optional, and not cosmetic: the algorithm list defaults to HS256
+        # and Settings.validate refuses an HS algorithm alongside a JWKS URL, so
+        # a job configured with the URL and without this crashes on import,
+        # before it opens the database. The API service and the operations jobs
+        # already set it; these two did not, and the first deployment's
+        # migration failed with "JWKS verification cannot use HS algorithms".
+        env {
+          name  = "ASSURANCEOS_AUTH_JWT_ALGORITHMS"
+          value = "RS256"
         }
 
         env {
@@ -694,6 +737,16 @@ resource "google_cloud_run_v2_job" "outbox" {
         env {
           name  = "ASSURANCEOS_AUTH_JWKS_URL"
           value = var.auth_jwks_url
+        }
+        # Not optional, and not cosmetic: the algorithm list defaults to HS256
+        # and Settings.validate refuses an HS algorithm alongside a JWKS URL, so
+        # a job configured with the URL and without this crashes on import,
+        # before it opens the database. The API service and the operations jobs
+        # already set it; these two did not, and the first deployment's
+        # migration failed with "JWKS verification cannot use HS algorithms".
+        env {
+          name  = "ASSURANCEOS_AUTH_JWT_ALGORITHMS"
+          value = "RS256"
         }
 
         env {

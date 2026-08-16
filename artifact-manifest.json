@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 911,
+  "file_count": 920,
   "files": [
     {
       "path": ".dockerignore",
@@ -31,8 +31,8 @@
     },
     {
       "path": ".github/workflows/security.yml",
-      "size_bytes": 2010,
-      "sha256": "f452eb520888201e7f64de5cbf88452254ac605625d46075e6deb74a5b8e405e"
+      "size_bytes": 2953,
+      "sha256": "174a490682248e6f8233f0f40cc76e04874b015fefdbbec460fbfc55951971ae"
     },
     {
       "path": ".gitignore",
@@ -66,8 +66,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 36556,
-      "sha256": "640a169e125bc4a8c895780d56dfbb5bfc60bf17dcdeb753369d74ff908a761e"
+      "size_bytes": 41629,
+      "sha256": "e1c116af2fce1e61f04894fb571187196a7e4b85477ff84728079a15a03b71ff"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -1926,8 +1926,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 149426,
-      "sha256": "87969d2826dd22072d7b5e94feeaceeb5e49ae87290e13e6b43f64dd1d7100cc"
+      "size_bytes": 149715,
+      "sha256": "8189e7a5334278ea497d3dd9307478a37c456a63215dee99563489bd2ca14cc4"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2466,8 +2466,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 27008,
-      "sha256": "b566926edfaabeeeb616b1b29fb22eb19023f0086ecd415ef082ed11bad4f532"
+      "size_bytes": 25844,
+      "sha256": "2dc686410eb102f3480fe6583425e4aa94598b0e77b3f565b0b73d285638b909"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2523,6 +2523,46 @@
       "path": "docs/architecture/evidence-vault-and-provenance.md",
       "size_bytes": 7536,
       "sha256": "2532cc4f1616ae742b4387d986670e71a232025b0a0556c5193145d6f8e40d61"
+    },
+    {
+      "path": "docs/architecture/figures/architecture-at-a-glance-dark.svg",
+      "size_bytes": 11754,
+      "sha256": "f43b338506ed35beafb6826a9f9fccc97ac2e982c28d31470bbf2342e206918b"
+    },
+    {
+      "path": "docs/architecture/figures/architecture-at-a-glance-light.svg",
+      "size_bytes": 11754,
+      "sha256": "4e5f5a01bd012c8369e47081bea90022107d8c7644f9156c392c906ae368e5bc"
+    },
+    {
+      "path": "docs/architecture/figures/cost-per-audit-dark.svg",
+      "size_bytes": 3927,
+      "sha256": "8fa03e2afe61a5b9a2ab703a2d8db6fcff9c3a9b67bbb7d66971aac0a2c1d543"
+    },
+    {
+      "path": "docs/architecture/figures/cost-per-audit-light.svg",
+      "size_bytes": 3927,
+      "sha256": "dc9b75411808c1c203f862d9921e0606da5ea10ed61d1de797f92b0fcba30170"
+    },
+    {
+      "path": "docs/architecture/figures/the-finding-dark.svg",
+      "size_bytes": 7406,
+      "sha256": "f07955e93c79a96186648c4c9caf5359c74e50635ed61da59a69fb28c2f14448"
+    },
+    {
+      "path": "docs/architecture/figures/the-finding-light.svg",
+      "size_bytes": 7406,
+      "sha256": "7228f86358bd9a2e9843f9573e1612b74bf6f13fcf20e0b7216942e6679aaaf3"
+    },
+    {
+      "path": "docs/architecture/figures/the-governed-lifecycle-dark.svg",
+      "size_bytes": 10212,
+      "sha256": "5166fe017e28f65d103d4cee1f72205f2df602f33ef8fed32eb71619a4c58b31"
+    },
+    {
+      "path": "docs/architecture/figures/the-governed-lifecycle-light.svg",
+      "size_bytes": 10212,
+      "sha256": "bbf68dd083aa1c4df3a8b569d8766bacf7928743087c0dade4f0d0e783e47b42"
     },
     {
       "path": "docs/architecture/recurring-audit-scheduler.md",
@@ -2606,8 +2646,8 @@
     },
     {
       "path": "docs/implementation/capability-status.yaml",
-      "size_bytes": 6979,
-      "sha256": "311d5414213c68ab4ebaa3af98dd95f6b694580450623ab3ea6c424a8aa20a71"
+      "size_bytes": 8185,
+      "sha256": "66fdd86b8f2b212471e17277ea8ee04a99ec3e9d7337b067b0942f9b96d344d2"
     },
     {
       "path": "docs/production-readiness.md",
@@ -2741,8 +2781,8 @@
     },
     {
       "path": "infrastructure/terraform/main.tf",
-      "size_bytes": 25493,
-      "sha256": "7a3e5302f98990c042e8bccd44f035f70106f9caa854fb87d62e13db40bf4ce7"
+      "size_bytes": 28165,
+      "sha256": "427b94fb1a6eb51a478616bc09005f5cc915244e8c40ad986511452faf328060"
     },
     {
       "path": "infrastructure/terraform/outputs.tf",
@@ -2751,8 +2791,8 @@
     },
     {
       "path": "infrastructure/terraform/variables.tf",
-      "size_bytes": 4141,
-      "sha256": "cc34e4aade76107575d3a683e73930ccc08a308c70f3eb5deac42f80e2eb826f"
+      "size_bytes": 4892,
+      "sha256": "f5cb52bf94b1e5a6a5e083fd79626e30bd9728f913dc7f3abeac21c98f18001b"
     },
     {
       "path": "infrastructure/terraform/versions.tf",
@@ -2896,8 +2936,8 @@
     },
     {
       "path": "scripts/build_artifact_manifest.py",
-      "size_bytes": 4127,
-      "sha256": "3180b38828e5ecd9e5bfd202754e1752dfe4d35b0c558028c4b43c88133b24a4"
+      "size_bytes": 5682,
+      "sha256": "d57dd67cf098c8038e87e52495caa876b04ed4646ae6763157177c90c2efeaa9"
     },
     {
       "path": "scripts/build_demo_corpus.py",
@@ -2908,6 +2948,11 @@
       "path": "scripts/build_release_archive.py",
       "size_bytes": 3048,
       "sha256": "5d5ea0e1234db92b3692de9584b3fedc353b61b5365aaa9c14461be7adfb31ef"
+    },
+    {
+      "path": "scripts/check_codeql_sarif.py",
+      "size_bytes": 4615,
+      "sha256": "068be97cc55c95f4e13fc33f93fe5616d90cb0d0dba28edff24ed2177fed5f89"
     },
     {
       "path": "scripts/check_gemini.py",
@@ -3086,8 +3131,8 @@
     },
     {
       "path": "scripts/validate_repo.py",
-      "size_bytes": 9430,
-      "sha256": "0daf56b38954a28898bbbdc741f02bd5b41cf01de8c05c83e07c8a9e47b2fbcf"
+      "size_bytes": 10043,
+      "sha256": "4e6894f02ac2a5b30c602e0ff0cfda9743a2035e58b86369c8c07df6aa6a0eb1"
     },
     {
       "path": "scripts/verify_evidence_export.py",
@@ -3321,8 +3366,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 115032,
-      "sha256": "df6aaceed4da8f0d1bf6b473813635be98ad34e5a2a0be8ecb56f2fef059b482"
+      "size_bytes": 115382,
+      "sha256": "73bde78241b5f4a4f560846dcd97a40c72ca15cf657cd600570b8a22171fc205"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3621,8 +3666,8 @@
     },
     {
       "path": "src/assuranceos/economics.py",
-      "size_bytes": 22364,
-      "sha256": "6b7084021c76a44c226b08ca7f1633955d40d7a9e3343bf1e263c1156fa78e1a"
+      "size_bytes": 22365,
+      "sha256": "997288066d6d59ee5b737b2bd021fdadc0660c3940b4d3c23a01f9e747049892"
     },
     {
       "path": "src/assuranceos/evaluation.py",

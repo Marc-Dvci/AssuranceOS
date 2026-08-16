@@ -50,14 +50,14 @@ google_platform:
   gemini_3_7_structured_runtime:
     requirement: Gemini 3.5 or newer through the Gemini API or Vertex AI
     implementation: complete
-    activation: credentials_pending
+    activation: provider_verified
     code: src/assuranceos/governance/models_client.py
     evidence_when_activated: Cloud Trace span with gen_ai.system=gcp.gemini, and the Judge Mode Agent Runtime tile
     note: >-
       The same governed runtime holds three transports behind one contract and
-      never learns which it is talking to. It has been run end to end against a
-      real model on the OpenAI-compatible transport; what is pending is the
-      Vertex account, not the code path.
+      never learns which it is talking to. Activated 2026-08-15 on project
+      audit-505613: the deployed service reports model_mode=vertex on /health and
+      the walkthrough's agent run was served by gemini-3.7-flash through Vertex.
   adk_managed_fleet_deployment:
     requirement: At least one Google agent framework
     implementation: complete
@@ -74,12 +74,28 @@ google_platform:
     activation: credentials_pending
     code: src/assuranceos/governance/managed_armor.py
     evidence_when_activated: one sanitize-operation log entry, and screened_by on a prompt-injection replay
+    note: >-
+      Not activated on the 2026-08-15 deployment. Template creation returned
+      PERMISSION_DENIED for the deploying account with the API enabled, so the
+      service runs on the local deterministic guardrail instead, which is what
+      the prompt-injection replay reports as screened_by, and what Judge Mode
+      shows. The managed path is therefore unproven on this account, and no
+      screen claims otherwise.
   google_cloud_infrastructure:
     requirement: At least one Google Cloud infrastructure service
     implementation: complete
-    activation: credentials_pending
-    code: infrastructure/terraform/ (34 resources — Cloud Run service and 5 jobs, Cloud SQL, Cloud Storage, Pub/Sub, Secret Manager, Cloud Scheduler, Cloud Trace, Artifact Registry)
+    activation: provider_verified
+    code: infrastructure/terraform/ (35 resources: Cloud Run service and 5 jobs, Cloud SQL, Cloud Storage, Pub/Sub, Secret Manager, Cloud Scheduler, Cloud Trace, Artifact Registry)
     evidence_when_activated: terraform outputs, the Cloud Run revision, and job execution logs
+    activated:
+      date: 2026-08-15
+      project: audit-505613
+      region: us-central1
+      service: assuranceos-demo-api
+      url: https://assuranceos-demo-api-u34b6gbpma-uc.a.run.app
+      database: Cloud SQL for PostgreSQL 16 (assuranceos-demo-postgres)
+      jobs_run: migrate, seed-demo, control-test, each completed with exit 0
+      readiness: /ready reports database, agent_registry, control_test_registry and control_test_registry_database all true
 
 hardening:
   jwt_tenant_authorization: complete
@@ -103,6 +119,10 @@ provider_activations:
 
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
+  # The Cloud Run deployment is live (see google_cloud_infrastructure.activated);
+  # this entry is specifically the managed Agent Engine fleet receipt, and the
+  # fleet has not been deployed. All-or-nothing across 19 agents, so a partial
+  # deployment would buy nothing.
   current_status: awaiting_receipt
   verification: live Agent Engine read-back, resource name, release digest, model, fleet completeness, managed Agent Identity, and Memory Bank policy
   limitation: the operator receipt is validated application evidence, not a cryptographic remote attestation
