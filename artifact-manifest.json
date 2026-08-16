@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 920,
+  "file_count": 924,
   "files": [
     {
       "path": ".dockerignore",
@@ -2535,6 +2535,11 @@
       "sha256": "4e5f5a01bd012c8369e47081bea90022107d8c7644f9156c392c906ae368e5bc"
     },
     {
+      "path": "docs/architecture/figures/architecture-at-a-glance.png",
+      "size_bytes": 165825,
+      "sha256": "5da47f162269a8da4f069ef1c8447efc1531060cb4c65b42a8523a62d921a400"
+    },
+    {
       "path": "docs/architecture/figures/cost-per-audit-dark.svg",
       "size_bytes": 3927,
       "sha256": "8fa03e2afe61a5b9a2ab703a2d8db6fcff9c3a9b67bbb7d66971aac0a2c1d543"
@@ -2543,6 +2548,11 @@
       "path": "docs/architecture/figures/cost-per-audit-light.svg",
       "size_bytes": 3927,
       "sha256": "dc9b75411808c1c203f862d9921e0606da5ea10ed61d1de797f92b0fcba30170"
+    },
+    {
+      "path": "docs/architecture/figures/cost-per-audit.png",
+      "size_bytes": 84153,
+      "sha256": "59806b06f0620c40bef45ca27540989b8730f12050ba0f668d8cd4a290847ab7"
     },
     {
       "path": "docs/architecture/figures/the-finding-dark.svg",
@@ -2555,6 +2565,11 @@
       "sha256": "7228f86358bd9a2e9843f9573e1612b74bf6f13fcf20e0b7216942e6679aaaf3"
     },
     {
+      "path": "docs/architecture/figures/the-finding.png",
+      "size_bytes": 152301,
+      "sha256": "817aa7c58582bbd7afb97d06b143c764730a2518a2e146f82cf9a6319cc5363e"
+    },
+    {
       "path": "docs/architecture/figures/the-governed-lifecycle-dark.svg",
       "size_bytes": 10212,
       "sha256": "5166fe017e28f65d103d4cee1f72205f2df602f33ef8fed32eb71619a4c58b31"
@@ -2563,6 +2578,11 @@
       "path": "docs/architecture/figures/the-governed-lifecycle-light.svg",
       "size_bytes": 10212,
       "sha256": "bbf68dd083aa1c4df3a8b569d8766bacf7928743087c0dade4f0d0e783e47b42"
+    },
+    {
+      "path": "docs/architecture/figures/the-governed-lifecycle.png",
+      "size_bytes": 83903,
+      "sha256": "5b77f6e9ddba880ec2ba742f5d9a61b0bb2a96c8a679a956f672c95ec3899b40"
     },
     {
       "path": "docs/architecture/recurring-audit-scheduler.md",
