@@ -443,6 +443,15 @@ def run_agent_audit_demo(
     test_run = next(
         (item["result"] for item in executed if item["tool"] == "tests.execute"), {}
     )
+    # Read back from the run record rather than from the copy the model saw.
+    # The model-bound copy carries a digest prefix and a sample of the
+    # exceptions, so a report assembled from it inherits both bounds without
+    # saying so.
+    if run_id := test_run.get("run_id"):
+        try:
+            test_run = context.control_tests.get_run(tenant, run_id).model_dump(mode="json")
+        except Exception:
+            pass
     injection_detectors = sorted(
         {
             finding.detector

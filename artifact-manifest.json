@@ -3416,8 +3416,8 @@
     },
     {
       "path": "src/assuranceos/agent_audit_demo.py",
-      "size_bytes": 21390,
-      "sha256": "051a9abe93a2a07082967237b556d291d4d5a1d8b7d3af5361d457ef9ac2fae9"
+      "size_bytes": 21822,
+      "sha256": "c834e9542a5dcd3c4bfce102992bf944274759cca1aad8c0e132c0d567715b01"
     },
     {
       "path": "src/assuranceos/agent_release.py",
@@ -3741,8 +3741,8 @@
     },
     {
       "path": "src/assuranceos/evaluator_audit.py",
-      "size_bytes": 36037,
-      "sha256": "65288a8050b24cf8f3e03ec6847f1c2c9a394d79e046ff9e9dc4a8a7ee6df502"
+      "size_bytes": 37345,
+      "sha256": "1a9b3ca5baab7ac10bcb23f15e399f80252a8527dc572397dcb8831cb17eb84c"
     },
     {
       "path": "src/assuranceos/evaluator_sandbox.py",
@@ -3781,8 +3781,8 @@
     },
     {
       "path": "src/assuranceos/governance/domain_tools.py",
-      "size_bytes": 37418,
-      "sha256": "b8f44668421f9c40e36db8e425c90bcc51ce839357778e83216d5c416438ce1e"
+      "size_bytes": 38280,
+      "sha256": "506b930a410404977c40a4af4392957e88fb2deb6f445406c733334780b3db0b"
     },
     {
       "path": "src/assuranceos/governance/embeddings.py",
@@ -4526,8 +4526,8 @@
     },
     {
       "path": "tests/test_evaluator_audit.py",
-      "size_bytes": 17567,
-      "sha256": "f7498e33695655bdb59f31b5d5425449662dd59badee885811bc2841ace46c82"
+      "size_bytes": 21242,
+      "sha256": "c9e498b0168c89c9fd672c8e23c7fcddd891d41e7a2015a934ffa9198ce8c9f9"
     },
     {
       "path": "tests/test_evaluator_sandbox.py",

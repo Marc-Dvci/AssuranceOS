@@ -593,25 +593,34 @@ class WorkspaceAudit:
         test_run = next(
             (item["result"] for item in executed if item["tool"] == "tests.execute"), {}
         )
+        # What the report says about the run is read back from the run itself,
+        # not from the copy that went through the model. Those differ by design
+        # -- the model-bound copy carries a digest prefix and a sample of the
+        # exceptions -- and a report assembled from it would quietly inherit
+        # both bounds.
+        canonical = self._canonical_run(
+            context.control_tests, workspace.tenant_id, test_run.get("run_id")
+        )
         finding = self._propose_finding(
             tenant_id=workspace.tenant_id,
             engagement_id=engagement_id,
             request=request,
-            test_run=test_run,
+            test_run=canonical,
             result=result,
         )
         return {
             "control_test": {
-                "test_id": test_run.get("test_id"),
-                "version": test_run.get("version"),
-                "run_id": test_run.get("run_id"),
-                "status": test_run.get("status"),
-                "conclusion": test_run.get("conclusion"),
-                "population_count": test_run.get("population_count"),
-                "population_complete": test_run.get("population_complete"),
-                "exception_count": test_run.get("exception_count"),
-                "result_manifest_hash": test_run.get("result_manifest_hash"),
-                "exceptions": (test_run.get("exceptions") or [])[:20],
+                "test_id": canonical.get("test_id"),
+                "version": canonical.get("version"),
+                "run_id": canonical.get("run_id"),
+                "status": canonical.get("status"),
+                "conclusion": canonical.get("conclusion"),
+                "population_count": canonical.get("population_count"),
+                "population_complete": canonical.get("population_complete"),
+                "exception_count": canonical.get("exception_count"),
+                "result_manifest_hash": canonical.get("result_manifest_hash"),
+                "limitations": canonical.get("limitations") or [],
+                "exceptions": (canonical.get("exceptions") or [])[:20],
             },
             "agent": {
                 "status": result.status,
@@ -629,6 +638,25 @@ class WorkspaceAudit:
             },
             "finding": finding,
         }
+
+    @staticmethod
+    def _canonical_run(service: Any, tenant_id: str, run_id: str | None) -> dict[str, Any]:
+        """Read the signed run back from the record it was written to.
+
+        Returns an empty mapping when the agent never got a run, which is the
+        honest shape: the report then says nothing about a population instead of
+        reporting a partially-filled one.
+        """
+
+        if not run_id:
+            return {}
+        try:
+            run = service.get_run(tenant_id, run_id)
+        except Exception:
+            return {}
+        payload = run.model_dump(mode="json") if hasattr(run, "model_dump") else dict(run)
+        payload.setdefault("version", payload.get("version") or payload.get("test_version"))
+        return payload
 
     def _brief(
         self, tenant_id: str, engagement_id: str, task_id: str, request: AuditRequest

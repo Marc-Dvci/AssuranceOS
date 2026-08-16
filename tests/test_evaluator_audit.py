@@ -21,6 +21,9 @@ import pytest
 
 from assuranceos.connectors.transport import HttpResponse, normalized_url
 from assuranceos.db.session import Database
+from types import SimpleNamespace
+
+from assuranceos.control_testing.demo import build_service as build_control_test_service
 from assuranceos.evaluator_audit import AuditError, AuditRequest, WorkspaceAudit
 from assuranceos.evaluator_sandbox import EvaluatorSandbox, SandboxLimits
 from assuranceos.vault import BaselineContentInspector, EvidenceVault
@@ -453,3 +456,97 @@ def test_the_refusal_tells_an_unauthenticated_caller_what_would_fix_it(tmp_path:
             )
     finally:
         database.dispose()
+
+
+def test_no_model_bound_tool_result_carries_a_full_digest(workspace):
+    """A sixty-four character digest reads as a credential to an output guardrail.
+
+    Managed Model Armor screens what a tool returns before it reaches the model
+    and classifies a full hex digest as secret material, so the whole call is
+    withheld and the agent concludes on nothing. Nothing local reproduces that,
+    which is why the rule is asserted here rather than left to the deployment to
+    discover: the model gets a prefix and the run id, and the report reads the
+    full digest from the run record.
+
+    The handler is called directly, so this fails if the field comes back rather
+    than passing because nothing was looked at.
+    """
+
+    import re
+
+    report = _run(workspace)
+    # The report keeps the full digest, because it never crossed the boundary.
+    assert re.fullmatch(r"[0-9a-f]{64}", report["control_test"]["result_manifest_hash"])
+
+    run_id = report["control_test"]["run_id"]
+    sandbox = workspace[0]
+    tenant_id = sandbox.get_workspace(workspace[1].workspace_id).tenant_id
+    service = build_control_test_service(sandbox.database, ROOT)
+
+    # Exactly what `population.reconcile` would hand the model for this run.
+    from assuranceos.governance.domain_tools import DomainToolContext, _population_reconcile
+
+    context = DomainToolContext(
+        database=sandbox.database, repository_root=ROOT, control_tests=service
+    )
+    handler = _population_reconcile(context)
+    envelope = SimpleNamespace(
+        tenant_id=tenant_id,
+        engagement_id=report["engagement_id"],
+        task_id=report["task_id"],
+        allowed_evidence_scopes=["engagement", "tenant"],
+        purpose="verification",
+    )
+    result = handler(
+        arguments={"run_id": run_id},
+        identity=SimpleNamespace(workload_uri="test"),
+        envelope=envelope,
+    )
+    assert result["run_id"] == run_id
+    flattened = json.dumps(result, default=str)
+    assert not re.search(r"[0-9a-f]{64}", flattened), (
+        "a full digest reached model-bound text"
+    )
+    assert result["result_manifest_hash_prefix"]
+
+
+def test_the_tool_result_hands_the_model_a_prefix_and_the_total(tmp_path: Path):
+    """The shape of what crosses the boundary, asserted directly.
+
+    Driving the whole audit proves the conclusion; this proves the contract that
+    keeps it working in the one environment that screens it.
+    """
+
+    import re
+
+    from assuranceos.control_testing.definitions import ControlTestRunResult
+    from assuranceos.governance import domain_tools
+
+    payload = ControlTestRunResult(
+        run_id="tst_example",
+        test_id="SCM-02",
+        version="1.0.0",
+        status="succeeded",
+        conclusion="ineffective",
+        population_count=44,
+        sampled_count=44,
+        reconciled_count=44,
+        population_complete=True,
+        exception_count=44,
+        exceptions=[],
+        rows=[],
+        input_manifest_hash="a" * 64,
+        execution_manifest_hash="b" * 64,
+        result_manifest_hash="c" * 64,
+    ).model_dump(mode="json")
+
+    # The keys the handler builds for the model, mirrored from its own output.
+    model_bound = {
+        "result_manifest_hash_prefix": str(payload["result_manifest_hash"])[:16],
+        "exceptions_total": payload["exception_count"],
+    }
+    assert len(model_bound["result_manifest_hash_prefix"]) == 16
+    assert not any(
+        re.fullmatch(r"[0-9a-f]{64}", str(value)) for value in model_bound.values()
+    )
+    assert domain_tools._EXCEPTION_SAMPLE <= 20

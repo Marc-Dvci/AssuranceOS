@@ -412,7 +412,14 @@ def _tests_execute(context: DomainToolContext):
             "population_complete": payload.get("population_complete"),
             "reconciled_count": payload.get("reconciled_count"),
             "exception_count": payload.get("exception_count"),
-            "result_manifest_hash": payload.get("result_manifest_hash"),
+            # A prefix, because the full digest is sixty-four hexadecimal
+            # characters and a guardrail that screens model-bound text for
+            # credentials classifies that as one. It is not a credential, and
+            # arguing with the detector would mean weakening it for everything
+            # that really is: the model needs to cite the run, and `run_id` is
+            # the citation. Whatever reports the result reads the full digest
+            # from the run record, which never crosses this boundary.
+            "result_manifest_hash_prefix": str(payload.get("result_manifest_hash") or "")[:16],
             # A bounded sample, with the total beside it. The agent concludes on
             # the run rather than by enumerating rows, and the finding is
             # composed from the full deterministic result rather than from
@@ -456,8 +463,12 @@ def _population_reconcile(context: DomainToolContext):
                 "sampled_count": run.sampled_count,
                 "exception_count": run.exception_count,
                 "population_complete": bool(run.population_complete),
-                "input_manifest_hash": run.input_manifest_hash,
-                "result_manifest_hash": run.result_manifest_hash,
+                # Prefixes, for the reason given on `tests.execute` above: a
+                # full sixty-four character digest reads as a credential to a
+                # guardrail screening model-bound text, and this is the same
+                # boundary.
+                "input_manifest_hash_prefix": str(run.input_manifest_hash or "")[:16],
+                "result_manifest_hash_prefix": str(run.result_manifest_hash or "")[:16],
                 "period": [
                     run.period_start.isoformat() if run.period_start else None,
                     run.period_end.isoformat() if run.period_end else None,
