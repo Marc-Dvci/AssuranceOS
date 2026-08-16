@@ -492,7 +492,7 @@ platform produces the same evidence hashes the demonstration cites.
 
 ## Quality
 
-The repository gate runs lint, 687 tests with an 85% coverage floor,
+The repository gate runs lint, 695 tests with an 85% coverage floor,
 release-signature verification, all 76 fleet evaluation cases, SQLite and
 PostgreSQL migrations, OpenAPI and artifact-manifest checks, Docker build, and
 Terraform validation. Security workflows add dependency review, CodeQL, secret

@@ -826,7 +826,7 @@ tests whether the header is present.
 
 ## Quality gate
 
-693 tests behind an 85% coverage floor, plus lint, release-signature
+695 tests behind an 85% coverage floor, plus lint, release-signature
 verification, all 76 fleet evaluation cases, SQLite and PostgreSQL migrations,
 OpenAPI and artifact-manifest checks, Docker build, and Terraform validation.
 Security workflows add dependency review, CodeQL, secret scanning, SBOM

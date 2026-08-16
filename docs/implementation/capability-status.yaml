@@ -61,30 +61,46 @@ google_platform:
   adk_managed_fleet_deployment:
     requirement: At least one Google agent framework
     implementation: complete
-    activation: credentials_pending
+    activation: provider_verified
     code: src/assuranceos/adk.py, src/assuranceos/managed_fleet.py, scripts/deploy_adk_agent.py
-    evidence_when_activated: var/agent-engine-deployment-result.json, with all 19 reasoningEngines resource names read back
+    evidence_when_activated: release/agent-engine-deployment-result.json, with all 19 reasoningEngines resource names read back
+    activated:
+      date: 2026-08-16
+      project: audit-505613
+      location: us-central1
+      receipt: release/agent-engine-deployment-result.json
+      deployed: 19 of 19 packages, no failures, each resource read back through the API
+      qualification: 76 of 76 release cases across 19 agents, passed before any resource was created
+      identity: managed Agent Identity on every engine
+      model: gemini-3.7-flash
     note: >-
       The hackathon's agent-framework requirement is met by the Google GenAI SDK,
       which is provider_verified above. This entry is the further step of running
-      the same signed fleet on managed Agent Engine, and it is not activated.
-      `deploy_adk_agent.py --plan` qualifies 19/19 agents against all 76 release
-      cases, and attempted deployments on 2026-08-16 got as far as creating a
-      reasoning engine and failed while building the runtime image. Two causes
-      were found and fixed: the deployment did not declare `cloudpickle`, which
-      the SDK serialises the agent with, and it shipped `src/assuranceos` as a
-      directory, which left the container starting with
-      `ModuleNotFoundError: No module named 'assuranceos'`. It now builds and
-      ships a wheel instead. What remains unresolved is where the uploader places
-      `extra_packages` inside the build context, so pip cannot yet find that
-      wheel. No resource survived any attempt; each was removed and the project
-      holds no reasoning engines. Memory Bank is configured per agent in the same
-      call and is therefore unactivated for the same reason.
+      the same signed fleet on managed Agent Engine, and it is now activated.
+      Deployment is all-or-nothing across the nineteen packages and gated on the
+      qualification suite, so nothing is created until 19/19 agents pass all 76
+      release cases. Two earlier attempts on 2026-08-16 created a reasoning engine
+      and failed while building the runtime image: the deployment did not declare
+      `cloudpickle`, which the SDK serialises the agent with, and it shipped
+      `src/assuranceos` as a directory, which left the container starting with
+      `ModuleNotFoundError: No module named 'assuranceos'`. It now builds a wheel
+      and names it where the builder places it inside the build context. No
+      resource from those attempts survived; each was removed before the run that
+      produced the receipt.
   vertex_ai_memory_bank:
     implementation: complete
-    activation: credentials_pending
+    activation: provider_verified
     code: src/assuranceos/managed_fleet.py
     evidence_when_activated: memory bank configuration confirmed per agent in the same deployment result
+    activated:
+      date: 2026-08-16
+      receipt: release/agent-engine-deployment-result.json
+      service: VertexAiMemoryBankService, configured on all 19 engines
+      generation: explicit_after_review, so a session reaches memory only once it has been approved for it
+      tenant_isolation: tenant-qualified user_id scope key
+      ttl: 31536000s memory-revision default
+      generation_model: gemini-3.7-flash
+      similarity_search_model: text-embedding-005
   google_model_armor:
     implementation: complete
     activation: provider_verified
@@ -152,10 +168,11 @@ provider_activations:
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
   # The Cloud Run deployment is live (see google_cloud_infrastructure.activated);
-  # this entry is specifically the managed Agent Engine fleet receipt, and the
-  # fleet has not been deployed. All-or-nothing across 19 agents, so a partial
-  # deployment would buy nothing.
-  current_status: awaiting_receipt
+  # this entry is specifically the managed Agent Engine fleet receipt. It is
+  # all-or-nothing across 19 agents, so a partial deployment would buy nothing.
+  current_status: provider_verified
+  receipt: release/agent-engine-deployment-result.json
+  received: 2026-08-16, 19 of 19 resources read back, no failures
   verification: live Agent Engine read-back, resource name, release digest, model, fleet completeness, managed Agent Identity, and Memory Bank policy
   limitation: the operator receipt is validated application evidence, not a cryptographic remote attestation
 
@@ -173,3 +190,4 @@ post_deployment_update:
   then:
     - python scripts/build_artifact_manifest.py   # this file is hashed by the manifest
     - pytest tests/test_release_hardening.py
+  applied: 2026-08-16, against release/agent-engine-deployment-result.json

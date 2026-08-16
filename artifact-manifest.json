@@ -67,7 +67,7 @@
     {
       "path": "README.md",
       "size_bytes": 43530,
-      "sha256": "2a465ba2843fc3d5184ab562fedb0bbd48cb9d10ed1a01f753d6d9784f682ceb"
+      "sha256": "b545507cd7e78308940be9d0c72369996dfce8de80e5ba5518aeb0da0fdc5e9e"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -2467,7 +2467,7 @@
     {
       "path": "docs/SUBMISSION.md",
       "size_bytes": 26894,
-      "sha256": "e88bb9b1ce375e664f6e21d3c1894cebf724bb2b4ddd91d2c90a05ab07388153"
+      "sha256": "ced0b30c2cee62abdfe9719c1c781862fae35750234171b656d206a7bf7895ec"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2666,8 +2666,8 @@
     },
     {
       "path": "docs/implementation/capability-status.yaml",
-      "size_bytes": 10409,
-      "sha256": "4ebfc19e5031c809f8eeff762811b6ad40920025721ae8c0acd80403f0b418c5"
+      "size_bytes": 11305,
+      "sha256": "8c85fb6432b65a0bc2acfb40a01fca9c94eb08cd338cdb95161a347019f577bf"
     },
     {
       "path": "docs/production-readiness.md",
@@ -3891,8 +3891,8 @@
     },
     {
       "path": "src/assuranceos/portfolio/demo.py",
-      "size_bytes": 16795,
-      "sha256": "532a7662338de3bddb29b112e36d74873c4f6f339998c056d15df8c322d27056"
+      "size_bytes": 18683,
+      "sha256": "5b9a89bd259066233dcc7b6160a5ddba02f1e8661c928091cc15e33f26e6b3cd"
     },
     {
       "path": "src/assuranceos/portfolio/exceptions.py",

@@ -26,6 +26,7 @@ from ..db.repositories import AuditEventRepository, TenantRepository
 from ..db.session import Database
 from .exceptions import CapacityError, PlanStateError
 from .planning import Candidate, CapacityPolicy
+from .repository import PortfolioRepository
 from .scoring import (
     AssuranceSource,
     ControlEvidence,
@@ -260,6 +261,13 @@ def run_portfolio_demo(
         service.register_risk(
             tenant_id=tenant, code=item["code"], title=item["title"]
         )
+        _record_declared_coverage(
+            database,
+            service,
+            tenant_id=tenant,
+            code=item["code"],
+            factors=item["factors"],
+        )
         assessment = service.assess_risk(
             tenant_id=tenant,
             risk_code=item["code"],
@@ -442,6 +450,53 @@ def _undeliverable_refusal(
         ),
         CapacityError,
     )
+
+
+def _record_declared_coverage(
+    database: Database,
+    service: PortfolioService,
+    *,
+    tenant_id: str,
+    code: str,
+    factors: RiskFactors,
+) -> None:
+    """Persist the assurance a risk's declared factors already rely on.
+
+    The coverage a rating is computed from is an argument for doing less audit
+    work, so it belongs on the register a reviewer reads rather than only inside
+    the call that scored the risk. Three of the six seeded risks carry it and
+    three carry none, which is the distinction the plan turns on: a risk nobody
+    has looked at is not a risk that is fine.
+
+    Recording the same assurance twice would overstate the combined-assurance
+    map, so an entry already on the register for the same source and date is
+    left alone.
+    """
+    if not factors.coverage:
+        return
+    with database.transaction() as session:
+        repository = PortfolioRepository(session)
+        risk = repository.risk_by_code(tenant_id, code)
+        existing = (
+            {
+                (record.source, record.obtained_on)
+                for record in repository.coverage_for(tenant_id, risk.risk_id)
+            }
+            if risk is not None
+            else set()
+        )
+    for record in factors.coverage:
+        if (record.source.value, record.obtained_on) in existing:
+            continue
+        service.record_coverage(
+            tenant_id=tenant_id,
+            risk_code=code,
+            source=record.source,
+            obtained_on=record.obtained_on,
+            recorded_by="agent:risk-portfolio",
+            scope_note=record.scope_note,
+            reference=record.reference,
+        )
 
 
 def _reset_and_seed(database: Database, tenant_id: str, *, reset: bool = True) -> None:
