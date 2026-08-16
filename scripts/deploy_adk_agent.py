@@ -341,7 +341,10 @@ def _emit(document: dict[str, Any], output: Path | None) -> None:
     encoded = json.dumps(document, indent=2, sort_keys=True) + "\n"
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(encoded, encoding="utf-8")
+        # Written with explicit LF. A receipt committed from Windows would
+        # otherwise carry CRLF, and the repository normalises to LF on the way
+        # in, so the artifact manifest would hash bytes that no checkout has.
+        output.write_text(encoded, encoding="utf-8", newline="\n")
     elif document.get("schema", "").endswith("plan.v1"):
         print(encoded, end="")
 

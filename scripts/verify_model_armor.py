@@ -52,7 +52,10 @@ def main() -> int:
 
     out_path = args.out if args.out.is_absolute() else REPOSITORY_ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    # Explicit LF: a receipt written from Windows would otherwise carry CRLF,
+    # and the repository normalises to LF, so the artifact manifest would hash
+    # bytes that no checkout has.
+    out_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     print(f"Model Armor verified: {receipt['template']}")
     print(f"  safe response       {receipt['safe_model_response']}")

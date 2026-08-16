@@ -2956,13 +2956,13 @@
     },
     {
       "path": "release/agent-engine-deployment-result.json",
-      "size_bytes": 20004,
-      "sha256": "ace458ff4a8f3e210da2d1734a3ddd79a790ebd0c6f762da595aad4c1bf23f86"
+      "size_bytes": 19447,
+      "sha256": "e1da7107659c2795a6fd6ae60408db3f6b98e982c8527eb65100024c840cdd25"
     },
     {
       "path": "release/model-armor-proof.json",
-      "size_bytes": 365,
-      "sha256": "d2818441a39b28913ed9ed9ec894d8fcb07d1f7c28516d5e832a62f9453588d3"
+      "size_bytes": 357,
+      "sha256": "c888ad7d216fc458dff5267370779b98b6a8136dd38ae51b1c22a107c8fb0693"
     },
     {
       "path": "scripts/build_artifact_manifest.py",
@@ -2991,8 +2991,8 @@
     },
     {
       "path": "scripts/deploy_adk_agent.py",
-      "size_bytes": 13951,
-      "sha256": "12986210436f5d90ee1ef8279977167117f4b7f20765d205b459558e4389352f"
+      "size_bytes": 14197,
+      "sha256": "b76b05dca97ae2bd3a73a74a9ea3a92e213d7a473d8bcacdba10ef0e8449b9e1"
     },
     {
       "path": "scripts/generate_audit_pack_signing_key.py",
@@ -3176,8 +3176,8 @@
     },
     {
       "path": "scripts/verify_model_armor.py",
-      "size_bytes": 2533,
-      "sha256": "6f9e79ed7b39697b49171aa082631e2040c201943852beecc13e7489a4ae4eda"
+      "size_bytes": 2738,
+      "sha256": "1d2be14d130874c76e9a3cb67b0616bdf2648e2388edca259f70140d3fea91af"
     },
     {
       "path": "security/controls/claims-policy.md",
