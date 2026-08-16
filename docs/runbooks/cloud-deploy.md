@@ -400,7 +400,7 @@ otherwise. Both are hashed by the artifact manifest.
 
 ```bash
 # docs/implementation/capability-status.yaml
-#   google_platform.*.activation:      credentials_pending -> provider_verified
+#   google_platform.*.activation:      whatever it says    -> provider_verified
 #   deployment_proof.current_status:   awaiting_receipt    -> provider_verified
 
 python scripts/build_artifact_manifest.py

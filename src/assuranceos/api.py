@@ -13,7 +13,7 @@ import tempfile
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from starlette.background import BackgroundTask
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uuid import uuid4
@@ -149,6 +149,17 @@ from .product_schemas import (
     JudgeOverviewResponse,
     PromptInjectionProofResponse,
 )
+from .evaluator_audit import AuditError, AuditRequest, WorkspaceAudit, default_period
+from .evaluator_sandbox import (
+    EvaluatorSandbox,
+    InProcessCredentialStore,
+    SandboxCredentialStore,
+    SandboxError,
+    SandboxLimits,
+    SandboxNotFoundError,
+    SecretManagerCredentialStore,
+    provider_catalogue,
+)
 from .monitoring import (
     ContinuousMonitoringService,
     MonitorDefinitionInput,
@@ -209,6 +220,7 @@ from .vault.exceptions import (
 )
 from .vault.inspection import ContentInspectionRejected
 from .governance.managed_armor import GoogleManagedModelArmor, build_model_armor
+from .governance.models_client import build_client
 from .governance.telemetry import TelemetryConfig, configure_telemetry
 
 app = FastAPI(title="AssuranceOS API", version="0.8.0")
@@ -3412,6 +3424,298 @@ def get_correlated_trace(tenant_id: str, trace_id: str) -> dict:
     return result
 
 
+# --------------------------------------------------------------------------
+# The evaluator sandbox
+#
+# Everything below operates on workspaces the sandbox itself minted, and never
+# on a tenant the caller names. That is why one permission is enough here where
+# the product's own routes need six: the authority granted is "build in a tenant
+# you created", and `EvaluatorSandbox.tenant_for` makes that literal -- it
+# derives the tenant from a thirty-two character identifier and refuses anything
+# that is not one, so no request on these paths can address the demonstration
+# tenant even by naming it exactly.
+# --------------------------------------------------------------------------
+
+
+class SandboxWorkspaceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    company_name: str = Field(min_length=1, max_length=120)
+    primary_domain: str | None = Field(default=None, max_length=255)
+
+
+class SandboxConnectRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: str = Field(min_length=1, max_length=64)
+    base_url: str = Field(min_length=1, max_length=2048)
+    stream: str = Field(min_length=1, max_length=128)
+    scope: str = Field(min_length=1, max_length=1024)
+    display_name: str | None = Field(default=None, max_length=255)
+    # The values the evaluator typed. There is deliberately no `credential_ref`
+    # field: a caller who could name a reference could name one of the
+    # deployment's own secrets, so the reference is minted from the workspace id
+    # and this is the only way a credential enters.
+    credentials: dict[str, str] = Field(default_factory=dict)
+
+
+class SandboxCollectRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    stream: str = Field(min_length=1, max_length=128)
+    scope: str = Field(min_length=1, max_length=1024)
+
+
+def _sandbox() -> EvaluatorSandbox:
+    """Build the sandbox, or refuse the route if this deployment has not enabled it."""
+
+    if not settings.evaluator_sandbox_enabled:
+        raise HTTPException(
+            status_code=404,
+            detail="the evaluator sandbox is not enabled on this deployment",
+        )
+    return _sandbox_instance()
+
+
+@lru_cache(maxsize=1)
+def _sandbox_instance() -> EvaluatorSandbox:
+    project = settings.evaluator_sandbox_secret_project
+    store: SandboxCredentialStore
+    if project:
+        store = SecretManagerCredentialStore(project)
+    else:
+        # Local and test deployments only. `Settings.validate` refuses this
+        # combination in production, because a process-held credential does not
+        # survive the cold start a scale-to-zero service guarantees.
+        store = InProcessCredentialStore()
+    return EvaluatorSandbox(
+        database,
+        vault,
+        store=store,
+        project_id=project,
+        limits=SandboxLimits(
+            max_workspaces=settings.evaluator_sandbox_max_workspaces,
+            ttl_hours=settings.evaluator_sandbox_ttl_hours,
+            max_pages=settings.evaluator_sandbox_max_pages,
+            max_objects=settings.evaluator_sandbox_max_objects,
+        ),
+    )
+
+
+def _sandbox_model_client():
+    """The model this deployment is configured to use, or none.
+
+    Returning ``None`` in mock mode is deliberate rather than a fallback: the
+    runtime's own scripted client then drives the loop, so the governed path is
+    exercised end to end on a machine with no model configured. What must not
+    happen is a silent substitution while the result claims a model ran, and it
+    cannot: the report carries `agent.model`, which names whatever answered.
+    """
+
+    if (settings.model_mode or "mock").strip().lower() == "mock":
+        return None
+    return build_client(
+        settings.model_mode,
+        model=settings.gemini_model if "gem" in settings.model_mode else None,
+        project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+    )
+
+
+def _raise_sandbox(exc: Exception) -> None:
+    if isinstance(exc, SandboxNotFoundError):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, SandboxError):
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    _raise_http(exc)
+
+
+@app.get(
+    "/api/v1/evaluator-sandbox/providers",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def sandbox_providers() -> dict:
+    sandbox = _sandbox()
+    return {
+        "providers": provider_catalogue(),
+        "credential_storage": sandbox.store.describe(),
+        "limits": {
+            "workspace_hours": sandbox.limits.ttl_hours,
+            "grant_hours": sandbox.limits.grant_hours,
+            "max_pages": sandbox.limits.max_pages,
+            "max_objects": sandbox.limits.max_objects,
+        },
+    }
+
+
+@app.post(
+    "/api/v1/evaluator-sandbox/workspaces",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def create_sandbox_workspace(payload: SandboxWorkspaceRequest) -> dict:
+    try:
+        workspace = _sandbox().create_workspace(payload.company_name, payload.primary_domain)
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+    return workspace.as_dict()
+
+
+@app.get(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def get_sandbox_workspace(workspace_id: str) -> dict:
+    sandbox = _sandbox()
+    try:
+        workspace = sandbox.get_workspace(workspace_id)
+        connectors = sandbox.list_connectors(workspace_id)
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+    return {**workspace.as_dict(), "connectors": connectors}
+
+
+@app.delete(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def delete_sandbox_workspace(workspace_id: str) -> dict:
+    try:
+        return _sandbox().delete_workspace(workspace_id)
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+
+
+@app.post(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def connect_sandbox_provider(workspace_id: str, payload: SandboxConnectRequest) -> dict:
+    try:
+        return _sandbox().connect(
+            workspace_id,
+            provider=payload.provider,
+            base_url=payload.base_url,
+            stream=payload.stream,
+            scope_value=payload.scope,
+            credentials=payload.credentials,
+            display_name=payload.display_name,
+        )
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+
+
+@app.post(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors/{connector_instance_id}/health",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def check_sandbox_connector(workspace_id: str, connector_instance_id: str) -> dict:
+    try:
+        return _sandbox().health(workspace_id, connector_instance_id)
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+
+
+@app.post(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors/{connector_instance_id}/collect",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def collect_sandbox_stream(
+    workspace_id: str, connector_instance_id: str, payload: SandboxCollectRequest
+) -> dict:
+    try:
+        run = _sandbox().collect(
+            workspace_id,
+            connector_instance_id,
+            stream=payload.stream,
+            scope_value=payload.scope,
+        )
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+    return run.model_dump(mode="json")
+
+
+class SandboxAuditRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    connector_instance_id: str = Field(min_length=1, max_length=128)
+    repository: str = Field(min_length=3, max_length=255)
+    period_start: date | None = None
+    period_end: date | None = None
+    required_approvals: int = Field(default=1, ge=0, le=20)
+
+
+@app.post(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}/audit",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def run_sandbox_audit(workspace_id: str, payload: SandboxAuditRequest) -> dict:
+    """Collect, test, conclude and propose, over the evaluator's own repository.
+
+    Synchronous on purpose. The whole value of the thing is watching one request
+    do the work an audit does, and a job id to poll would put a queue between an
+    evaluator and the only interesting part.
+    """
+
+    sandbox = _sandbox()
+    start, end = default_period(sandbox.limits.audit_period_days)
+    audit = WorkspaceAudit(
+        sandbox,
+        repository_root=Path(__file__).resolve().parents[2],
+        model_client=_sandbox_model_client(),
+    )
+    try:
+        return audit.run(
+            AuditRequest(
+                workspace_id=workspace_id,
+                connector_instance_id=payload.connector_instance_id,
+                repository=payload.repository.strip(),
+                period_start=payload.period_start or start,
+                period_end=payload.period_end or end,
+                required_approvals=payload.required_approvals,
+            )
+        )
+    except AuditError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+
+
+@app.get(
+    "/api/v1/evaluator-sandbox/workspaces/{workspace_id}/evidence",
+    dependencies=[Depends(require_permission(Permission.SANDBOX_OPERATE))],
+)
+def sandbox_evidence(workspace_id: str) -> dict:
+    sandbox = _sandbox()
+    try:
+        tenant_id = sandbox.get_workspace(workspace_id).tenant_id
+    except Exception as exc:
+        _raise_sandbox(exc)
+        raise AssertionError("unreachable")
+    records = sandbox.vault.list(tenant_id, limit=100)
+    return {
+        "count": len(records),
+        "records": [
+            {
+                "evidence_id": record.evidence_id,
+                "source_type": record.source_type,
+                "source_locator": record.source_locator,
+                "content_sha256": record.content_sha256,
+                "integrity_status": record.integrity_status,
+                "classification": record.classification,
+                "collected_at": record.collected_at.isoformat(),
+                "size_bytes": record.size_bytes,
+            }
+            for record in records
+        ],
+    }
+
+
 @lru_cache(maxsize=1)
 def _product_template() -> str:
     """The single-file frontend, read once.
@@ -3442,5 +3746,6 @@ def judge_mode() -> str:
 @app.get("/standards", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/governance", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/reporting", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
 def product_app() -> str:
     return _product_template()

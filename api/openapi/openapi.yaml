@@ -4620,6 +4620,292 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/providers:
+    get:
+      summary: Sandbox Providers
+      operationId: sandbox_providers_api_v1_evaluator_sandbox_providers_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Sandbox Providers Api V1 Evaluator Sandbox Providers
+                  Get
+      security:
+      - HTTPBearer: []
+  /api/v1/evaluator-sandbox/workspaces:
+    post:
+      summary: Create Sandbox Workspace
+      operationId: create_sandbox_workspace_api_v1_evaluator_sandbox_workspaces_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxWorkspaceRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Create Sandbox Workspace Api V1 Evaluator Sandbox
+                  Workspaces Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}:
+    get:
+      summary: Get Sandbox Workspace
+      operationId: get_sandbox_workspace_api_v1_evaluator_sandbox_workspaces__workspace_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Sandbox Workspace Api V1 Evaluator Sandbox Workspaces  Workspace
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      summary: Delete Sandbox Workspace
+      operationId: delete_sandbox_workspace_api_v1_evaluator_sandbox_workspaces__workspace_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Delete Sandbox Workspace Api V1 Evaluator Sandbox
+                  Workspaces  Workspace Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors:
+    post:
+      summary: Connect Sandbox Provider
+      operationId: connect_sandbox_provider_api_v1_evaluator_sandbox_workspaces__workspace_id__connectors_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxConnectRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Connect Sandbox Provider Api V1 Evaluator Sandbox
+                  Workspaces  Workspace Id  Connectors Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors/{connector_instance_id}/health:
+    post:
+      summary: Check Sandbox Connector
+      operationId: check_sandbox_connector_api_v1_evaluator_sandbox_workspaces__workspace_id__connectors__connector_instance_id__health_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      - name: connector_instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Connector Instance Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Check Sandbox Connector Api V1 Evaluator Sandbox Workspaces  Workspace
+                  Id  Connectors  Connector Instance Id  Health Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}/connectors/{connector_instance_id}/collect:
+    post:
+      summary: Collect Sandbox Stream
+      operationId: collect_sandbox_stream_api_v1_evaluator_sandbox_workspaces__workspace_id__connectors__connector_instance_id__collect_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      - name: connector_instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Connector Instance Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxCollectRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Collect Sandbox Stream Api V1 Evaluator Sandbox Workspaces  Workspace
+                  Id  Connectors  Connector Instance Id  Collect Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}/audit:
+    post:
+      summary: Run Sandbox Audit
+      description: 'Collect, test, conclude and propose, over the evaluator''s own
+        repository.
+
+
+        Synchronous on purpose. The whole value of the thing is watching one request
+
+        do the work an audit does, and a job id to poll would put a queue between
+        an
+
+        evaluator and the only interesting part.'
+      operationId: run_sandbox_audit_api_v1_evaluator_sandbox_workspaces__workspace_id__audit_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxAuditRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Run Sandbox Audit Api V1 Evaluator Sandbox Workspaces  Workspace
+                  Id  Audit Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-sandbox/workspaces/{workspace_id}/evidence:
+    get:
+      summary: Sandbox Evidence
+      operationId: sandbox_evidence_api_v1_evaluator_sandbox_workspaces__workspace_id__evidence_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workspace_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workspace Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Sandbox Evidence Api V1 Evaluator Sandbox Workspaces  Workspace
+                  Id  Evidence Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     AdjudicateFindingRequest:
@@ -8445,6 +8731,119 @@ components:
       - rationale
       title: RiskScore
       description: A computed rating, its terms, and the confidence it is held with.
+    SandboxAuditRequest:
+      properties:
+        connector_instance_id:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Connector Instance Id
+        repository:
+          type: string
+          maxLength: 255
+          minLength: 3
+          title: Repository
+        period_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period Start
+        period_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period End
+        required_approvals:
+          type: integer
+          maximum: 20.0
+          minimum: 0.0
+          title: Required Approvals
+          default: 1
+      additionalProperties: false
+      type: object
+      required:
+      - connector_instance_id
+      - repository
+      title: SandboxAuditRequest
+    SandboxCollectRequest:
+      properties:
+        stream:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Stream
+        scope:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Scope
+      additionalProperties: false
+      type: object
+      required:
+      - stream
+      - scope
+      title: SandboxCollectRequest
+    SandboxConnectRequest:
+      properties:
+        provider:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Provider
+        base_url:
+          type: string
+          maxLength: 2048
+          minLength: 1
+          title: Base Url
+        stream:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Stream
+        scope:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Scope
+        display_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Display Name
+        credentials:
+          additionalProperties:
+            type: string
+          type: object
+          title: Credentials
+      additionalProperties: false
+      type: object
+      required:
+      - provider
+      - base_url
+      - stream
+      - scope
+      title: SandboxConnectRequest
+    SandboxWorkspaceRequest:
+      properties:
+        company_name:
+          type: string
+          maxLength: 120
+          minLength: 1
+          title: Company Name
+        primary_domain:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Primary Domain
+      additionalProperties: false
+      type: object
+      required:
+      - company_name
+      title: SandboxWorkspaceRequest
     ScheduleDecision:
       properties:
         actor_id:

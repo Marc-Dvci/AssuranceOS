@@ -19,7 +19,7 @@ implementation_definitions:
 
 activation_definitions:
   not_required: Runs with no external provider. Local release gates prove it.
-  credentials_pending: Adapter and contract are exercised against deterministic transports; a provider account has not been attached.
+  evaluator_supplied: Runs against the real provider on whatever account is supplied to it, through the evaluator sandbox or the CLI. No account of ours is attached, by design rather than by omission.
   provider_verified: Exercised against the live provider, with a recorded operator receipt.
 
 capabilities:
@@ -27,7 +27,7 @@ capabilities:
   durable_engagement_orchestrator: {implementation: complete, activation: not_required}
   recurring_audit_scheduler: {implementation: complete, activation: not_required}
   evidence_vault_and_provenance: {implementation: complete, activation: not_required}
-  connector_sdk_and_provider_adapters: {implementation: complete, activation: credentials_pending}
+  connector_sdk_and_provider_adapters: {implementation: complete, activation: provider_verified}
   deterministic_control_test_engine: {implementation: complete, activation: not_required}
   signed_versioned_test_registry: {implementation: complete, activation: not_required}
   standards_and_audit_pack_compiler: {implementation: complete, activation: not_required}
@@ -164,12 +164,29 @@ hardening:
   tenant_isolated_review_gated_memory: complete
 
 provider_activations:
-  github_jira_confluence_google_drive: credentials_pending
-  entra_okta_gcp_iam: credentials_pending
-  service_now_ticket_writer: credentials_pending
-  # The plan for taking the first of these to a real API, with the population it
-  # would run over measured first: live-source-collection-plan.md.
-  planned_first_live_collection: github pull_requests and commits, read-only, this repository
+  # Verified against the live API, unauthenticated, read-only, with a receipt:
+  # release/live-collection-proof.json. Ten pull requests off this repository
+  # were collected through the ordinary governed path, hashed on arrival and
+  # integrity-checked, and a collection outside the approved scope was refused.
+  # Reproduce with: python scripts/verify_evaluator_sandbox.py --provider github
+  #   --scope Marc-Dvci/AssuranceOS --receipt release/live-collection-proof.json
+  github: provider_verified
+  jira_confluence_google_drive: evaluator_supplied
+  entra_okta_gcp_iam: evaluator_supplied
+  service_now_ticket_writer: evaluator_supplied
+  # Any of them can be run against a real account without a code change, from
+  # the product's own screen or from a clone. The evaluator sandbox holds the
+  # supplied credential in Secret Manager, never in the database, and disposes
+  # of it with the workspace.
+  evaluator_sandbox: src/assuranceos/evaluator_sandbox.py, /workspace, /api/v1/evaluator-sandbox
+  # The evaluator sandbox does not stop at collection. SCM-02 is a signed
+  # procedure over commits collected from a live repository, executed by a
+  # governed agent through the same tool the demonstration uses, and the result
+  # is a finding waiting on a human. Verified against this repository on
+  # 2026-08-16 with Gemini 3.7 Flash through Vertex, receipt at
+  # release/evaluator-audit-proof.json: 44 of 44 changes reached the default
+  # branch without a reviewed pull request over a thirty-day period.
+  evaluator_audit: provider_verified
 
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
@@ -184,7 +201,7 @@ deployment_proof:
 
 # This file is documentation and nothing reads it at runtime, which is exactly
 # why it has to be updated deliberately. A deployment that flips Judge Mode to
-# operational while this still says credentials_pending leaves the repository
+# operational while this still says a capability is dormant leaves the repository
 # contradicting the running system, and the contradiction is the kind this
 # product exists to catch.
 post_deployment_update:

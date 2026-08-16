@@ -4,6 +4,7 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Any, Callable
 
+from assuranceos.db.base import as_utc
 from assuranceos.db.models import (
     CollectedSourceObject,
     CollectionGrant,
@@ -478,7 +479,8 @@ class ConnectorService:
             raise CollectionGrantError("connector implementation does not match registered type")
         if grant.status != "active":
             raise CollectionGrantError(f"collection grant is {grant.status}")
-        if grant.expires_at is not None and grant.expires_at <= now:
+        expires_at = as_utc(grant.expires_at)
+        if expires_at is not None and expires_at <= now:
             raise CollectionGrantExpiredError("collection grant has expired")
         if not grant.read_only:
             raise CollectionGrantError("write-capable grants are not accepted")

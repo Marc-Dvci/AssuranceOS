@@ -1,0 +1,38 @@
+{
+  "name": "a direct push, an unmerged pull request, an under-approved merge, and a clean merge",
+  "context": {"period_start": "2026-08-01", "period_end": "2026-08-31"},
+  "parameters": {"expected_population_count": 6, "required_approvals": 1},
+  "datasets": {
+    "commits": [
+      {"commit_sha": "aaa1", "repository": "acme/platform", "committed_at": "2026-08-04T09:00:00Z", "author_login": "alice", "parent_count": 1, "evidence_id": "ev_c1"},
+      {"commit_sha": "bbb2", "repository": "acme/platform", "committed_at": "2026-08-06T11:30:00Z", "author_login": "bob", "parent_count": 1, "evidence_id": "ev_c2"},
+      {"commit_sha": "ccc3", "repository": "acme/platform", "committed_at": "2026-08-09T14:00:00Z", "author_login": "carol", "parent_count": 2, "evidence_id": "ev_c3"},
+      {"commit_sha": "ddd4", "repository": "acme/platform", "committed_at": "2026-08-12T08:15:00Z", "author_login": "dan", "parent_count": 2, "evidence_id": "ev_c4"},
+      {"commit_sha": "eee5", "repository": "acme/platform", "committed_at": "2026-08-15T16:45:00Z", "author_login": "erin", "parent_count": 1, "evidence_id": "ev_c5"},
+      {"commit_sha": "fff6", "repository": "acme/platform", "committed_at": "2026-07-30T10:00:00Z", "author_login": "frank", "parent_count": 1, "evidence_id": "ev_c6"}
+    ],
+    "commit_reviews": [
+      {"commit_sha": "aaa1", "association_determined": true, "merged_pull_request": null, "pull_request_states": [], "approvals": null, "approvals_determined": false, "evidence_id": "ev_r1"},
+      {"commit_sha": "bbb2", "association_determined": true, "merged_pull_request": null, "pull_request_states": ["open"], "approvals": null, "approvals_determined": false, "evidence_id": "ev_r2"},
+      {"commit_sha": "ccc3", "association_determined": true, "merged_pull_request": 41, "pull_request_states": ["closed"], "approvals": 0, "approvals_determined": true, "evidence_id": "ev_r3"},
+      {"commit_sha": "ddd4", "association_determined": true, "merged_pull_request": 42, "pull_request_states": ["closed"], "approvals": 2, "approvals_determined": true, "evidence_id": "ev_r4"},
+      {"commit_sha": "eee5", "association_determined": false, "merged_pull_request": null, "pull_request_states": [], "approvals": null, "approvals_determined": false, "evidence_id": "ev_r5"},
+      {"commit_sha": "fff6", "association_determined": true, "merged_pull_request": null, "pull_request_states": [], "approvals": null, "approvals_determined": false, "evidence_id": "ev_r6"}
+    ]
+  },
+  "expected_conclusion": "ineffective",
+  "expected_exception_keys": [
+    "SCM-02:acme/platform:aaa1",
+    "SCM-02:acme/platform:bbb2",
+    "SCM-02:acme/platform:ccc3"
+  ],
+  "expected_classifications": {
+    "aaa1": "control_exception",
+    "bbb2": "control_exception",
+    "ccc3": "control_exception",
+    "ddd4": "effective",
+    "eee5": "not_determined"
+  },
+  "expected_limitation_count": 1,
+  "notes": "fff6 is outside the period and must not appear at all. eee5 has an undetermined association and must be neither a pass nor an exception."
+}

@@ -16,8 +16,12 @@ def test_control_test_demo_runs_every_released_procedure(tmp_path):
     database.create_schema()
     try:
         result = run_control_test_demo(database, root)
-        assert {item["test_id"] for item in result["released_tests"]} == {"SCM-01", "IAM-01", "SLA-01"}
+        assert {item["test_id"] for item in result["released_tests"]} >= {"SCM-01", "IAM-01", "SLA-01"}
+        assert result["executed_tests"] == ["IAM-01", "SCM-01", "SLA-01"]
         assert len(result["runs"]) == 3
+        # A released procedure this corpus cannot supply is named with its
+        # reason, so "not run" never looks the same as "not noticed".
+        assert {item["test_id"] for item in result["not_run"]} == {"SCM-02"}
 
         runs = {item["test_id"]: item for item in result["runs"]}
         assert all(item["conclusion"] == "ineffective" for item in runs.values())

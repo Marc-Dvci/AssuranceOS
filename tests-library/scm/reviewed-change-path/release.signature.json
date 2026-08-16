@@ -3,5 +3,5 @@
   "algorithm": "Ed25519",
   "key_id": "assuranceos-control-tests-2026-08",
   "public_key_sha256": "a97a3ef2389786a2b67499b846aea64182e04dc6675b5e08cf41d4352b58befa",
-  "signature_base64": "Re7bew6Sz+EO7/qlH6v3rRK4QkwZWzRxxmYaVEh4cK16plaP/NI21PkthqT75pHunUlxO6iDruUS+Uvu6nxVCQ=="
+  "signature_base64": "plCHoRMczEVghiEjgQCiLWEeC9JYlfD7L1xvd3YURgQkdghBiNkB3NrWOTsjkRmbaYX4BBusSysRK/s2YHYCBQ=="
 }

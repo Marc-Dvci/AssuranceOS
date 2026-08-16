@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["parameters", "datasets"],
+  "properties": {
+    "parameters": {"type": "object"},
+    "datasets": {
+      "type": "object",
+      "required": ["commits", "commit_reviews"],
+      "properties": {
+        "commits": {"type": "array"},
+        "commit_reviews": {"type": "array"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

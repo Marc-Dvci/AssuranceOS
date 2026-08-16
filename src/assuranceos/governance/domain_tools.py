@@ -59,6 +59,12 @@ _TEST_DATASETS: dict[str, str] = {
 }
 
 
+#: How many exception records a tool result carries into the prompt. The count
+#: travels beside it, so the model is never misled about the size of what it is
+#: concluding on.
+_EXCEPTION_SAMPLE = 10
+
+
 class DomainToolError(RuntimeError):
     """A tool refused its arguments. The gateway records this as a denial."""
 
@@ -77,11 +83,52 @@ class DomainToolContext:
     # bound exists so a single call cannot spend the whole model context on one
     # document without the caller having asked for it.
     max_content_bytes: int = 2_000_000
+    #: Where ``tests.execute`` gets its population. Unset, it is the published
+    #: corpus, which is what the demonstration runs on. A caller that collected
+    #: its own population -- the evaluator workspace does -- supplies one
+    #: instead, and the agent then tests real records through exactly the same
+    #: tool. The agent cannot choose between them, which is the point: the
+    #: population a task is entitled to is a property of the task, not something
+    #: a model gets to pick mid-run.
+    population_provider: Callable[[str], Any] | None = None
 
     def corpus(self) -> Any:
         from ..corpus import AsteriaCorpus
 
         return AsteriaCorpus(self.repository_root / "demo/asteria")
+
+    def bind_population(self, test_id: str) -> Any:
+        """Resolve the datasets and parameters for one test, or refuse by name."""
+
+        from ..collection_projection import BoundPopulation
+
+        if self.population_provider is not None:
+            bound = self.population_provider(test_id)
+            if bound is None:
+                raise DomainToolError(
+                    f"no population is bound to test {test_id!r} in this workspace"
+                )
+            return bound
+        if test_id not in _TEST_DATASETS:
+            raise DomainToolError(
+                f"no corpus population is bound to test {test_id!r}; "
+                f"available: {', '.join(sorted(_TEST_DATASETS))}"
+            )
+        datasets = getattr(self.corpus(), _TEST_DATASETS[test_id])()
+        population = datasets[0]
+        for item in datasets:
+            if item.name in {"pull_requests", "terminated_users", "incidents"}:
+                population = item
+                break
+        return BoundPopulation(
+            test_id=test_id,
+            version=None,
+            datasets=datasets,
+            parameters={
+                "expected_population_count": len(population.records),
+                **({"required_approvals": 1} if test_id == "SCM-01" else {}),
+            },
+        )
 
 
 # -- scope enforcement --------------------------------------------------------
@@ -109,7 +156,23 @@ def _engagement_scope(envelope: ExecutionEnvelope, requested: str | None) -> str
     raise DomainToolError(f"evidence scopes {sorted(scopes)} do not permit reading evidence")
 
 
-def _period(envelope: ExecutionEnvelope, arguments: Mapping[str, Any]) -> tuple[date, date]:
+def _period(
+    envelope: ExecutionEnvelope,
+    arguments: Mapping[str, Any],
+    *,
+    bound: Any = None,
+) -> tuple[date, date]:
+    """The period a run covers, and who is allowed to decide it.
+
+    When the task binds a population it binds the period with it, and the model
+    may not move it. Asking for a different one is refused rather than ignored,
+    because a silently ignored period produces a result that answers a question
+    nobody asked and looks exactly like one that does not.
+
+    Only where nothing is bound -- the published corpus -- do the arguments
+    decide, falling back to the corpus's own engagement period.
+    """
+
     from ..corpus import PERIOD_END, PERIOD_START
 
     def parse(value: Any, fallback: date) -> date:
@@ -119,6 +182,18 @@ def _period(envelope: ExecutionEnvelope, arguments: Mapping[str, Any]) -> tuple[
             return date.fromisoformat(str(value))
         except ValueError as exc:
             raise DomainToolError(f"invalid date {value!r}") from exc
+
+    fixed = getattr(bound, "period", None)
+    if fixed:
+        start, end = fixed
+        for name, supplied in (("period_start", start), ("period_end", end)):
+            requested = arguments.get(name)
+            if requested not in (None, "") and parse(requested, supplied) != supplied:
+                raise DomainToolError(
+                    f"this task tests {start.isoformat()} to {end.isoformat()}; "
+                    f"{name}={requested!r} is outside what it was scoped to"
+                )
+        return start, end
 
     start = parse(arguments.get("period_start"), PERIOD_START)
     end = parse(arguments.get("period_end"), PERIOD_END)
@@ -297,12 +372,8 @@ def _tests_execute(context: DomainToolContext):
         from ..control_testing.definitions import ControlTestRunRequest
 
         test_id = _text(arguments.get("test_id")).upper()
-        if test_id not in _TEST_DATASETS:
-            raise DomainToolError(
-                f"no corpus population is bound to test {test_id!r}; "
-                f"available: {', '.join(sorted(_TEST_DATASETS))}"
-            )
-        version = _text(arguments.get("version"))
+        bound = context.bind_population(test_id)
+        version = _text(arguments.get("version")) or (bound.version or "")
         if not version:
             candidates = [
                 release
@@ -312,15 +383,7 @@ def _tests_execute(context: DomainToolContext):
             if not candidates:
                 raise DomainToolError(f"no released version of {test_id}")
             version = str(sorted(candidates, key=lambda item: str(item.get("version")))[-1]["version"])
-        period_start, period_end = _period(envelope, arguments)
-
-        corpus = context.corpus()
-        datasets = getattr(corpus, _TEST_DATASETS[test_id])()
-        population = datasets[0]
-        for item in datasets:
-            if item.name in {"pull_requests", "terminated_users", "incidents"}:
-                population = item
-                break
+        period_start, period_end = _period(envelope, arguments, bound=bound)
 
         # The idempotency key is derived from the task, not supplied. A model that
         # can choose the key can run the same test twice and get two answers.
@@ -333,11 +396,8 @@ def _tests_execute(context: DomainToolContext):
             requested_by=identity.workload_uri,
             idempotency_key=f"agent:{envelope.task_id}:{test_id}:{version}",
             engagement_id=envelope.engagement_id,
-            parameters={
-                "expected_population_count": len(population.records),
-                **({"required_approvals": 1} if test_id == "SCM-01" else {}),
-            },
-            datasets=datasets,
+            parameters=dict(bound.parameters),
+            datasets=bound.datasets,
         )
         result = context.control_tests.run(envelope.tenant_id, request)
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else dict(result)
@@ -353,7 +413,17 @@ def _tests_execute(context: DomainToolContext):
             "reconciled_count": payload.get("reconciled_count"),
             "exception_count": payload.get("exception_count"),
             "result_manifest_hash": payload.get("result_manifest_hash"),
-            "exceptions": exceptions[:50],
+            # A bounded sample, with the total beside it. The agent concludes on
+            # the run rather than by enumerating rows, and the finding is
+            # composed from the full deterministic result rather than from
+            # anything the model repeats back. Handing over forty-four exception
+            # records instead spends the reply budget on transcription: a
+            # reasoning model thinks, then relays, then runs out of tokens
+            # part-way through its own JSON, and the conclusion is lost while
+            # the signed run beneath it was perfectly good.
+            "exceptions": exceptions[:_EXCEPTION_SAMPLE],
+            "exceptions_shown": min(len(exceptions), _EXCEPTION_SAMPLE),
+            "exceptions_total": len(exceptions),
         }
 
     return handler

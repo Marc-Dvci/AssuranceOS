@@ -429,8 +429,18 @@ golden audit remains the Google Cloud path.
 
 ## Data sources
 
-Everything the platform reads in the demonstration is synthetic and lives in the
-repository, so a judge can reproduce any result byte for byte.
+Everything the platform reads in the *demonstration* is synthetic and lives in
+the repository, so a judge can reproduce any result byte for byte. That is a
+property of the demonstration rather than of the platform: **Your company** in
+the sidebar opens a workspace of your own, where the same connectors read your
+real GitHub, Jira, Confluence, Drive, Okta, Entra ID or Google Cloud IAM account
+under a read-only grant you approve, and **Run the audit** takes it further than
+collection: the signed `SCM-02` procedure over the commits that actually reached
+your default branch, executed by a governed agent, ending in a finding that waits
+for your decision. Two receipts record real runs against this repository:
+`release/live-collection-proof.json` for the collection and
+`release/evaluator-audit-proof.json` for the audit, the second concluding
+`ineffective` on 44 of 44 changes.
 
 - **The company's public footprint**, six pages retrieved under a collection
   grant that names the hosts it may reach. `public_sources.py` refuses anything

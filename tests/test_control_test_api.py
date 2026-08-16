@@ -74,7 +74,12 @@ def test_control_test_http_contracts(tmp_path, monkeypatch):
         client = TestClient(api.app)
         releases = client.get("/api/v1/control-tests")
         assert releases.status_code == 200
-        assert {item["test_id"] for item in releases.json()} == {"SCM-01", "IAM-01", "SLA-01"}
+        # The endpoint lists whatever the signed library holds, so this asserts
+        # that each release is present rather than that the library has a
+        # particular size.
+        assert {item["test_id"] for item in releases.json()} == {
+            release.manifest.test_id for release in registry.list()
+        }
 
         execution = client.post("/api/v1/tenants/tnt_api/control-test-runs", json=payload())
         assert execution.status_code == 200, execution.text

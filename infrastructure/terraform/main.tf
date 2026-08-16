@@ -308,6 +308,29 @@ resource "google_secret_manager_secret_iam_member" "runtime_evaluator_token" {
   member    = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+# The evaluator sandbox writes a supplied credential into Secret Manager and
+# destroys it with the workspace. Creating a secret needs `secretmanager.admin`:
+# there is no narrower predefined role that can create one, and an IAM condition
+# on the secret name does not gate creation, because the create permission is
+# checked against the parent project rather than against the name being created.
+#
+# So this is a real widening, stated rather than buried. Its practical extent is
+# small on this project -- the runtime service account already holds accessor on
+# every secret that exists here -- and what it adds is the ability to create,
+# delete and read secrets in general. The code-level control is the one that
+# matters and it is tested in both directions: `SandboxCredentialResolver`
+# resolves only references under the `assuranceos-eval-` prefix that the sandbox
+# itself minted, and refuses a caller-supplied reference to anything else.
+#
+# It is opt-in, and a deployment that does not want the sandbox leaves
+# `evaluator_sandbox_enabled` false and never grants this.
+resource "google_project_iam_member" "runtime_sandbox_secrets" {
+  count   = var.evaluator_sandbox_enabled ? 1 : 0
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
 resource "google_pubsub_topic_iam_member" "runtime_publish" {
   topic  = google_pubsub_topic.outbox.name
   role   = "roles/pubsub.publisher"
@@ -514,6 +537,26 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "ASSURANCEOS_DEMO_ROOT"
         value = "/app/demo/asteria"
+      }
+
+      env {
+        name  = "ASSURANCEOS_EVALUATOR_SANDBOX"
+        value = var.evaluator_sandbox_enabled ? "true" : "false"
+      }
+
+      env {
+        name  = "ASSURANCEOS_EVALUATOR_SANDBOX_SECRET_PROJECT"
+        value = var.evaluator_sandbox_enabled ? var.project_id : ""
+      }
+
+      env {
+        name  = "ASSURANCEOS_EVALUATOR_SANDBOX_MAX_WORKSPACES"
+        value = tostring(var.evaluator_sandbox_max_workspaces)
+      }
+
+      env {
+        name  = "ASSURANCEOS_EVALUATOR_SANDBOX_TTL_HOURS"
+        value = tostring(var.evaluator_sandbox_ttl_hours)
       }
 
       env {

@@ -422,9 +422,10 @@
       <a class="nav-link" href="/standards" data-route data-nav="standards"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>Standards</a>
       <a class="nav-link" href="/governance" data-route data-nav="governance"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>Governance</a>
       <a class="nav-link" href="/reporting" data-route data-nav="reporting"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Reporting</a>
+      <a class="nav-link" href="/workspace" data-route data-nav="workspace"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>Your company</a>
       <a class="nav-link" href="/judge" data-route data-nav="judge"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>Judge Mode</a>
     </nav>
-    <div class="side-bottom"><div class="tenant-label">Active organization</div><div class="tenant-name" id="tenant-name">Asteria Systems DemoCo</div><div class="side-note">Synthetic environment · canonical data only</div></div>
+    <div class="side-bottom"><div class="tenant-label">Active organization</div><div class="tenant-name" id="tenant-name">Asteria Systems DemoCo</div><div class="side-note">Demonstration company · live control plane</div></div>
   </aside>
   <div class="workspace">
     <main id="content" tabindex="-1" aria-live="polite" aria-busy="true"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></main>
@@ -435,11 +436,11 @@
 <script>
   const TENANT=localStorage.getItem('assuranceos.tenant')||'tnt_asteria_demo';
   const state={overview:null,cockpit:null,packs:null,truth:null,error:null,partial:[],action:null};
-  const routes={'/':'home','/onboarding':'onboarding','/plan-proposals':'plan','/audits':'audits','/findings':'findings','/evidence':'evidence','/standards':'standards','/governance':'governance','/reporting':'reporting','/judge':'judge'};
+  const routes={'/':'home','/onboarding':'onboarding','/plan-proposals':'plan','/audits':'audits','/findings':'findings','/evidence':'evidence','/standards':'standards','/governance':'governance','/reporting':'reporting','/workspace':'workspace','/judge':'judge'};
   // /findings/<id> is a detail route rather than a tab; it keeps the Findings
   // entry highlighted so the sidebar still says where you are.
   const findingRoute=path=>{const match=path.match(/^\/findings\/([A-Za-z0-9_.:-]+)$/);return match?decodeURIComponent(match[1]):null};
-  const titles={home:'Home',onboarding:'Onboarding',plan:'Audit plan',audits:'Audits',findings:'Findings',evidence:'Evidence',standards:'Standards',governance:'Governance',reporting:'Reporting',judge:'Judge Mode'};
+  const titles={home:'Home',onboarding:'Onboarding',plan:'Audit plan',audits:'Audits',findings:'Findings',evidence:'Evidence',standards:'Standards',governance:'Governance',reporting:'Reporting',workspace:'Your company',judge:'Judge Mode'};
   const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const short=(v,n=16)=>v&&v.length>n?`${v.slice(0,n)}…`:v||'—';
   const fmt=v=>v==null?'—':new Intl.NumberFormat().format(v);
@@ -495,7 +496,176 @@
   function projectionBlock(p){if(!p||!p.points?.length)return '';
     const cells=p.points.map(x=>`<div class="metric"><div class="metric-label">${fmt(x.documents)} documents analysed</div><div class="metric-value">${esc(money(x.usd))}</div><div class="metric-note">${fmt(x.input_tokens)} input tokens · ${esc(money(x.introductory_usd))} at the introductory rate</div></div>`).join('');
     return `<div style="margin-top:22px"><div class="panel-kicker" style="margin-bottom:10px">What an audit costs, by how much it has to read, projected from this tenant's own measured unit costs, priced at ${esc(p.priced_as)}</div><div class="metrics" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px">${cells}</div><details><summary class="row-sub">How this is calculated (${p.assumptions.length} stated assumptions)</summary><ul class="row-sub" style="margin:8px 0 0 16px">${p.assumptions.map(x=>`<li>${esc(x)}</li>`).join('')}<li>Measured here: ${fmt(p.measured_inputs.documents_measured)} documents averaging ${fmt(p.measured_inputs.mean_document_bytes)} bytes, or about ${fmt(p.measured_inputs.tokens_per_document)} tokens each.</li></ul></details><div class="row-sub" style="margin-top:8px">${esc(p.caveat)}</div></div>`}
-  function render(){const path=location.pathname.replace(/\/$/,'')||'/',detail=findingRoute(path),key=detail?'findings':(routes[path]||'home');document.title=`${titles[key]} · AssuranceOS`;document.getElementById('crumb').textContent=titles[key];document.querySelectorAll('[data-nav]').forEach(x=>{const active=x.dataset.nav===key;x.classList.toggle('active',active);active?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current')});const root=document.getElementById('content');if(state.error){root.innerHTML=head('Control plane','Connect to AssuranceOS','This interface reads the running control plane and never substitutes mocked product state.')+`<div class="panel"><div class="empty"><strong>${esc(state.error.status===401?'Evaluator session required':'Control plane unavailable')}</strong><span>${esc(state.error.message)}</span><div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center"><input id="access-code" type="password" placeholder="Evaluator access code" autocomplete="one-time-code" style="padding:10px 12px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit;min-width:230px" onkeydown="if(event.key==='Enter')document.getElementById('access-code-submit').click()"><button class="button primary" id="access-code-submit" onclick="submitAccessCode()">Enter</button><button class="button" onclick="document.getElementById('session-button').click()">Paste a token instead</button></div><div class="row-sub" id="access-code-error" style="margin-top:10px"></div></div></div>`+footer();return}if(!state.cockpit){return}const notice=state.partial.length?`<div class="partial-notice" role="status">Some evaluator-only data is unavailable for this role: ${esc(state.partial.join(', '))}. Core workspace data remains available.</div>`:'';if(detail){root.innerHTML=notice+findingDetailPage(detail)+footer();if(!detailState[detail])loadFindingDetail(detail);return}root.innerHTML=notice+({home:homePage,onboarding:onboardingPage,plan:planPage,audits:auditsPage,findings:findingsPage,evidence:evidencePage,standards:standardsPage,governance:governancePage,reporting:reportingPage,judge:judgePage}[key])()+footer()}
+
+  // ----------------------------------------------------------------------
+  // Your company: the evaluator's own workspace.
+  //
+  // Everything else in this interface reads a company that does not exist. This
+  // screen is where somebody points the same platform at systems that do. The
+  // workspace identifier is kept in this browser rather than listed anywhere,
+  // because it is the only thing that reaches the workspace; losing it is the
+  // same as deleting it, which is the intended property.
+  // ----------------------------------------------------------------------
+  const sandbox={providers:null,limits:null,storage:null,workspace:null,connectors:[],evidence:null,provider:'github',stream:null,busy:null,note:null,problem:null,unavailable:null};
+  const WORKSPACE_KEY='assuranceos.workspace';
+  // The audit is one request that does the whole job, so it is slow on purpose
+  // and the button says so. A spinner that promises three seconds and takes
+  // forty reads as a broken page rather than as work being done.
+  const AUDIT_TIMEOUT_MS=180000;
+  const sandboxProvider=()=>(sandbox.providers||[]).find(p=>p.connector_type===sandbox.provider)||null;
+  const sandboxStream=()=>{const p=sandboxProvider();if(!p)return null;return p.streams.find(s=>s.name===sandbox.stream)||p.streams[0]};
+  function sandboxSay(note,problem){sandbox.note=note||null;sandbox.problem=problem||null;render()}
+  async function sandboxBoot(){
+    if(sandbox.providers||sandbox.unavailable)return;
+    try{const body=await api('/api/v1/evaluator-sandbox/providers');sandbox.providers=body.providers;sandbox.limits=body.limits;sandbox.storage=body.credential_storage}
+    catch(error){sandbox.unavailable=error.message||'unavailable';render();return}
+    const held=localStorage.getItem(WORKSPACE_KEY);
+    if(held){try{await sandboxLoad(held)}catch(e){localStorage.removeItem(WORKSPACE_KEY)}}
+    render();
+  }
+  async function sandboxLoad(id){const body=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(id)}`);sandbox.workspace=body;sandbox.connectors=body.connectors||[];return body}
+  async function sandboxRun(label,work){sandbox.busy=label;sandbox.problem=null;render();try{await work()}catch(error){sandbox.problem=error.message||String(error)}finally{sandbox.busy=null;render()}}
+  function sandboxCreate(){
+    const name=(document.getElementById('sandbox-company')?.value||'').trim();
+    const domain=(document.getElementById('sandbox-domain')?.value||'').trim();
+    if(!name){sandboxSay(null,'A company name is required.');return}
+    sandboxRun('create',async()=>{
+      const body=await api('/api/v1/evaluator-sandbox/workspaces',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company_name:name,primary_domain:domain||null})});
+      localStorage.setItem(WORKSPACE_KEY,body.workspace_id);
+      await sandboxLoad(body.workspace_id);
+      sandbox.note=`Workspace created for ${body.company_name}.`;
+    });
+  }
+  function sandboxForget(){localStorage.removeItem(WORKSPACE_KEY);sandbox.workspace=null;sandbox.connectors=[];sandbox.evidence=null;sandboxSay('Workspace forgotten in this browser. It expires on its own.')}
+  function sandboxDelete(){
+    const id=sandbox.workspace?.workspace_id;if(!id)return;
+    sandboxRun('delete',async()=>{
+      const body=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(id)}`,{method:'DELETE'});
+      localStorage.removeItem(WORKSPACE_KEY);sandbox.workspace=null;sandbox.connectors=[];sandbox.evidence=null;
+      sandbox.note=`Workspace deleted. ${body.secrets_destroyed} stored credential(s) destroyed.`;
+    });
+  }
+  function sandboxPick(value){sandbox.provider=value;sandbox.stream=null;render()}
+  function sandboxPickStream(value){sandbox.stream=value;render()}
+  function sandboxConnect(){
+    const profile=sandboxProvider(),stream=sandboxStream();if(!profile||!stream)return;
+    const base=(document.getElementById('sandbox-base')?.value||'').trim()||profile.base_url_example;
+    const scope=(document.getElementById('sandbox-scope')?.value||'').trim();
+    if(!scope){sandboxSay(null,`${stream.scope_label} is required.`);return}
+    const credentials={};
+    profile.credential_fields.forEach(f=>{const value=(document.getElementById(`sandbox-cred-${f.name}`)?.value||'').trim();if(value)credentials[f.name]=value});
+    sandboxRun('connect',async()=>{
+      const body=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/connectors`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:profile.connector_type,base_url:base,stream:stream.name,scope,credentials})});
+      await sandboxLoad(sandbox.workspace.workspace_id);
+      sandbox.lastScope=scope;sandbox.lastStream=stream.name;
+      sandbox.note=`${body.connector.display_name} attached. A read-only grant over ${JSON.stringify(body.grant.resource_selectors)} expires ${new Date(body.grant.expires_at).toLocaleString()}.`;
+    });
+  }
+  function sandboxHealth(id){sandboxRun(`health:${id}`,async()=>{const body=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/connectors/${encodeURIComponent(id)}/health`,{method:'POST'});await sandboxLoad(sandbox.workspace.workspace_id);sandbox.note=`Provider answered: ${body.status}.`})}
+  function sandboxCollect(id){
+    const scope=(document.getElementById(`sandbox-collect-${id}`)?.value||'').trim();
+    if(!scope){sandboxSay(null,'Name what to collect, exactly as the grant approved it.');return}
+    const connector=sandbox.connectors.find(c=>c.connector_instance_id===id);
+    const profile=(sandbox.providers||[]).find(p=>p.connector_type===connector?.connector_type);
+    const stream=(sandbox.lastStream&&profile?.streams.some(s=>s.name===sandbox.lastStream))?sandbox.lastStream:profile?.streams[0]?.name;
+    sandboxRun(`collect:${id}`,async()=>{
+      const run=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/connectors/${encodeURIComponent(id)}/collect`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stream,scope})});
+      sandbox.evidence=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/evidence`);
+      await sandboxLoad(sandbox.workspace.workspace_id);
+      sandbox.note=`${run.status}: ${run.objects_seen} object(s) read, ${run.objects_ingested} hashed into the vault.`;
+    });
+  }
+  function sandboxAudit(id){
+    const repository=(document.getElementById(`sandbox-collect-${id}`)?.value||'').trim();
+    if(!repository||!repository.includes('/')){sandboxSay(null,'Name the repository to audit, as owner/repository.');return}
+    sandboxRun(`audit:${id}`,async()=>{
+      const body=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({connector_instance_id:id,repository}),signal:AbortSignal.timeout(AUDIT_TIMEOUT_MS)});
+      sandbox.audit=body;
+      sandbox.evidence=await api(`/api/v1/evaluator-sandbox/workspaces/${encodeURIComponent(sandbox.workspace.workspace_id)}/evidence`);
+      await sandboxLoad(sandbox.workspace.workspace_id);
+      sandbox.note=`${body.control_test.test_id} concluded ${body.control_test.conclusion} over ${body.control_test.population_count} change(s).`;
+    });
+  }
+  // The report is rendered from the run rather than summarised: a reviewer needs
+  // to see the population, the digest and the exceptions, because those are the
+  // parts that can be checked against the repository by hand.
+  function auditPanel(){const a=sandbox.audit;if(!a)return '';
+    const t=a.control_test,g=a.agent,f=a.finding;
+    const verdict=t.conclusion==='effective'?'ok':(t.conclusion==='ineffective'?'block':'');
+    const rows=(t.exceptions||[]).slice(0,12).map(x=>`<tr><td>${esc(x.classification)}</td><td class="mono">${esc(short(String(x.subject_ref).split('@').pop(),14))}</td><td>${esc(x.reason)}</td></tr>`).join('');
+    return `<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">5 &middot; The audit</div><div class="panel-kicker">${esc(a.repository)}, ${esc(a.period.start)} to ${esc(a.period.end)}</div></div><div class="panel-kicker">${esc(t.test_id)}@${esc(t.version)}</div></div><div class="panel-body">
+      ${metrics([['Conclusion',String(t.conclusion||'—').replaceAll('_',' '),'from the signed procedure'],['Population',fmt(t.population_count),t.population_complete?'reconciled complete':'not complete'],['Exceptions',fmt(t.exception_count),'each citing its own commit'],['Model',g.model||'—',`${(g.tool_calls_allowed||[]).length} tool call(s)`],['Out-of-envelope tool',g.boundary_probe?.denied?'denied':'allowed',esc(g.boundary_probe?.stage||'')]])}
+      <div class="row-sub" style="margin-top:14px"><strong>Result digest</strong> <span class="mono">${esc(t.result_manifest_hash||'—')}</span></div>
+      ${g.summary?`<div class="row-sub" style="margin-top:10px">${esc(g.summary)}</div>`:''}
+      ${(a.population.notes||[]).map(n=>`<div class="row-sub" style="margin-top:8px">Limitation: ${esc(n)}</div>`).join('')}
+      ${rows?`<div style="overflow:auto;margin-top:16px"><table class="evidence-table"><thead><tr><th>Classification</th><th>Commit</th><th>Why</th></tr></thead><tbody>${rows}</tbody></table></div>`:''}
+      <div class="row-sub" style="margin-top:14px">${f&&f.proposed?`Finding <strong>${esc(f.finding_id)}</strong> proposed at ${esc(f.severity)} severity and waiting for a human decision. Nothing here was accepted automatically.`:`No finding proposed: ${esc((f&&f.reason)||'—')}`}</div>
+      <div class="row-sub" style="margin-top:8px">The grant this run used was revoked when it finished (${esc(a.grant?.revoked?.status||'—')}). Status chip: ${status(verdict==='block'?'ineffective':(t.conclusion||'unknown'))}</div>
+    </div></section>`}
+  function sandboxField(f){return `<label style="display:block;margin-top:12px;font-size:13px" for="sandbox-cred-${esc(f.name)}">${esc(f.label)}</label><input id="sandbox-cred-${esc(f.name)}" type="${f.secret?'password':'text'}" autocomplete="off" placeholder="${esc(f.help)}" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit"><div class="row-sub">${esc(f.help)}</div>`}
+  function workspacePage(){
+    if(sandbox.unavailable)return head('Your company','Bring your own systems','')+`<section class="panel"><div class="panel-body">${empty('Not enabled on this deployment',`The evaluator workspace is switched off here (${sandbox.unavailable}). Everything it does can also be run from a clone with scripts/verify_evaluator_sandbox.py.`)}</div></section>`;
+    if(!sandbox.providers)return head('Your company','Bring your own systems','')+`<section class="panel"><div class="panel-body"><div class="skeleton"></div></div></section>`;
+    const banner=(sandbox.problem?`<div class="partial-notice" role="alert">${esc(sandbox.problem)}</div>`:'')+(sandbox.note?`<div class="partial-notice" role="status">${esc(sandbox.note)}</div>`:'');
+    const intro=head('Your company','Bring your own systems','Everything else in this workspace reads Asteria, which is a demonstration company. This screen runs the same governed path over yours: a tenant of your own, your provider account, a purpose-bound read-only grant, and your records hashed into the evidence vault.');
+    if(!sandbox.workspace){
+      return intro+banner+`<div class="grid"><section class="panel span-8"><div class="panel-head"><div><div class="panel-title">1 · Create a workspace</div><div class="panel-kicker">Disposable, and yours alone</div></div></div><div class="panel-body">
+        <label style="display:block;font-size:13px" for="sandbox-company">Company name</label><input id="sandbox-company" placeholder="Northwind Trading" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">
+        <label style="display:block;margin-top:12px;font-size:13px" for="sandbox-domain">Primary domain (optional)</label><input id="sandbox-domain" placeholder="northwind.example" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">
+        <div style="margin-top:16px"><button class="button primary" onclick="sandboxCreate()" ${sandbox.busy?'disabled':''}>${sandbox.busy==='create'?'Creating…':'Create workspace'}</button></div>
+        <div class="row-sub" style="margin-top:14px">The workspace lives for ${fmt(sandbox.limits.workspace_hours)} hours and then deletes itself with anything in it. Its identifier is kept in this browser and is never listed, so only this tab can reach it.</div>
+      </div></section>${sandboxRulesPanel()}</div>`;
+    }
+    const w=sandbox.workspace,profile=sandboxProvider(),stream=sandboxStream();
+    const options=(sandbox.providers||[]).map(p=>`<option value="${esc(p.connector_type)}"${p.connector_type===sandbox.provider?' selected':''}>${esc(p.display_name)}</option>`).join('');
+    const streams=(profile?.streams||[]).map(s=>`<option value="${esc(s.name)}"${s.name===stream?.name?' selected':''}>${esc(s.label)}</option>`).join('');
+    const connectors=sandbox.connectors.length?sandbox.connectors.map(c=>{
+      const p=(sandbox.providers||[]).find(x=>x.connector_type===c.connector_type);
+      const hint=p?.streams[0]?.scope_help||'';
+      return `<div class="agent"><h3>${esc(c.display_name)}</h3><p>${esc(c.connector_type)} · ${esc((()=>{try{return new URL(c.base_url).hostname}catch(e){return c.base_url||'—'}})())}</p>
+      <div class="chips"><span class="chip">read-only</span>${status(c.status)}<span class="chip${c.authenticated?'':' block'}">${c.authenticated?'credential stored':'no credential'}</span>${c.last_health_status?status(c.last_health_status):''}</div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="sandbox-collect-${esc(c.connector_instance_id)}" value="${esc(sandbox.lastScope||'')}" placeholder="${esc(hint)}" style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">
+      <button class="button" onclick="sandboxHealth('${esc(c.connector_instance_id)}')" ${sandbox.busy?'disabled':''}>${sandbox.busy===`health:${c.connector_instance_id}`?'Checking…':'Check'}</button>
+      <button class="button primary" onclick="sandboxCollect('${esc(c.connector_instance_id)}')" ${sandbox.busy?'disabled':''}>${sandbox.busy===`collect:${c.connector_instance_id}`?'Collecting…':'Collect'}</button>
+      ${c.connector_type==='github'?`<button class="button" onclick="sandboxAudit('${esc(c.connector_instance_id)}')" ${sandbox.busy?'disabled':''} title="Collect the change population, run the signed procedure over it, and propose a finding">${sandbox.busy===`audit:${c.connector_instance_id}`?'Auditing…':'Run the audit'}</button>`:''}</div>
+      ${c.connector_type==='github'?`<div class="row-sub" style="margin-top:8px">Run the audit collects the last 30 days of commits and their review path, executes the signed SCM-02 procedure over them, and proposes a finding you decide on. It takes up to a minute.</div>`:''}</div>`;
+    }).join(''):'';
+    const evidence=sandbox.evidence?.records?.length?`<section class="panel span-12 flush"><div class="panel-head"><div><div class="panel-title">4 · What arrived</div><div class="panel-kicker">Your records, content-addressed on arrival</div></div><div class="panel-kicker">${fmt(sandbox.evidence.count)} records</div></div><div class="panel-body" style="overflow:auto"><table class="evidence-table"><thead><tr><th>Source</th><th>Locator</th><th>SHA-256</th><th>Integrity</th><th>Collected</th></tr></thead><tbody>${sandbox.evidence.records.map(r=>`<tr><td>${esc(r.source_type)}</td><td>${esc(short(r.source_locator,52))}</td><td class="mono digest" title="${esc(r.content_sha256)}">${esc(r.content_sha256)}</td><td>${status(r.integrity_status)}</td><td>${date(r.collected_at)}</td></tr>`).join('')}</tbody></table></div></section>`:'';
+    return intro+banner+`<div class="grid">
+      <section class="panel span-4"><div class="panel-head"><div><div class="panel-title">${esc(w.company_name)}</div><div class="panel-kicker">Your workspace</div></div></div><div class="panel-body">
+        <div class="row-sub">Expires ${esc(new Date(w.expires_at).toLocaleString())}</div>
+        <div class="row-sub" style="margin-top:6px">Credentials: ${esc(w.credential_storage)}</div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="button" onclick="sandboxForget()" ${sandbox.busy?'disabled':''}>Forget here</button><button class="button" onclick="sandboxDelete()" ${sandbox.busy?'disabled':''}>${sandbox.busy==='delete'?'Deleting…':'Delete now'}</button></div>
+      </div></section>
+      <section class="panel span-8"><div class="panel-head"><div><div class="panel-title">2 · Connect a system</div><div class="panel-kicker">Read-only, and scoped to what you name</div></div></div><div class="panel-body">
+        <div style="display:flex;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:170px"><label style="display:block;font-size:13px" for="sandbox-provider">Provider</label><select id="sandbox-provider" onchange="sandboxPick(this.value)" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">${options}</select></div>
+        <div style="flex:1;min-width:170px"><label style="display:block;font-size:13px" for="sandbox-stream">What to read</label><select id="sandbox-stream" onchange="sandboxPickStream(this.value)" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">${streams}</select></div></div>
+        <div class="row-sub" style="margin-top:8px">${esc(profile?.summary||'')}</div>
+        <label style="display:block;margin-top:12px;font-size:13px" for="sandbox-base">API base URL</label><input id="sandbox-base" value="${esc(profile?.base_url_example||'')}" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">
+        <div class="row-sub">Only ${esc((profile?.allowed_hosts||[]).join(', '))} is reachable from here.</div>
+        <label style="display:block;margin-top:12px;font-size:13px" for="sandbox-scope">${esc(stream?.scope_label||'Scope')}</label><input id="sandbox-scope" placeholder="${esc(stream?.scope_help||'')}" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit">
+        <div class="row-sub">${esc(stream?.scope_help||'')}</div>
+        ${(profile?.credential_fields||[]).map(sandboxField).join('')}
+        <div class="row-sub" style="margin-top:8px">${esc(profile?.credential_help||'')} Needs ${esc((profile?.read_scopes||[]).join(', '))}. <a href="${esc(profile?.documentation_url||'#')}" target="_blank" rel="noreferrer noopener">Provider documentation</a></div>
+        <div style="margin-top:16px"><button class="button primary" onclick="sandboxConnect()" ${sandbox.busy?'disabled':''}>${sandbox.busy==='connect'?'Attaching…':'Attach and approve a grant'}</button></div>
+      </div></section>
+      ${connectors?`<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">3 · Collect</div><div class="panel-kicker">Each run is checked against the grant before anything is read</div></div><div class="panel-kicker">${fmt(sandbox.connectors.length)} attached</div></div><div class="panel-body"><div class="agent-grid">${connectors}</div><div class="row-sub" style="margin-top:14px">A run stops at ${fmt(sandbox.limits.max_objects)} objects or ${fmt(sandbox.limits.max_pages)} pages, whichever comes first.</div></div></section>`:''}
+      ${auditPanel()}
+      ${evidence}
+      ${sandboxRulesPanel()}
+    </div>`;
+  }
+  // The rules are on the screen rather than in a policy document, because they
+  // are what somebody is entitled to know before typing a credential into
+  // somebody else's deployment.
+  function sandboxRulesPanel(){return `<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">What happens to what you type</div><div class="panel-kicker">The same constraints the platform puts on itself</div></div></div><div class="panel-body"><div class="lifecycle">
+    <div class="stage"><div class="stage-no">01</div><h3>Read-only</h3><p>Every grant is read-only and the service refuses a write-capable one. No adapter here exposes a write.</p></div>
+    <div class="stage"><div class="stage-no">02</div><h3>Scoped</h3><p>The grant names the repository, project or drive you typed. A collection outside it is refused rather than trimmed.</p></div>
+    <div class="stage"><div class="stage-no">03</div><h3>Held apart</h3><p>Your credential goes to ${esc(sandbox.storage||'the configured store')} and never into the database. The connector holds a reference, never a value.</p></div>
+    <div class="stage"><div class="stage-no">04</div><h3>Bounded</h3><p>Only the provider's own hosts are reachable, on HTTPS, and every request is checked, including the ones pagination derives.</p></div>
+    <div class="stage"><div class="stage-no">05</div><h3>Disposable</h3><p>Delete the workspace and the grants are revoked, the credentials destroyed and the tenant dropped. It expires on its own regardless.</p></div>
+  </div></div></section>`}
+  function render(){const path=location.pathname.replace(/\/$/,'')||'/',detail=findingRoute(path),key=detail?'findings':(routes[path]||'home');document.title=`${titles[key]} · AssuranceOS`;document.getElementById('crumb').textContent=titles[key];document.querySelectorAll('[data-nav]').forEach(x=>{const active=x.dataset.nav===key;x.classList.toggle('active',active);active?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current')});const root=document.getElementById('content');if(state.error){root.innerHTML=head('Control plane','Connect to AssuranceOS','This interface reads the running control plane and never substitutes mocked product state.')+`<div class="panel"><div class="empty"><strong>${esc(state.error.status===401?'Evaluator session required':'Control plane unavailable')}</strong><span>${esc(state.error.message)}</span><div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center"><input id="access-code" type="password" placeholder="Evaluator access code" autocomplete="one-time-code" style="padding:10px 12px;border-radius:8px;border:1px solid var(--line,#ccc);background:transparent;color:inherit;min-width:230px" onkeydown="if(event.key==='Enter')document.getElementById('access-code-submit').click()"><button class="button primary" id="access-code-submit" onclick="submitAccessCode()">Enter</button><button class="button" onclick="document.getElementById('session-button').click()">Paste a token instead</button></div><div class="row-sub" id="access-code-error" style="margin-top:10px"></div></div></div>`+footer();return}if(!state.cockpit){return}const notice=state.partial.length?`<div class="partial-notice" role="status">Some evaluator-only data is unavailable for this role: ${esc(state.partial.join(', '))}. Core workspace data remains available.</div>`:'';if(detail){root.innerHTML=notice+findingDetailPage(detail)+footer();if(!detailState[detail])loadFindingDetail(detail);return}root.innerHTML=notice+({home:homePage,onboarding:onboardingPage,plan:planPage,audits:auditsPage,findings:findingsPage,evidence:evidencePage,standards:standardsPage,governance:governancePage,reporting:reportingPage,workspace:workspacePage,judge:judgePage}[key])()+footer();if(key==='workspace')sandboxBoot()}
   // What the platform knows about the company, and where each piece came from.
   // A profile with no visible provenance is a guess with good typography: the
   // panel leads with the fact a reviewer overruled, because a system that only
@@ -544,8 +714,12 @@
   // matters about each: it is read-only, and the last collection either worked or
   // it did not.
   function connectorPanel(){const items=state.cockpit.connectors||[];if(!items.length)return `<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">3 · Connect the systems</div><div class="panel-kicker">Read-only, under a collection grant</div></div></div><div class="panel-body">${empty('No systems connected','Evidence can also be ingested directly, but a connected system is what lets an audit run unattended.')}</div></section>`;
-    const cards=items.map(x=>{const run=x.latest_run;return `<div class="agent"><h3>${esc(x.display_name||x.connector_type)}</h3><p>${esc(x.connector_type)} · ${esc(x.base_url||'—')}</p><div class="chips"><span class="chip">read-only</span>${status(x.status)}${run?`<span class="chip${run.status==='succeeded'?'':' block'}">${esc(run.status)}</span>`:'<span class="chip block">never collected</span>'}</div><div class="agent-foot"><span>${run?`${fmt(run.objects_collected)} of ${fmt(run.objects_seen)} objects`:'—'}</span><span>${run?date(run.started_at):''}</span></div></div>`}).join('');
-    return `<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">3 · Connect the systems</div><div class="panel-kicker">Read-only, under a collection grant a human issued</div></div><div class="panel-kicker">${fmt(items.length)} connected</div></div><div class="panel-body"><div class="agent-grid">${cards}</div><div class="row-sub" style="margin-top:14px">No connector holds a write credential. An agent that cannot change your systems cannot break them at three in the morning, and that is a property of the credential rather than a promise about the model.</div></div></section>`}
+    // A demonstration host is not shown. `api.github.asteria.test` is accurate
+    // and reads as a broken configuration, and the panel says plainly underneath
+    // that these four are demonstration connections.
+    const shown=url=>{try{const host=new URL(url).hostname;return host.endsWith('.test')?null:host}catch(e){return null}};
+    const cards=items.map(x=>{const run=x.latest_run,host=shown(x.base_url);return `<div class="agent"><h3>${esc(x.display_name||x.connector_type)}</h3><p>${esc(x.connector_type)}${host?` · ${esc(host)}`:''}</p><div class="chips"><span class="chip">read-only</span>${status(x.status)}${run?`<span class="chip${run.status==='succeeded'?'':' block'}">${esc(run.status)}</span>`:'<span class="chip block">never collected</span>'}</div><div class="agent-foot"><span>${run?`${fmt(run.objects_collected)} of ${fmt(run.objects_seen)} objects`:'—'}</span><span>${run?date(run.started_at):''}</span></div></div>`}).join('');
+    return `<section class="panel span-12"><div class="panel-head"><div><div class="panel-title">3 · Connect the systems</div><div class="panel-kicker">Read-only, under a collection grant a human issued</div></div><div class="panel-kicker">${fmt(items.length)} connected</div></div><div class="panel-body"><div class="agent-grid">${cards}</div><div class="row-sub" style="margin-top:14px">No connector holds a write credential. An agent that cannot change your systems cannot break them at three in the morning, and that is a property of the credential rather than a promise about the model.</div><div class="row-sub" style="margin-top:10px;opacity:.75">Asteria is a demonstration company, so its connections are simulated. The connectors themselves are live: <a href="/workspace" data-route>add your own company</a> to attach GitHub, Jira, Confluence, Drive, Okta, Entra ID or Google Cloud IAM and collect from them.</div></div></section>`}
 
   function eventList(events){return events.length?`<div class="list">${events.map(e=>`<div class="row" style="grid-template-columns:minmax(0,1fr) auto"><div><div class="row-title">${esc(e.event_type)}</div><div class="row-sub">${esc(e.engagement_id||'platform')} · ${date(e.occurred_at)}</div></div><span class="tiny-dot"></span></div>`).join('')}</div>`:empty('No events recorded','Lifecycle events appear as work advances.')}
   function planPage(){const c=state.cockpit;return head('Portfolio intelligence','Risk-based audit plan','Review proposed coverage, explicit exclusions, blind spots, and the residual risk accepted with each approved plan.')+metrics([['Risks',c.risks.length,'registered'],['Proposals',c.plan_proposals.length,'versioned'],['Coverage sources',c.coverage.length,'recorded'],['Scheduled',c.schedules.length,'recurring'],['Blind spots',c.plan_proposals.reduce((n,p)=>n+p.blind_spots.length,0),'explicit']])+`<div class="grid"><section class="panel span-8 flush"><div class="panel-head"><div><div class="panel-title">Plan proposals</div><div class="panel-kicker">Capacity and coverage are preserved together</div></div></div><div class="panel-body">${c.plan_proposals.length?c.plan_proposals.map(p=>`<div class="finding-card"><div class="finding-top"><div><h3>${esc(p.name)} · v${p.version}</h3><div class="row-sub">${date(p.horizon[0])} — ${date(p.horizon[1])} · ${fmt(p.planned_days)} days planned of ${fmt(p.plannable_days)} plannable</div></div>${status(p.status)}</div><p>${p.planned.length} engagements planned; ${p.excluded.length} exclusions remain visible to the approver.${p.planned_days>p.plannable_days?' Mandatory coverage alone exceeds the capacity in this scenario, so the plan is reported undeliverable rather than trimmed. Dropping a required audit is a decision for the audit committee rather than for a ranking rule.':''}</p><div class="chips"><span class="chip">${pct(p.coverage_ratio)} coverage</span><span class="chip">${p.blind_spots.length} blind spots</span><span class="chip">${p.excluded.length} excluded</span>${p.planned_days>p.plannable_days?`<span class="chip block">over capacity · not deliverable</span>`:''}</div></div>`).join(''):empty('No plan proposal in this tenant','Risk assessments can be scored and assembled through the portfolio API.')}</div></section><section class="panel span-4 flush"><div class="panel-head"><div><div class="panel-title">Risk register</div><div class="panel-kicker">Evidence-linked ratings</div></div></div><div class="panel-body">${c.risks.length?`<div class="list">${c.risks.map(r=>`<div class="row" style="grid-template-columns:minmax(0,1fr) auto"><div><div class="row-title">${esc(r.code)} · ${esc(r.title)}</div><div class="row-sub">Confidence ${Math.round((r.confidence||0)*100)}% · ${r.evidence_ids.length} sources</div></div>${status(r.status)}</div>`).join('')}</div>`:empty('Risk register ready','Registered risks and computed assessments appear here.')}</div></section></div>`}

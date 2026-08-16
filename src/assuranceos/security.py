@@ -22,6 +22,14 @@ class Permission(StrEnum):
     # They are therefore safe to grant to a read-only evaluator, and a control an
     # evaluator cannot exercise is a control they have to take on trust.
     PROOF_REPLAY = "proofs:replay"
+    # Building a disposable workspace on the evaluator's own company, and
+    # pointing it at the evaluator's own systems. Held apart from every other
+    # write permission because it authorises writes to exactly one class of
+    # tenant: the ones the sandbox itself minted. It does not widen what its
+    # holder may do to the demonstration tenant, or to any tenant they did not
+    # create, because the routes it guards derive the tenant from a workspace
+    # identifier and never accept one.
+    SANDBOX_OPERATE = "sandbox:operate"
     ENGAGEMENT_READ = "engagements:read"
     ENGAGEMENT_WRITE = "engagements:write"
     ENGAGEMENT_APPROVE = "engagements:approve"
@@ -83,6 +91,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
         {
             Permission.AGENTS_READ,
             Permission.PROOF_REPLAY,
+            Permission.SANDBOX_OPERATE,
             Permission.ENGAGEMENT_READ,
             Permission.SCHEDULE_READ,
             Permission.EVIDENCE_READ,

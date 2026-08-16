@@ -204,12 +204,25 @@ def main() -> None:
         ).load().list()
     except Exception as exc:
         fail(str(exc))
-    if {(item.manifest.test_id, item.manifest.version) for item in control_tests} != {
-        ("SCM-01", "2.0.0"),
-        ("IAM-01", "1.0.0"),
-        ("SLA-01", "1.0.0"),
-    }:
-        fail("expected released SCM-01, IAM-01 and SLA-01 control tests")
+    # Two properties, neither of them a fixed inventory. An exact set fails on
+    # the next procedure the library gains, which says nothing about whether the
+    # library is sound, and the two things actually worth failing on are a
+    # required procedure going missing and a package on disk that did not
+    # produce a verified release.
+    released = {(item.manifest.test_id, item.manifest.version) for item in control_tests}
+    required = {("SCM-01", "2.0.0"), ("IAM-01", "1.0.0"), ("SLA-01", "1.0.0"), ("SCM-02", "1.0.0")}
+    if missing := sorted(required - released):
+        fail(f"required control-test releases are missing: {missing}")
+    packaged = sum(
+        1
+        for path in (ROOT / "tests-library").rglob("manifest.yaml")
+        if "__pycache__" not in path.parts
+    )
+    if len(control_tests) != packaged:
+        fail(
+            f"{packaged} control-test package(s) on disk produced {len(control_tests)} "
+            "verified release(s); one did not load"
+        )
 
     print(
         f"Validated {len(agent_dirs)} signed agent packages, common schemas, "

@@ -2,7 +2,7 @@
   "schema": "assurance.control_test_release.v1",
   "test_id": "SLA-01",
   "version": "1.0.0",
-  "released_at": "2026-08-08T20:25:29.973601+00:00",
+  "released_at": "2026-08-16T18:29:30.707383+00:00",
   "files": {
     "golden_cases/basic.json": "4871522894fb33e80f927f139f48e39f81c2f0f6e33cf8c3d5d77f76737d7c96",
     "input.schema.json": "492b67b2c06ef21b8ba2e837040e7f46b59b97afaacc1ee6e0e098e68b4a5da3",

@@ -1,0 +1,17 @@
+{
+  "schema": "assurance.control_test_release.v1",
+  "test_id": "SCM-02",
+  "version": "1.0.0",
+  "released_at": "2026-08-16T18:29:30.701618+00:00",
+  "files": {
+    "golden_cases/basic.json": "e2177cf7136b1ba1dcc0f2835bf586baa8ddedb9fcdf338c394d85838bd9a799",
+    "golden_cases/budget_exhausted.json": "f2cd38dff0957adf6fcdc941ed92b6a33ab5096c42ac2d0f13fadd5edbc85b69",
+    "golden_cases/clean_repository.json": "4d468647dd6a183565cb3f27170aaa55a2959cec122dfe190f3d84dfc8d9e325",
+    "input.schema.json": "da252dcbe6bf1ae14c2aef97a9d313a4323ce26125e82977a0d817056fae1258",
+    "manifest.yaml": "e194622e0e42d643d925504a3a9b40fc3c2195ea95dde4f9da9d22f393859769",
+    "output.schema.json": "bf40abd6a2ddf3616590120b8396e24b35e9f99001ed2e84de5aa1e50aeb032e",
+    "parameters.schema.json": "32946637f5948cdd2598d10b79f7cad6e8ea89bca66b6b99aac57250dd4206d9",
+    "test.py": "1844853a3b2c5c8e6e7e1ccabdbae6b4fa1b759f0fd03d2d417e2daa747aa24e"
+  },
+  "package_sha256": "b1b5477f18882f6a814f903d17ec7c4d1cac6e5a1160551cc6241534f6e7fcbf"
+}

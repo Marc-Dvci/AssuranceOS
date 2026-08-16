@@ -1,5 +1,17 @@
 # Plan — collecting one source system live
 
+> **Carried out on 2026-08-16.** The GitHub adapter gained `commits` and
+> `commit_reviews`, `SCM-02 · Reviewed change path` was authored and signed,
+> `src/assuranceos/collection_projection.py` projects a collection into its
+> declared datasets, and the evaluator workspace runs the whole path over any
+> repository. Receipts: `release/live-collection-proof.json` and
+> `release/evaluator-audit-proof.json`. Two decisions in the last section were
+> resolved as written there: the auditee is this repository, and the result is
+> published. What was **not** built is the standalone
+> `scripts/run_live_collection_demo.py` and its Judge Mode tile; the same run is
+> reachable from `/workspace` and from `scripts/verify_evaluator_audit.py`,
+> which is where an evaluator actually meets it.
+
 Every population the demonstration tests today is synthetic. That is a deliberate
 property of the Asteria corpus, which exists so a result can be reproduced byte
 for byte and published without a client's records in it, and it stays. What is

@@ -109,6 +109,18 @@ class Settings:
     execution_signing_key_id: str
     execution_envelope_ttl_seconds: int
     control_test_allow_degraded_sandbox: bool
+    # The evaluator sandbox: disposable workspaces an evaluator points at their
+    # own systems. Off unless switched on, because it is the one surface that
+    # accepts somebody else's credential, and a deployment should have to say
+    # that it wants it. The ceilings below are what a stranger's request runs
+    # inside; they have defaults so that switching it on cannot mean switching
+    # the bounds off.
+    evaluator_sandbox_enabled: bool = False
+    evaluator_sandbox_secret_project: str | None = None
+    evaluator_sandbox_max_workspaces: int = 25
+    evaluator_sandbox_ttl_hours: int = 48
+    evaluator_sandbox_max_pages: int = 5
+    evaluator_sandbox_max_objects: int = 500
 
     @property
     def is_production(self) -> bool:
@@ -219,6 +231,27 @@ class Settings:
             control_test_allow_degraded_sandbox=_bool_env(
                 "ASSURANCEOS_CONTROL_TEST_ALLOW_DEGRADED_SANDBOX", False
             ),
+            evaluator_sandbox_enabled=_bool_env("ASSURANCEOS_EVALUATOR_SANDBOX", False),
+            # Explicit, with no fallback to GOOGLE_CLOUD_PROJECT. Inheriting it
+            # would mean that running the product locally, with a cloud project
+            # configured for the model, silently writes credentials typed on a
+            # laptop into a real Secret Manager. Where a credential is stored is
+            # a decision somebody should have to make in writing.
+            evaluator_sandbox_secret_project=_stripped_env(
+                "ASSURANCEOS_EVALUATOR_SANDBOX_SECRET_PROJECT"
+            ),
+            evaluator_sandbox_max_workspaces=_int_env(
+                "ASSURANCEOS_EVALUATOR_SANDBOX_MAX_WORKSPACES", 25, minimum=1
+            ),
+            evaluator_sandbox_ttl_hours=_int_env(
+                "ASSURANCEOS_EVALUATOR_SANDBOX_TTL_HOURS", 48, minimum=1
+            ),
+            evaluator_sandbox_max_pages=_int_env(
+                "ASSURANCEOS_EVALUATOR_SANDBOX_MAX_PAGES", 5, minimum=1
+            ),
+            evaluator_sandbox_max_objects=_int_env(
+                "ASSURANCEOS_EVALUATOR_SANDBOX_MAX_OBJECTS", 500, minimum=1
+            ),
         )
         settings.validate()
         return settings
@@ -313,6 +346,19 @@ class Settings:
             # The endpoint is public by necessity and throttled rather than
             # rate-limited by a gateway, so the code itself carries the entropy.
             raise ValueError("evaluator access code must be at least 12 characters")
+        if self.evaluator_sandbox_enabled and self.is_production:
+            # A production sandbox with no secret project falls back to holding
+            # credentials in the process, and a service that scales to zero then
+            # loses an evaluator's connector between two clicks. That failure
+            # looks like a broken product rather than like a missing setting, so
+            # it is refused at startup where the cause is still visible.
+            if not self.evaluator_sandbox_secret_project:
+                raise ValueError(
+                    "the evaluator sandbox requires "
+                    "ASSURANCEOS_EVALUATOR_SANDBOX_SECRET_PROJECT in production"
+                )
+            if self.auth_mode != "jwt":
+                raise ValueError("the evaluator sandbox requires JWT authentication")
         if self.export_signing_private_key and not self.export_signing_private_key.is_file():
             raise ValueError("configured export-signing private key does not exist")
         if self.export_signing_public_key and not self.export_signing_public_key.is_file():

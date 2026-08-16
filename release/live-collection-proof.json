@@ -1,0 +1,50 @@
+{
+  "schema": "assuranceos.live-collection-proof.v1",
+  "generated_at": "2026-08-16T18:08:13.153248+00:00",
+  "provider": {
+    "connector_type": "github",
+    "display_name": "GitHub",
+    "host": "api.github.com",
+    "authenticated": false,
+    "allowed_hosts": [
+      "api.github.com",
+      "*.ghe.com"
+    ]
+  },
+  "grant": {
+    "purpose": "Evaluator collection of pull requests for Sandbox Verification Ltd",
+    "allowed_streams": [
+      "pull_requests"
+    ],
+    "resource_selectors": {
+      "repositories": [
+        "Marc-Dvci/AssuranceOS"
+      ]
+    },
+    "read_only": true,
+    "expires_at": "2026-08-17T00:08:12.198900+00:00"
+  },
+  "health": {
+    "status": "healthy",
+    "checked_at": "2026-08-16T18:08:12.388607+00:00"
+  },
+  "run": {
+    "stream": "pull_requests",
+    "scope": "Marc-Dvci/AssuranceOS",
+    "status": "succeeded",
+    "objects_seen": 10,
+    "objects_ingested": 10,
+    "pages": 1,
+    "schema_fingerprint": "6e2c58331afd56a664c1ec45bf322d6b5fa8d2949e5343a446f116fe3cc13541"
+  },
+  "evidence": {
+    "count": 10,
+    "first_locator": "https://github.com/Marc-Dvci/AssuranceOS/pull/1",
+    "first_sha256": "01baefb16259a9bb5378c220224e369ce806755512dd6dc93b436adf2806a2c2",
+    "all_verified": true
+  },
+  "refusal": {
+    "checked": "a collection outside the approved scope",
+    "result": "refused"
+  }
+}

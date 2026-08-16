@@ -202,3 +202,25 @@ variable "max_instances" {
     error_message = "max_instances must be at least one and not lower than min_instances"
   }
 }
+
+# The evaluator sandbox: disposable workspaces an evaluator points at their own
+# systems. Off by default because it is the one surface that accepts somebody
+# else's credential and makes an outbound call on their behalf, and because
+# enabling it grants the runtime service account Secret Manager admin.
+variable "evaluator_sandbox_enabled" {
+  description = "Allow evaluators to create disposable workspaces against their own provider accounts."
+  type        = bool
+  default     = false
+}
+
+variable "evaluator_sandbox_max_workspaces" {
+  description = "How many evaluator workspaces may exist at once."
+  type        = number
+  default     = 25
+}
+
+variable "evaluator_sandbox_ttl_hours" {
+  description = "How long an evaluator workspace lives before it is swept with its credentials."
+  type        = number
+  default     = 48
+}

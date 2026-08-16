@@ -1,0 +1,77 @@
+schema_version: assurance.control_test_manifest.v1
+test_id: SCM-02
+version: 1.0.0
+domain: scm
+title: Reviewed change path
+description: >-
+  Tests the complete population of commits that reached the default branch in
+  period, asking of each one whether it arrived through a merged pull request
+  carrying the required approvals. SCM-01 tests the pull requests a repository
+  has; this tests the changes it shipped, which is a different population and
+  the one a change control is actually about.
+engine: python
+entrypoint: test.py:execute
+input_schema: input.schema.json
+output_schema: output.schema.json
+parameter_schema: parameters.schema.json
+datasets:
+  - name: commits
+    role: population
+    primary_key: [commit_sha]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [commit_sha, repository, committed_at]
+      properties:
+        commit_sha: {type: string}
+        repository: {type: string}
+        committed_at: {type: string, format: date-time}
+        author_login: {type: [string, 'null']}
+        parent_count: {type: integer, minimum: 0}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+  - name: commit_reviews
+    role: reference
+    primary_key: [commit_sha]
+    evidence_required: true
+    row_schema:
+      type: object
+      required: [commit_sha, association_determined]
+      properties:
+        commit_sha: {type: string}
+        # False means the association was never established, which is not the
+        # same as establishing that there was none. The procedure keeps those
+        # two apart and reports the first as a limitation.
+        association_determined: {type: boolean}
+        merged_pull_request: {type: [integer, 'null']}
+        pull_request_states: {type: array, items: {type: string}}
+        approvals: {type: [integer, 'null']}
+        approvals_determined: {type: boolean}
+        evidence_id: {type: [string, 'null']}
+      additionalProperties: false
+reconciliation:
+  require_complete: true
+  expected_count_parameter: expected_population_count
+  reject_duplicate_primary_keys: true
+sampling:
+  method: full_population
+resources:
+  timeout_seconds: 30
+  memory_mb: 1024
+  cpu_seconds: 10
+  max_output_bytes: 2000000
+allowed_libraries: [datetime, typing]
+known_limitations:
+  - >-
+    Branch protection configuration is a design test and is outside this
+    procedure. A repository can pass here and still permit a direct push
+    tomorrow.
+  - >-
+    A commit whose pull-request association was not determined within the
+    collection's lookup budget is reported as a limitation. It is neither a pass
+    nor an exception, because an undetermined association is missing evidence
+    rather than evidence of absence.
+  - >-
+    Approvals are counted from the latest review state per reviewer. A reviewer
+    who approved and later requested changes is not counted as an approver, and
+    review comments are not approvals.

@@ -1,0 +1,54 @@
+{
+  "schema": "assuranceos.evaluator-audit-proof.v1",
+  "generated_at": "2026-08-16T19:01:37.552025+00:00",
+  "repository": "Marc-Dvci/AssuranceOS",
+  "period": {
+    "start": "2026-07-17",
+    "end": "2026-08-16"
+  },
+  "grant": {
+    "allowed_streams": [
+      "commits",
+      "commit_reviews"
+    ],
+    "read_only": true,
+    "revoked_at": "2026-08-16T19:01:37.549516+00:00"
+  },
+  "collection": {
+    "commits": {
+      "run_id": "run_26693b8fc0824fad8840",
+      "status": "succeeded",
+      "objects_seen": 44,
+      "objects_ingested": 44,
+      "objects_unchanged": 0,
+      "pages": 1
+    },
+    "commit_reviews": {
+      "run_id": "run_69b51009dd0949d7b147",
+      "status": "succeeded",
+      "objects_seen": 44,
+      "objects_ingested": 44,
+      "objects_unchanged": 0,
+      "pages": 1
+    }
+  },
+  "control_test": {
+    "test_id": "SCM-02",
+    "version": "1.0.0",
+    "conclusion": "ineffective",
+    "population_count": 44,
+    "population_complete": true,
+    "exception_count": 44,
+    "result_manifest_hash": "72ad8e5e2dce789f4950c206f8211beb201d4ccdd73d0526fba6103c94bc1b7d"
+  },
+  "agent": {
+    "model": "gemini-3.7-flash",
+    "conclusion": "ineffective",
+    "denied_out_of_envelope_tool": true
+  },
+  "finding": {
+    "proposed": true,
+    "severity": "high",
+    "status": "proposed"
+  }
+}

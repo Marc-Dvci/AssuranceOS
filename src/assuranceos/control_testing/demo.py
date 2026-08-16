@@ -28,7 +28,13 @@ def build_service(database: Database, root: Path) -> ControlTestService:
 def run_control_test_demo(
     database: Database, root: Path, tenant_id: str | None = None
 ) -> dict:
-    """Run every released control test over the collected Asteria corpus.
+    """Run every released control test the Asteria corpus has a population for.
+
+    Not every released procedure belongs to this corpus. SCM-02 is defined over
+    commits collected from a live repository, and the corpus holds none, so it
+    is reported in ``not_run`` with the reason rather than silently omitted --
+    an omission is indistinguishable from a procedure nobody noticed was
+    missing.
 
     The populations are read from the corpus rather than written here. That is
     the point of the exercise: the same signed test, in the same sandbox, over
@@ -108,9 +114,22 @@ def run_control_test_demo(
         ),
     )
 
+    executed = {"SCM-01", "IAM-01", "SLA-01"}
     return {
         "tenant_id": tenant,
         "released_tests": service.list_releases(),
+        "executed_tests": sorted(executed),
+        "not_run": [
+            {
+                "test_id": str(release.get("test_id")),
+                "reason": (
+                    "defined over a population collected from a live source system; "
+                    "the published corpus holds none"
+                ),
+            }
+            for release in service.list_releases()
+            if str(release.get("test_id")) not in executed
+        ],
         "corpus": corpus.collection_summary(),
         "runs": [
             scm.model_dump(mode="json"),

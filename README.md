@@ -82,7 +82,8 @@ human gate behave identically whichever transport served the run.
 | Health | [`/health`](https://assuranceos-demo-api-u34b6gbpma-uc.a.run.app/health) · [`/ready`](https://assuranceos-demo-api-u34b6gbpma-uc.a.run.app/ready) · [`/docs`](https://assuranceos-demo-api-u34b6gbpma-uc.a.run.app/docs), all public |
 | Where | Cloud Run `assuranceos-demo-api`, project `audit-505613`, region `us-central1`, over Cloud SQL for PostgreSQL 16 |
 | Model | Gemini 3.7 Flash through Vertex AI. `/health` reports `model_mode: vertex` |
-| Data | the seeded synthetic Asteria tenant. The footer of every screen prints the project, region, revision and service it is running on |
+| Data | the seeded Asteria tenant, and any company you add yourself. The footer of every screen prints the project, region, revision and service it is running on |
+| Try it on your own systems | **Your company** in the sidebar, or `/workspace`. Create a company, attach your own GitHub, Jira, Confluence, Drive, Okta, Entra ID or Google Cloud IAM account, and collect from it under a read-only grant you approve |
 
 **The workspace needs a bearer token.** The service is publicly reachable and the
 application authorises every tenant read, which is the posture an audit platform
@@ -343,7 +344,7 @@ See
 See
 [`docs/architecture/evidence-vault-and-provenance.md`](docs/architecture/evidence-vault-and-provenance.md).
 
-### Component 5: connector SDK and local fixture connectors
+### Component 5: connector SDK and provider adapters
 
 - tenant-scoped connector instances containing credential references, never credential values;
 - purpose-bound, time-bound, read-only collection grants with exact stream and resource selectors;
@@ -351,11 +352,23 @@ See
 - normalized source objects persisted into the evidence vault with request, grant, and provider provenance;
 - schema fingerprinting and drift detection between successful runs;
 - bounded live HTTP transport with distinct authentication, permission, rate-limit, protocol, and availability failures;
-- fixture transport that rejects unregistered network calls;
+- deterministic cassette transport, so every adapter's contract is tested without a network;
+- guarded transport for evaluator-supplied providers: per-provider host allowlist, HTTPS on the
+  default port, refusal of any name resolving to a non-public address, and validation of every
+  request an adapter makes rather than only the first, because pagination follows a URL the
+  provider chose;
 - GitHub pull-request, Jira issue, Confluence page, Google Drive snapshot and incremental-change,
   Okta, Microsoft Entra ID, and Google Cloud IAM adapters;
 - credentialed, provider-idempotent Jira and ServiceNow remediation writers;
-- complete Asteria connector demonstration covering four source systems.
+- complete Asteria connector demonstration covering four source systems;
+- **an evaluator workspace** (`/workspace`): a disposable tenant, a provider account supplied by
+  whoever is holding the keyboard, credentials held in Secret Manager and never in the database,
+  and the same governed collection path over their records. Verified against the live GitHub API,
+  read-only, with a receipt in `release/live-collection-proof.json`;
+- **and a real audit on top of it**: `SCM-02 · Reviewed change path`, a signed procedure over the
+  commits that actually reached a branch, executed by a governed agent through the same tool the
+  demonstration uses, ending in a finding that waits for a human. Verified on this repository with
+  Gemini 3.7 Flash, receipt in `release/evaluator-audit-proof.json`.
 
 See
 [`docs/architecture/connector-sdk-and-collection-grants.md`](docs/architecture/connector-sdk-and-collection-grants.md).
