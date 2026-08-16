@@ -975,7 +975,7 @@ resource "google_cloud_scheduler_job" "outbox" {
   name        = "${local.prefix}-outbox-dispatch"
   description = "Dispatch the AssuranceOS transactional outbox"
   region      = var.region
-  schedule    = "* * * * *"
+  schedule    = var.outbox_dispatch_schedule
   time_zone   = "UTC"
 
   retry_config {
@@ -1002,7 +1002,7 @@ resource "google_cloud_scheduler_job" "audit_scheduler" {
   name        = "${local.prefix}-audit-scheduler"
   description = "Evaluate due AssuranceOS schedules and launch eligible engagements"
   region      = var.region
-  schedule    = "* * * * *"
+  schedule    = var.audit_scheduler_schedule
   time_zone   = "UTC"
 
   retry_config {

@@ -2781,8 +2781,8 @@
     },
     {
       "path": "infrastructure/terraform/main.tf",
-      "size_bytes": 28165,
-      "sha256": "427b94fb1a6eb51a478616bc09005f5cc915244e8c40ad986511452faf328060"
+      "size_bytes": 28199,
+      "sha256": "20eab4ada3a00c4fc32d20ddb2f5421c8258066afad59e7e9ec3f074c4c6d300"
     },
     {
       "path": "infrastructure/terraform/outputs.tf",
@@ -2791,8 +2791,8 @@
     },
     {
       "path": "infrastructure/terraform/variables.tf",
-      "size_bytes": 4892,
-      "sha256": "f5cb52bf94b1e5a6a5e083fd79626e30bd9728f913dc7f3abeac21c98f18001b"
+      "size_bytes": 5875,
+      "sha256": "d05b44f89d795b3061aa86d3bdb1469e3fbaccabd9ee4f12629f8e6ce10cf798"
     },
     {
       "path": "infrastructure/terraform/versions.tf",

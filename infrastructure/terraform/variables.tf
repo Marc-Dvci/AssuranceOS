@@ -127,6 +127,28 @@ variable "allow_unauthenticated_cloud_run" {
   default     = false
 }
 
+# Both workers used to be pinned to "* * * * *". Measured on the deployed
+# service, the scheduler pass takes about 68 seconds and the outbox dispatch
+# about 130, so a one-minute cadence started a new execution before the previous
+# one finished and the two piled up: roughly 79 vCPU-hours a day, which is the
+# largest line in this project's bill and buys nothing a demonstration needs.
+# Leasing makes the overlap safe rather than useful.
+#
+# Recurrence is the property being demonstrated, and it is demonstrated equally
+# well on the hour. Set these back to a tighter cadence for a load test, never
+# for a deployment left running.
+variable "audit_scheduler_schedule" {
+  description = "Cron cadence for evaluating due schedules and launching engagements."
+  type        = string
+  default     = "0 * * * *"
+}
+
+variable "outbox_dispatch_schedule" {
+  description = "Cron cadence for dispatching the transactional outbox."
+  type        = string
+  default     = "*/15 * * * *"
+}
+
 variable "min_instances" {
   type    = number
   default = 0
