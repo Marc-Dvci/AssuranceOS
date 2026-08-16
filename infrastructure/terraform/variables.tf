@@ -137,6 +137,23 @@ variable "allow_unauthenticated_cloud_run" {
 # Recurrence is the property being demonstrated, and it is demonstrated equally
 # well on the hour. Set these back to a tighter cadence for a load test, never
 # for a deployment left running.
+# Evaluator access. A reviewer opens `/judge#code=<code>` and the page exchanges
+# the code for the read-only viewer token, because a JWT does not fit in a
+# 255-character submission field and nobody should have to paste one. Both are
+# Secret Manager ids rather than values, and leaving either empty disables the
+# exchange endpoint entirely.
+variable "evaluator_access_code_secret_id" {
+  description = "Secret Manager secret holding the evaluator access code. Empty disables code exchange."
+  type        = string
+  default     = ""
+}
+
+variable "evaluator_token_secret_id" {
+  description = "Secret Manager secret holding the read-only token the code exchanges for."
+  type        = string
+  default     = ""
+}
+
 variable "audit_scheduler_schedule" {
   description = "Cron cadence for evaluating due schedules and launching engagements."
   type        = string

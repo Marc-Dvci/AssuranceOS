@@ -8,6 +8,21 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 
+def _stripped_env(name: str) -> str | None:
+    """Read an optional secret, treating whitespace-only as absent.
+
+    Secret Manager payloads routinely arrive with a trailing newline, and a code
+    that compares equal only when the operator remembered not to press Enter is
+    a support ticket rather than a control.
+    """
+
+    raw = os.getenv(name)
+    if raw is None:
+        return None
+    value = raw.strip()
+    return value or None
+
+
 def _bool_env(name: str, default: bool) -> bool:
     raw = os.getenv(name)
     if raw is None:
@@ -79,6 +94,12 @@ class Settings:
     auth_jwks_url: str | None
     auth_jwt_algorithms: tuple[str, ...]
     auth_clock_leeway_seconds: int
+    # An evaluator reaches the workspace with a short access code rather than by
+    # pasting a JWT. The code is a shared secret held by whoever was given it;
+    # the token it returns is the same read-only viewer credential either way, so
+    # this widens how the credential is delivered and not what it can do.
+    evaluator_access_code: str | None
+    evaluator_token: str | None
     auto_create_schema: bool
     trusted_hosts: tuple[str, ...]
     export_signing_private_key: Path | None
@@ -177,6 +198,8 @@ class Settings:
             auth_clock_leeway_seconds=_int_env(
                 "ASSURANCEOS_AUTH_CLOCK_LEEWAY_SECONDS", 30, minimum=0
             ),
+            evaluator_access_code=_stripped_env("ASSURANCEOS_EVALUATOR_ACCESS_CODE"),
+            evaluator_token=_stripped_env("ASSURANCEOS_EVALUATOR_TOKEN"),
             auto_create_schema=_bool_env(
                 "ASSURANCEOS_AUTO_CREATE_SCHEMA", environment in {"local", "test"}
             ),
@@ -278,6 +301,18 @@ class Settings:
                     raise ValueError("JWKS verification cannot use HS algorithms")
                 if self.is_production and not self.auth_jwks_url.startswith("https://"):
                     raise ValueError("production JWKS URL must use HTTPS")
+        # The pair is all-or-nothing. A code with no token exchanges for nothing,
+        # and a token with no code is unreachable, so either half alone is a
+        # misconfiguration that presents as a broken login rather than as an error.
+        if bool(self.evaluator_access_code) != bool(self.evaluator_token):
+            raise ValueError(
+                "configure both ASSURANCEOS_EVALUATOR_ACCESS_CODE and "
+                "ASSURANCEOS_EVALUATOR_TOKEN, or neither"
+            )
+        if self.evaluator_access_code and len(self.evaluator_access_code) < 12:
+            # The endpoint is public by necessity and throttled rather than
+            # rate-limited by a gateway, so the code itself carries the entropy.
+            raise ValueError("evaluator access code must be at least 12 characters")
         if self.export_signing_private_key and not self.export_signing_private_key.is_file():
             raise ValueError("configured export-signing private key does not exist")
         if self.export_signing_public_key and not self.export_signing_public_key.is_file():

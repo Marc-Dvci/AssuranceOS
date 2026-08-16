@@ -294,6 +294,20 @@ resource "google_secret_manager_secret_iam_member" "runtime_execution_signing" {
   member    = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+resource "google_secret_manager_secret_iam_member" "runtime_evaluator_code" {
+  count     = var.evaluator_access_code_secret_id == "" ? 0 : 1
+  secret_id = var.evaluator_access_code_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.runtime.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "runtime_evaluator_token" {
+  count     = var.evaluator_token_secret_id == "" ? 0 : 1
+  secret_id = var.evaluator_token_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.runtime.email}"
+}
+
 resource "google_pubsub_topic_iam_member" "runtime_publish" {
   topic  = google_pubsub_topic.outbox.name
   role   = "roles/pubsub.publisher"
@@ -519,6 +533,40 @@ resource "google_cloud_run_v2_service" "api" {
           secret_key_ref {
             secret  = google_secret_manager_secret.database_url.secret_id
             version = google_secret_manager_secret_version.database_url.version
+          }
+        }
+      }
+
+      # The evaluator access code and the token it returns are both credentials,
+      # so neither is a plain env value on the revision. They are optional: an
+      # empty `evaluator_access_code_secret_id` leaves the exchange endpoint
+      # returning 404 and the workspace reachable only by pasting a token.
+      dynamic "env" {
+        for_each = var.evaluator_access_code_secret_id == "" ? [] : [1]
+
+        content {
+          name = "ASSURANCEOS_EVALUATOR_ACCESS_CODE"
+
+          value_source {
+            secret_key_ref {
+              secret  = var.evaluator_access_code_secret_id
+              version = "latest"
+            }
+          }
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.evaluator_token_secret_id == "" ? [] : [1]
+
+        content {
+          name = "ASSURANCEOS_EVALUATOR_TOKEN"
+
+          value_source {
+            secret_key_ref {
+              secret  = var.evaluator_token_secret_id
+              version = "latest"
+            }
           }
         }
       }

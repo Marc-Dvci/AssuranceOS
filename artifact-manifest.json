@@ -1906,8 +1906,8 @@
     },
     {
       "path": "api/openapi/openapi.yaml",
-      "size_bytes": 246120,
-      "sha256": "1cb9ee4da71f21b2670a5898e225c90e45f837a20d98a31714eb35d64d2bc551"
+      "size_bytes": 248025,
+      "sha256": "c38cfa81bd96a4d07ee8d7360ab463a7a49fbbc405d2481ab5b00f5e6baa569d"
     },
     {
       "path": "api/protobuf/README.md",
@@ -1926,8 +1926,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 150246,
-      "sha256": "e344c2a9544d1c73873b085fd604eda5d4a9eb59fe1f34dee9a717cb89f98996"
+      "size_bytes": 153166,
+      "sha256": "9a8585efc7cc2fbee1172266c205be0a5e4c8fd109533fe799613a157c403da5"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2801,8 +2801,8 @@
     },
     {
       "path": "infrastructure/terraform/main.tf",
-      "size_bytes": 28199,
-      "sha256": "20eab4ada3a00c4fc32d20ddb2f5421c8258066afad59e7e9ec3f074c4c6d300"
+      "size_bytes": 29834,
+      "sha256": "89e92752cbd2bd7feb75062b2f9b11f70359a90e7d658a54447243123529e419"
     },
     {
       "path": "infrastructure/terraform/outputs.tf",
@@ -2811,8 +2811,8 @@
     },
     {
       "path": "infrastructure/terraform/variables.tf",
-      "size_bytes": 5875,
-      "sha256": "d05b44f89d795b3061aa86d3bdb1469e3fbaccabd9ee4f12629f8e6ce10cf798"
+      "size_bytes": 6590,
+      "sha256": "4c92b10dce2ba049440401de1ace23d475e8e5181935e917826e92cd3ef9c7fc"
     },
     {
       "path": "infrastructure/terraform/versions.tf",
@@ -3386,8 +3386,8 @@
     },
     {
       "path": "src/assuranceos/api.py",
-      "size_bytes": 115382,
-      "sha256": "5e90f5ba6ebf8e8aea9839ef1c14c28d1d757e211783ed9f91ae8e53fbc1d4fb"
+      "size_bytes": 119604,
+      "sha256": "c4d539baa53bdcff98c0b77874dd6b92686d0fef08298c577419489b65b020e9"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3401,8 +3401,8 @@
     },
     {
       "path": "src/assuranceos/config.py",
-      "size_bytes": 15526,
-      "sha256": "fcf31b59030b1701c4159571ac720f1dd3344938582dfdda6323b9fa503563a9"
+      "size_bytes": 17330,
+      "sha256": "d38248402d08b1db1537e7b9c0a193ad90b412ef98561be44088490745d2c44b"
     },
     {
       "path": "src/assuranceos/connectors/__init__.py",
@@ -4536,8 +4536,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 16871,
-      "sha256": "267e5f9f6de1c2d4ab6d557a9a73936453f34c8d75acdd01909c7a7c91a27f00"
+      "size_bytes": 19463,
+      "sha256": "acb0b1c24cb97d720dbcbdbd76c12ecc6a750dfd4de62ca87d926ba6db3ed3c8"
     },
     {
       "path": "tests/test_reporting.py",

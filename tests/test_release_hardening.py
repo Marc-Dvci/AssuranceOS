@@ -122,6 +122,75 @@ def test_a_read_only_evaluator_can_replay_the_proofs_but_cannot_operate_the_demo
         api.app.state.jwt_verifier = previous_verifier
 
 
+def test_an_access_code_exchanges_for_the_evaluator_token_and_a_wrong_one_does_not():
+    """The code is the delivery mechanism; the credential behind it is unchanged.
+
+    Both directions again: the right code returns the configured token, and a
+    wrong code returns 403 without returning it. The throttle is asserted too,
+    because the endpoint cannot require a credential to reach it.
+    """
+    import dataclasses
+
+    from assuranceos import api
+
+    previous = api.settings
+    api.settings = dataclasses.replace(
+        previous,
+        evaluator_access_code="correct-horse-battery",
+        evaluator_token="header.payload.signature",
+    )
+    api._EVALUATOR_ATTEMPTS.clear()
+    try:
+        client = TestClient(api.app)
+
+        good = client.post("/api/v1/evaluator-session", json={"code": "correct-horse-battery"})
+        assert good.status_code == 200
+        assert good.json()["token"] == "header.payload.signature"
+
+        api._EVALUATOR_ATTEMPTS.clear()
+        bad = client.post("/api/v1/evaluator-session", json={"code": "wrong"})
+        assert bad.status_code == 403
+        assert "header.payload.signature" not in bad.text
+
+        # Whitespace is stripped, because a code pasted out of a form or an
+        # email arrives with it and a login that fails on a trailing space is
+        # indistinguishable from a wrong code.
+        api._EVALUATOR_ATTEMPTS.clear()
+        padded = client.post(
+            "/api/v1/evaluator-session", json={"code": "  correct-horse-battery \n"}
+        )
+        assert padded.status_code == 200
+
+        api._EVALUATOR_ATTEMPTS.clear()
+        for _ in range(api._EVALUATOR_MAX_ATTEMPTS):
+            client.post("/api/v1/evaluator-session", json={"code": "wrong"})
+        throttled = client.post("/api/v1/evaluator-session", json={"code": "wrong"})
+        assert throttled.status_code == 429
+    finally:
+        api.settings = previous
+        api._EVALUATOR_ATTEMPTS.clear()
+
+
+def test_evaluator_session_is_absent_until_it_is_configured():
+    """An unconfigured deployment must not present a login that cannot succeed."""
+    import dataclasses
+
+    from assuranceos import api
+
+    previous = api.settings
+    api.settings = dataclasses.replace(
+        previous, evaluator_access_code=None, evaluator_token=None
+    )
+    api._EVALUATOR_ATTEMPTS.clear()
+    try:
+        client = TestClient(api.app)
+        missing = client.post("/api/v1/evaluator-session", json={"code": "anything"})
+        assert missing.status_code == 404
+    finally:
+        api.settings = previous
+        api._EVALUATOR_ATTEMPTS.clear()
+
+
 def test_all_agent_packages_are_release_signed_and_tampering_is_detected(tmp_path: Path):
     root = Path("agents")
     packages = AgentRegistry(root).load()

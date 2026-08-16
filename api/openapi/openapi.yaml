@@ -4419,6 +4419,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/evaluator-session:
+    post:
+      summary: Evaluator Session
+      description: 'Exchange a short access code for the read-only evaluator token.
+
+
+        This exists because a JWT does not fit in a 255-character submission field
+
+        and a reviewer should not have to paste one. What it hands back is the same
+
+        viewer credential that was always intended for evaluators, so the code
+
+        changes how the credential is delivered rather than what it permits.'
+      operationId: evaluator_session_api_v1_evaluator_session_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluatorSessionRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluatorSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/judge/overview:
     get:
       summary: Judge Overview
@@ -6533,6 +6566,42 @@ components:
       - case_count
       - passed_cases
       title: EvaluationSummaryResponse
+    EvaluatorSessionRequest:
+      properties:
+        code:
+          type: string
+          maxLength: 256
+          minLength: 1
+          title: Code
+      type: object
+      required:
+      - code
+      title: EvaluatorSessionRequest
+    EvaluatorSessionResponse:
+      properties:
+        token:
+          type: string
+          title: Token
+        role:
+          type: string
+          title: Role
+        tenant_ids:
+          items:
+            type: string
+          type: array
+          title: Tenant Ids
+        expires_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Expires At
+      type: object
+      required:
+      - token
+      - role
+      - tenant_ids
+      - expires_at
+      title: EvaluatorSessionResponse
     EvidenceExportRequest:
       properties:
         evidence_ids:

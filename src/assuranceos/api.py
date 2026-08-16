@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 import hashlib
+import hmac
 from pathlib import Path
+import threading
+import time
 from typing import Literal
 import os
 import tempfile
@@ -3132,6 +3135,116 @@ def product_risk_discovery(tenant_id: str) -> dict:
     shown the fact and the rule that put it there.
     """
     return discovered_universe(database, tenant_id)
+
+
+class EvaluatorSessionRequest(BaseModel):
+    code: str = Field(min_length=1, max_length=256)
+
+
+class EvaluatorSessionResponse(BaseModel):
+    token: str
+    role: str
+    tenant_ids: list[str]
+    expires_at: str | None
+
+
+#: Failed attempts per client address, as (window_started, count). The exchange
+#: endpoint cannot require a credential, because it is where the credential comes
+#: from, so the code's own entropy plus this throttle are what stand in front of
+#: it. Deliberately in-process: Cloud Run holds at most a handful of instances
+#: and a shared store here would be a database dependency on the login path.
+_EVALUATOR_ATTEMPTS: dict[str, tuple[float, int]] = {}
+_EVALUATOR_ATTEMPTS_LOCK = threading.Lock()
+_EVALUATOR_WINDOW_SECONDS = 300.0
+_EVALUATOR_MAX_ATTEMPTS = 10
+
+
+def _evaluator_throttle(client: str) -> None:
+    now = time.monotonic()
+    with _EVALUATOR_ATTEMPTS_LOCK:
+        started, count = _EVALUATOR_ATTEMPTS.get(client, (now, 0))
+        if now - started > _EVALUATOR_WINDOW_SECONDS:
+            started, count = now, 0
+        if count >= _EVALUATOR_MAX_ATTEMPTS:
+            raise HTTPException(
+                status_code=429,
+                detail="too many access-code attempts; try again in a few minutes",
+            )
+        _EVALUATOR_ATTEMPTS[client] = (started, count + 1)
+
+
+def _evaluator_throttle_clear(client: str) -> None:
+    with _EVALUATOR_ATTEMPTS_LOCK:
+        _EVALUATOR_ATTEMPTS.pop(client, None)
+
+
+@app.post("/api/v1/evaluator-session", response_model=EvaluatorSessionResponse)
+def evaluator_session(payload: EvaluatorSessionRequest, request: Request) -> dict:
+    """Exchange a short access code for the read-only evaluator token.
+
+    This exists because a JWT does not fit in a 255-character submission field
+    and a reviewer should not have to paste one. What it hands back is the same
+    viewer credential that was always intended for evaluators, so the code
+    changes how the credential is delivered rather than what it permits.
+    """
+
+    configured_code = settings.evaluator_access_code
+    configured_token = settings.evaluator_token
+    if not configured_code or not configured_token:
+        raise HTTPException(status_code=404, detail="evaluator access is not configured")
+
+    client = request.client.host if request.client else "unknown"
+    _evaluator_throttle(client)
+
+    # Compared on bytes and in constant time: a length check or an early return
+    # leaks the code one character at a time.
+    if not hmac.compare_digest(
+        payload.code.strip().encode("utf-8"), configured_code.encode("utf-8")
+    ):
+        raise HTTPException(status_code=403, detail="invalid access code")
+
+    _evaluator_throttle_clear(client)
+
+    # Read back from the token rather than restating it here, so this response
+    # cannot advertise a role or an expiry the credential does not actually hold.
+    role, tenant_ids, expires_at = _describe_token(configured_token)
+    return {
+        "token": configured_token,
+        "role": role,
+        "tenant_ids": tenant_ids,
+        "expires_at": expires_at,
+    }
+
+
+def _describe_token(token: str) -> tuple[str, list[str], str | None]:
+    """Describe a JWT from its payload without verifying it.
+
+    Verification belongs to the request path that will receive this token; here
+    the claims are only being echoed for display, and a token this endpoint
+    cannot parse is still returned rather than withheld.
+    """
+
+    try:
+        import base64
+        import json
+
+        segment = token.split(".")[1]
+        segment += "=" * (-len(segment) % 4)
+        claims = json.loads(base64.urlsafe_b64decode(segment))
+        roles = claims.get("roles") or []
+        expiry = claims.get("exp")
+        expires_at = (
+            datetime.fromtimestamp(expiry, tz=timezone.utc).isoformat()
+            if isinstance(expiry, (int, float))
+            else None
+        )
+        return (
+            str(roles[0]) if roles else "unknown",
+            [str(item) for item in claims.get("tenant_ids") or []],
+            expires_at,
+        )
+    except Exception:  # pragma: no cover - malformed token still exchanges
+        return "unknown", [], None
 
 
 @app.get(
