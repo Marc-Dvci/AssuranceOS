@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 927,
+  "file_count": 928,
   "files": [
     {
       "path": ".dockerignore",
@@ -2661,13 +2661,18 @@
     },
     {
       "path": "docs/implementation/README.md",
-      "size_bytes": 427,
-      "sha256": "d7f979efd44db0789aa69b427a5912c5eb844c145ce2db99d9a0a6af41ef0700"
+      "size_bytes": 665,
+      "sha256": "45e871e980c46adf6048c04b85947a8944926f66e3e5375bae9550a5d5a9f4ad"
     },
     {
       "path": "docs/implementation/capability-status.yaml",
-      "size_bytes": 11305,
-      "sha256": "8c85fb6432b65a0bc2acfb40a01fca9c94eb08cd338cdb95161a347019f577bf"
+      "size_bytes": 11568,
+      "sha256": "23ce5e2683cc04ebefb023d9424abaed9c254025ad4a7f98e289d1bda9f0ff2c"
+    },
+    {
+      "path": "docs/implementation/live-source-collection-plan.md",
+      "size_bytes": 12088,
+      "sha256": "73a38ed5b82189ec8ddae9e5595e60bcdeb81e2fe2bcc37486070f2ed655d974"
     },
     {
       "path": "docs/production-readiness.md",

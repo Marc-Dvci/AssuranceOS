@@ -133,7 +133,10 @@ google_platform:
     requirement: At least one Google Cloud infrastructure service
     implementation: complete
     activation: provider_verified
-    code: infrastructure/terraform/ (35 resources: Cloud Run service and 5 jobs, Cloud SQL, Cloud Storage, Pub/Sub, Secret Manager, Cloud Scheduler, Cloud Trace, Artifact Registry)
+    code: >-
+      infrastructure/terraform/ (35 resources: Cloud Run service and 5 jobs,
+      Cloud SQL, Cloud Storage, Pub/Sub, Secret Manager, Cloud Scheduler,
+      Cloud Trace, Artifact Registry)
     evidence_when_activated: terraform outputs, the Cloud Run revision, and job execution logs
     activated:
       date: 2026-08-15
@@ -164,6 +167,9 @@ provider_activations:
   github_jira_confluence_google_drive: credentials_pending
   entra_okta_gcp_iam: credentials_pending
   service_now_ticket_writer: credentials_pending
+  # The plan for taking the first of these to a real API, with the population it
+  # would run over measured first: live-source-collection-plan.md.
+  planned_first_live_collection: github pull_requests and commits, read-only, this repository
 
 deployment_proof:
   source: ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON or ASSURANCEOS_AGENT_ENGINE_PROOF
