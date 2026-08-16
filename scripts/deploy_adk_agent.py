@@ -107,12 +107,18 @@ def _agent_engine_config(
     return {
         "staging_bucket": staging_bucket,
         # Both paths are relative to the repository root, and the deploy runs
-        # from there. `extra_packages` entries are recreated under `user_code/`
-        # at the same relative path, so an absolute path produces a layout the
-        # builder cannot address and pip fails with "No such file or directory"
-        # after the resource has been created. pip itself runs one level above
-        # `user_code`, which is why the requirement carries the prefix.
-        "requirements": [*RUNTIME_REQUIREMENTS, f"user_code/{_uploaded(wheel)}"],
+        # from there, because an absolute path produces a layout the builder
+        # cannot address and pip fails with "No such file or directory" after
+        # the resource has been created.
+        #
+        # The wheel requirement carries no `user_code/` prefix. The builder
+        # copies the uploaded objects to `/code/user_code/` and then, for a GCS
+        # deployment, runs `tar -xvf user_code/dependencies.tar.gz` from `/code`
+        # itself, so `extra_packages` land at `/code/<relative path>` while
+        # requirements.txt stays at `/code/user_code/requirements.txt`. pip runs
+        # from `/code`, so the wheel resolves with the path it was uploaded
+        # under and a prefix points one directory too deep.
+        "requirements": [*RUNTIME_REQUIREMENTS, _uploaded(wheel)],
         "extra_packages": [_uploaded(wheel), _uploaded(package.path)],
         "display_name": f"AssuranceOS · {package.manifest['display_name']}",
         "description": str(package.manifest["mandate"]),

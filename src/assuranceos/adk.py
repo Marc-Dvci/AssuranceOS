@@ -15,10 +15,11 @@ reason.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import timedelta
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
 from .execution_security import ExecutionEnvelopeVerifier
@@ -151,6 +152,14 @@ def build_adk_agent(
     if package is None:
         raise ValueError(f"agent package was not found: {agent_dir}")
     instruction = (agent_dir / "system_prompt.md").read_text(encoding="utf-8")
+    # The agent is cloudpickled for Agent Engine, and a concrete Path pickles as
+    # the deploying platform's flavour. Deploying from Windows therefore ships a
+    # WindowsPath that the Linux runtime cannot reconstruct, and the service dies
+    # while loading its own agent with "cannot instantiate 'WindowsPath'" after
+    # the resource has been created and billed. Nothing reachable from the
+    # pickled closure reads this path, so it travels in a platform-neutral form
+    # and the deploy works from any operating system.
+    package = replace(package, path=PurePosixPath(package.path.as_posix()))
     policy_gateway = PolicyGateway()
     if trusted_execution_keys is None:
         key_id, public_key = _default_execution_key(agent_dir)

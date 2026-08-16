@@ -129,6 +129,58 @@ async def persist_reviewed_session(
     }
 
 
+def _validate_model_armor_receipt(
+    receipt: Any,
+    *,
+    template: str,
+) -> list[str]:
+    """Check a Model Armor verification receipt against the configured template.
+
+    Returns the reasons the receipt is not acceptable; an empty list means the
+    template was exercised on both decision paths and answered correctly.
+    """
+
+    if not isinstance(receipt, dict):
+        return ["Model Armor verification receipt is missing"]
+    errors: list[str] = []
+    if receipt.get("schema") != "assurance.model_armor_verification.v1":
+        errors.append("unsupported Model Armor verification schema")
+    if receipt.get("template") != template:
+        errors.append("Model Armor template does not match deployment")
+    if receipt.get("safe_model_response") != "NO_MATCH_FOUND":
+        errors.append("Model Armor safe-response check did not pass")
+    if receipt.get("adversarial_user_prompt") != "MATCH_FOUND":
+        errors.append("Model Armor adversarial check did not pass")
+    if not _is_utc_timestamp(receipt.get("verified_at")):
+        errors.append("Model Armor verification timestamp is invalid")
+    return errors
+
+
+def _load_model_armor_receipt(*, repository_root: Path) -> tuple[Any, str | None, list[str]]:
+    """Load a standalone Model Armor receipt, if the operator produced one.
+
+    Model Armor sits in the request path whether or not the fleet was ever
+    deployed to Agent Engine, so its proof has to be loadable on its own. A
+    guardrail that is running is reported as running.
+    """
+
+    raw = os.getenv("ASSURANCEOS_MODEL_ARMOR_PROOF_JSON", "").strip()
+    path_value = os.getenv("ASSURANCEOS_MODEL_ARMOR_PROOF", "").strip()
+    try:
+        if raw:
+            return json.loads(raw), "environment", []
+        if path_value:
+            proof_path = Path(path_value)
+            if not proof_path.is_absolute():
+                proof_path = repository_root / proof_path
+            if not proof_path.is_file():
+                return None, str(proof_path), ["configured Model Armor proof file does not exist"]
+            return json.loads(proof_path.read_text(encoding="utf-8")), str(proof_path), []
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        return None, path_value or "environment", [f"Model Armor proof could not be loaded: {exc}"]
+    return None, None, []
+
+
 def managed_fleet_proof(
     *,
     repository_root: Path,
@@ -142,6 +194,10 @@ def managed_fleet_proof(
     read every resource back from the Agent Engine API. The receipt is still an
     operator-supplied artifact (not a remote attestation), and that limitation is
     made explicit in the returned proof metadata.
+
+    Model Armor is verified separately. It guards the request path of any
+    deployment, so tying its status to an Agent Engine receipt would report a
+    working guardrail as absent whenever the fleet runs somewhere else.
     """
 
     source = "deployment_plan"
@@ -180,6 +236,7 @@ def managed_fleet_proof(
     model_armor_template = os.getenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", "").strip()
     model_armor_errors: list[str] = []
     model_armor_verified = False
+    model_armor_source: str | None = None
     if document is not None:
         if document.get("schema") != "assurance.agent_engine_deployment_result.v2":
             errors.append("unsupported deployment proof schema")
@@ -243,27 +300,20 @@ def managed_fleet_proof(
         if verification.get("resource_count") != len(expected):
             errors.append("verified resource count does not match the signed fleet")
 
-        if model_armor_template:
+    if model_armor_template:
+        armor_receipt, armor_source, armor_load_errors = _load_model_armor_receipt(
+            repository_root=repository_root
+        )
+        if armor_receipt is None and not armor_load_errors and document is not None:
             managed_services = document.get("managed_services")
-            armor = (
-                managed_services.get("model_armor")
-                if isinstance(managed_services, dict)
-                else None
-            )
-            if not isinstance(armor, dict):
-                model_armor_errors.append("Model Armor verification receipt is missing")
-            else:
-                if armor.get("schema") != "assurance.model_armor_verification.v1":
-                    model_armor_errors.append("unsupported Model Armor verification schema")
-                if armor.get("template") != model_armor_template:
-                    model_armor_errors.append("Model Armor template does not match deployment")
-                if armor.get("safe_model_response") != "NO_MATCH_FOUND":
-                    model_armor_errors.append("Model Armor safe-response check did not pass")
-                if armor.get("adversarial_user_prompt") != "MATCH_FOUND":
-                    model_armor_errors.append("Model Armor adversarial check did not pass")
-                if not _is_utc_timestamp(armor.get("verified_at")):
-                    model_armor_errors.append("Model Armor verification timestamp is invalid")
-                model_armor_verified = not model_armor_errors
+            if isinstance(managed_services, dict):
+                armor_receipt = managed_services.get("model_armor")
+                armor_source = "agent_engine_deployment"
+        model_armor_source = armor_source
+        model_armor_errors = armor_load_errors + _validate_model_armor_receipt(
+            armor_receipt, template=model_armor_template
+        )
+        model_armor_verified = not model_armor_errors
 
     project = str((document or {}).get("project") or os.getenv("GOOGLE_CLOUD_PROJECT") or "")
     location = str(
@@ -313,6 +363,8 @@ def managed_fleet_proof(
         "model_armor": {
             "configured": model_armor_verified,
             "template": model_armor_template or None,
+            "source": model_armor_source,
+            "independent_of_agent_engine": True,
             "verification_errors": model_armor_errors,
         },
         "verification_errors": errors,

@@ -1,0 +1,557 @@
+{
+  "agents": [
+    {
+      "agent_id": "company-intelligence",
+      "display_name": "Public Company Intelligence Agent",
+      "human_gates": [
+        "organization_profile_confirmation"
+      ],
+      "package_sha256": "5724b3350abcc6301bb3d6313887e1321f5bf5bed43bb674e93bf1ce115e46a6",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "continuous-monitoring",
+      "display_name": "Continuous Monitoring Agent",
+      "human_gates": [
+        "monitor_version_change_approval"
+      ],
+      "package_sha256": "fc5628d4becc65f58f694a93439a5f0641ed939ecc346c5aa1313f65a530be74",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "control-design",
+      "display_name": "Control Design Agent",
+      "human_gates": [
+        "design_conclusion_review"
+      ],
+      "package_sha256": "357fe43f878540c20d01dc82efb30199ad51acced2895943d72c3a1b7af22bd9",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "engagement-director",
+      "display_name": "Engagement Director Agent",
+      "human_gates": [
+        "scope_approval",
+        "finding_approval",
+        "report_issuance"
+      ],
+      "package_sha256": "41d142166ebd0526cc1495e4a66290697dd93fdb433cf6f8bc03449e19aabd43",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "evidence-custodian",
+      "display_name": "Evidence Custodian Agent",
+      "human_gates": [
+        "sensitive_evidence_access"
+      ],
+      "package_sha256": "706109f6d428a6801e5a1704f8b1f0d518e367209332f5e57147803735577ccf",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "finding-adjudicator",
+      "display_name": "Finding Adjudicator Agent",
+      "human_gates": [
+        "finding_approval"
+      ],
+      "package_sha256": "87cb9420dccf4f9eb93d756ca8516e9a9bc009ce4019e766773d721bb2d31d57",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "interview",
+      "display_name": "Interview Agent",
+      "human_gates": [
+        "interview_invitation_approval",
+        "sensitive_matter_handoff"
+      ],
+      "package_sha256": "b5b58fc897fb9628a44596fbb53d7c646b2196bf1e7018df742db6c237207c60",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "onboarding-director",
+      "display_name": "Onboarding Director Agent",
+      "human_gates": [
+        "profile_confirmation",
+        "connector_authorization",
+        "audit_plan_approval"
+      ],
+      "package_sha256": "d0e0c87fd097df4a22020696d71291eaa5f4528ececd186018a692ac0803c2db",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "operating-effectiveness",
+      "display_name": "Operating Effectiveness Agent",
+      "human_gates": [
+        "test_result_acceptance"
+      ],
+      "package_sha256": "f5cac1203ab2e34a0466a12b5accd36b0a8ef2c342d37082b1d6d5424d5040be",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "organization-discovery",
+      "display_name": "Organization Discovery Agent",
+      "human_gates": [
+        "canonical_entity_merge_approval"
+      ],
+      "package_sha256": "041948c18dadd485bfcac2e8ddcfdf8a571771a651fbf2dea49f22a8afc75b17",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "policy-documentation",
+      "display_name": "Policy and Documentation Agent",
+      "human_gates": [
+        "criteria_acceptance"
+      ],
+      "package_sha256": "06e6a6d706ede9a103e38f12ae776b02d512bb193ce8fe0cdc3a4d5228b18908",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "process-mining",
+      "display_name": "Process Mining Agent",
+      "human_gates": [
+        "material_process_observation_review"
+      ],
+      "package_sha256": "a1ebbc3c2ca8dcda1710ef0186f2931b4355a4c086d035459d96428ecfa8a966",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "quality-reviewer",
+      "display_name": "Quality Reviewer Agent",
+      "human_gates": [
+        "quality_review_acceptance"
+      ],
+      "package_sha256": "ba40bccbaf3c6c76b12664c7cc226bd1faf7d465f07d76d4584828c735d8b17e",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "remediation-coordinator",
+      "display_name": "Remediation Coordinator Agent",
+      "human_gates": [
+        "external_action_approval",
+        "risk_acceptance_approval"
+      ],
+      "package_sha256": "70e78bf828d11b02782d7833db81577da4a183f49c203d357309d6afacf3e985",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "retest-verification",
+      "display_name": "Retest Verification Agent",
+      "human_gates": [
+        "finding_closure_approval"
+      ],
+      "package_sha256": "8e7cb9c0a16794a2413fc9eb819706d4fd315313d62ca7bbaf9a9ff3f08035ee",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "risk-portfolio",
+      "display_name": "Risk and Audit Portfolio Agent",
+      "human_gates": [
+        "audit_plan_approval"
+      ],
+      "package_sha256": "2ce09b2e2d7f89c3044ee3807a72e9f5702070200b62daff1a3a2691a4f4f23f",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "scope-materiality",
+      "display_name": "Scope and Materiality Agent",
+      "human_gates": [
+        "engagement_scope_approval"
+      ],
+      "package_sha256": "267ad98f0e2b630e9d90640df2a7b89f9ee7d9ff0bf3bdb2cc7c78a4374e120a",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "skeptic",
+      "display_name": "Skeptic Agent",
+      "human_gates": [
+        "observation_rework_decision"
+      ],
+      "package_sha256": "40ff1afaff8f6209938b3d85dac83b6cba9dee5dc73d337c3c2512969d0d5081",
+      "tool_count": 5,
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "transaction-analytics",
+      "display_name": "Transaction Analytics Agent",
+      "human_gates": [
+        "generated_code_approval"
+      ],
+      "package_sha256": "4c145ede95b9e1df1bc4e8a3f0ccdd7b5468a8fed65005fe2ad62cccce61bae2",
+      "tool_count": 5,
+      "version": "0.8.0"
+    }
+  ],
+  "complete": true,
+  "deployed": [
+    {
+      "agent_id": "company-intelligence",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "5724b3350abcc6301bb3d6313887e1321f5bf5bed43bb674e93bf1ce115e46a6",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/85314955489837056",
+      "verified_at": "2026-08-16T13:58:56.946808+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "continuous-monitoring",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "fc5628d4becc65f58f694a93439a5f0641ed939ecc346c5aa1313f65a530be74",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/4467739605386395648",
+      "verified_at": "2026-08-16T14:02:04.029374+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "control-design",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "357fe43f878540c20d01dc82efb30199ad51acced2895943d72c3a1b7af22bd9",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/7382694464201949184",
+      "verified_at": "2026-08-16T14:04:58.927320+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "engagement-director",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "41d142166ebd0526cc1495e4a66290697dd93fdb433cf6f8bc03449e19aabd43",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/433640239169273856",
+      "verified_at": "2026-08-16T14:08:05.673932+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "evidence-custodian",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "706109f6d428a6801e5a1704f8b1f0d518e367209332f5e57147803735577ccf",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/4585959095604871168",
+      "verified_at": "2026-08-16T14:10:49.492650+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "finding-adjudicator",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "87cb9420dccf4f9eb93d756ca8516e9a9bc009ce4019e766773d721bb2d31d57",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/3202228110095286272",
+      "verified_at": "2026-08-16T14:14:49.353117+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "interview",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "b5b58fc897fb9628a44596fbb53d7c646b2196bf1e7018df742db6c237207c60",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/72226369072791552",
+      "verified_at": "2026-08-16T14:19:10.696224+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "onboarding-director",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "d0e0c87fd097df4a22020696d71291eaa5f4528ececd186018a692ac0803c2db",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/9203274613566472192",
+      "verified_at": "2026-08-16T14:22:37.724436+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "operating-effectiveness",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "f5cac1203ab2e34a0466a12b5accd36b0a8ef2c342d37082b1d6d5424d5040be",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/7410841961873014784",
+      "verified_at": "2026-08-16T14:25:22.794201+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "organization-discovery",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "041948c18dadd485bfcac2e8ddcfdf8a571771a651fbf2dea49f22a8afc75b17",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/241111355099185152",
+      "verified_at": "2026-08-16T14:28:39.057869+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "policy-documentation",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "06e6a6d706ede9a103e38f12ae776b02d512bb193ce8fe0cdc3a4d5228b18908",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/5211959443809370112",
+      "verified_at": "2026-08-16T14:32:06.508615+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "process-mining",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "a1ebbc3c2ca8dcda1710ef0186f2931b4355a4c086d035459d96428ecfa8a966",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/7544824050787287040",
+      "verified_at": "2026-08-16T14:35:34.580005+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "quality-reviewer",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "ba40bccbaf3c6c76b12664c7cc226bd1faf7d465f07d76d4584828c735d8b17e",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/6483100438634692608",
+      "verified_at": "2026-08-16T14:38:40.019049+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "remediation-coordinator",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "70e78bf828d11b02782d7833db81577da4a183f49c203d357309d6afacf3e985",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/1172230578058035200",
+      "verified_at": "2026-08-16T14:41:58.714791+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "retest-verification",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "8e7cb9c0a16794a2413fc9eb819706d4fd315313d62ca7bbaf9a9ff3f08035ee",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/7954651616878002176",
+      "verified_at": "2026-08-16T14:45:58.066003+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "risk-portfolio",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "2ce09b2e2d7f89c3044ee3807a72e9f5702070200b62daff1a3a2691a4f4f23f",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/6834381209569591296",
+      "verified_at": "2026-08-16T14:49:03.573887+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "scope-materiality",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "267ad98f0e2b630e9d90640df2a7b89f9ee7d9ff0bf3bdb2cc7c78a4374e120a",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/6200499562017193984",
+      "verified_at": "2026-08-16T14:52:08.962733+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "skeptic",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "40ff1afaff8f6209938b3d85dac83b6cba9dee5dc73d337c3c2512969d0d5081",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/8005317112685920256",
+      "verified_at": "2026-08-16T14:55:06.110385+00:00",
+      "version": "0.8.0"
+    },
+    {
+      "agent_id": "transaction-analytics",
+      "identity_type": "AGENT_IDENTITY",
+      "memory_bank": {
+        "configured": true,
+        "generation": "explicit_after_review",
+        "service": "VertexAiMemoryBankService"
+      },
+      "package_sha256": "4c145ede95b9e1df1bc4e8a3f0ccdd7b5468a8fed65005fe2ad62cccce61bae2",
+      "resource_name": "projects/91995351602/locations/us-central1/reasoningEngines/817572107402608640",
+      "verified_at": "2026-08-16T14:57:50.359011+00:00",
+      "version": "0.8.0"
+    }
+  ],
+  "deployed_at": "2026-08-16T14:57:50.359011+00:00",
+  "failures": [],
+  "generated_at": "2026-08-16T13:56:10.506123+00:00",
+  "managed_services": {
+    "model_armor": {
+      "adversarial_user_prompt": "MATCH_FOUND",
+      "method": "modelarmor.sanitizeUserPrompt+sanitizeModelResponse",
+      "safe_model_response": "NO_MATCH_FOUND",
+      "schema": "assurance.model_armor_verification.v1",
+      "template": "projects/audit-505613/locations/us-central1/templates/assuranceos-guardrails",
+      "verified_at": "2026-08-16T13:56:15.275342+00:00"
+    }
+  },
+  "memory_bank": {
+    "configuration": {
+      "customization_configs": [
+        {
+          "consolidation_config": {
+            "revisions_per_candidate_count": 1
+          },
+          "enable_third_person_memories": true,
+          "generate_memories_examples": [],
+          "memory_topics": [
+            {
+              "managed_memory_topic": {
+                "managed_topic_enum": "KEY_CONVERSATION_DETAILS"
+              }
+            },
+            {
+              "managed_memory_topic": {
+                "managed_topic_enum": "EXPLICIT_INSTRUCTIONS"
+              }
+            }
+          ],
+          "scope_keys": [
+            "user_id"
+          ]
+        }
+      ],
+      "disable_memory_revisions": false,
+      "generation_config": {
+        "model": "projects/audit-505613/locations/us-central1/publishers/google/models/gemini-3.7-flash"
+      },
+      "similarity_search_config": {
+        "embedding_model": "projects/audit-505613/locations/us-central1/publishers/google/models/text-embedding-005"
+      },
+      "ttl_config": {
+        "memory_revision_default_ttl": "31536000s"
+      }
+    },
+    "generation": "explicit_after_review",
+    "service": "VertexAiMemoryBankService",
+    "tenant_isolation": "tenant-qualified user_id"
+  },
+  "model": "gemini-3.7-flash",
+  "model_armor": {
+    "configured": true,
+    "template": "projects/audit-505613/locations/us-central1/templates/assuranceos-guardrails",
+    "verification": "required_before_deployment"
+  },
+  "project": "audit-505613",
+  "qualification": {
+    "agent_count": 19,
+    "case_count": 76,
+    "completed_at": "2026-08-16T13:56:10.506123+00:00",
+    "mode": "contract",
+    "model": null,
+    "passed": true,
+    "passed_agents": 19,
+    "passed_cases": 76,
+    "schema": "assurance.agent_fleet_evaluation.v1",
+    "started_at": "2026-08-16T13:56:09.186720+00:00",
+    "suites": {
+      "adversarial": {
+        "cases": 19,
+        "passed": 19
+      },
+      "cross_industry": {
+        "cases": 19,
+        "passed": 19
+      },
+      "golden": {
+        "cases": 19,
+        "passed": 19
+      },
+      "missing_evidence": {
+        "cases": 19,
+        "passed": 19
+      }
+    }
+  },
+  "region": "us-central1",
+  "requirements": [
+    "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
+    "google-genai>=2.9,<3",
+    "PyYAML>=6,<7",
+    "pydantic>=2.9,<3",
+    "cryptography>=50,<51",
+    "cloudpickle~=3.1"
+  ],
+  "schema": "assurance.agent_engine_deployment_result.v2",
+  "staging_bucket": "gs://audit-505613-assuranceos-demo-agent-staging",
+  "verification": {
+    "method": "agentplatform.agent_engines.get",
+    "resource_count": 19,
+    "verified_at": "2026-08-16T14:57:50.359011+00:00"
+  }
+}

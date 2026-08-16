@@ -100,8 +100,15 @@ projects/.../reasoningEngines/... resource name next to its signed package
 digest, model, region, deployment time, managed Agent Identity, and Memory Bank
 policy. The deploy command reads every resource back through the Agent Engine
 API. Judge Mode re-validates that receipt against the running release rather
-than displaying a static inventory, and until that receipt exists it says
-"deployment-qualified" rather than "operational".
+than displaying a static inventory: all nineteen resources are deployed and read
+back, so the fleet, Memory Bank and Agent Identity report "operational". Where no
+receipt exists the same screen says "deployment-qualified" instead, because a
+release-qualified package set is not a cloud deployment.
+
+Model Armor is verified separately, by exercising the configured template in both
+directions. It guards the request path of any deployment, so tying its status to
+an Agent Engine receipt would report a working guardrail as absent whenever the
+fleet runs elsewhere or is torn down after judging.
 
 ### Vertex AI Memory Bank
 

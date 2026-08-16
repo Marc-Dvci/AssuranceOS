@@ -1,0 +1,8 @@
+{
+  "schema": "assurance.model_armor_verification.v1",
+  "template": "projects/audit-505613/locations/us-central1/templates/assuranceos-guardrails",
+  "verified_at": "2026-08-16T13:39:53.449166+00:00",
+  "method": "modelarmor.sanitizeUserPrompt+sanitizeModelResponse",
+  "safe_model_response": "NO_MATCH_FOUND",
+  "adversarial_user_prompt": "MATCH_FOUND"
+}

@@ -275,7 +275,8 @@ running inside the auditee's own network.
 - Asteria Systems DemoCo synthetic golden engagement;
 - governed control-test selection and execution contracts;
 - FastAPI control plane, lifecycle cockpit, and live Judge Mode proof surface;
-- optional Google ADK and Vertex AI Agent Engine adapters.
+- Google ADK and Vertex AI Agent Engine, with the nineteen-agent fleet deployed
+  and read back under managed Agent Identity and Memory Bank.
 
 ### Component 1: canonical domain database
 
@@ -429,8 +430,9 @@ enforcement point rather than two implementations kept in agreement by hand.
   approved findings without the adjudication workflow;
 - contract and live-model evaluation across 19 agents and 76 golden, adversarial,
   missing-evidence, and cross-industry cases;
-- offline Agent Engine deployment planning with signed package digests and a
-  qualification gate before cloud mutation;
+- Agent Engine deployment of all nineteen signed packages, gated on the
+  qualification suite and verified by reading every resource back through the
+  API, with an offline planning mode for inspection before any cloud mutation;
 - local privacy runtime with network isolation, local-only model routing, and
   verified signed evidence-bundle transfer;
 - responsive product routes for planning, audits, findings, evidence, standards,
@@ -740,6 +742,15 @@ to a running deployment with a receipt Judge Mode accepts, including the two ste
 ordered for a reason: Model Armor is applied to the seed jobs and fails closed on any match,
 and the managed fleet proof is all-or-nothing across all nineteen agents.
 
+The two receipts are independent, because the things they attest to are. Model
+Armor guards the request path of any deployment, so it is verified on its own by
+exercising the template in both directions, and that proof stays valid after the
+Agent Engine fleet is torn down:
+
+```bash
+python scripts/verify_model_armor.py --out var/model-armor-proof.json
+```
+
 Authentication needs no identity provider. The API verifies bearer tokens against a JWKS
 document over HTTPS, and a JWKS document is a static file describing a public key:
 
@@ -815,7 +826,7 @@ tests whether the header is present.
 
 ## Quality gate
 
-687 tests behind an 85% coverage floor, plus lint, release-signature
+693 tests behind an 85% coverage floor, plus lint, release-signature
 verification, all 76 fleet evaluation cases, SQLite and PostgreSQL migrations,
 OpenAPI and artifact-manifest checks, Docker build, and Terraform validation.
 Security workflows add dependency review, CodeQL, secret scanning, SBOM

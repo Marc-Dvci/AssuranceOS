@@ -22,6 +22,9 @@ terraform.tfstate*
 *.tfvars
 *.tfvars.tmp
 .DS_Store
+# The Agent Engine deploy stages its runtime wheel flat at the repository root,
+# because that is the one placement the uploader recreates where pip can find it.
+/assuranceos-*.whl
 coverage.xml
 htmlcov/
 .coverage

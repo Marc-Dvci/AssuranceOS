@@ -195,3 +195,84 @@ def test_managed_fleet_rejects_duplicate_or_unread_deployment_receipts(
     assert proof["cloud_verified"] is False
     assert any("read-back" in error for error in proof["verification_errors"])
     assert any("duplicate" in error for error in proof["verification_errors"])
+
+
+def _armor_receipt(template: str, **overrides) -> dict:
+    receipt = {
+        "schema": "assurance.model_armor_verification.v1",
+        "template": template,
+        "verified_at": "2026-08-16T00:01:00Z",
+        "method": "modelarmor.sanitizeUserPrompt+sanitizeModelResponse",
+        "safe_model_response": "NO_MATCH_FOUND",
+        "adversarial_user_prompt": "MATCH_FOUND",
+    }
+    receipt.update(overrides)
+    return receipt
+
+
+def test_model_armor_is_verified_without_any_agent_engine_deployment(tmp_path, monkeypatch):
+    """A guardrail that is running is reported as running.
+
+    Model Armor sits in the request path of every deployment, so an undeployed
+    Agent Engine fleet must not make a working template read as absent.
+    """
+
+    template = "projects/1/locations/us-central1/templates/audit"
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    receipt_path = tmp_path / "model-armor-proof.json"
+    receipt_path.write_text(json.dumps(_armor_receipt(template)), encoding="utf-8")
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON", raising=False)
+    monkeypatch.setenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", template)
+    monkeypatch.setenv("ASSURANCEOS_MODEL_ARMOR_PROOF", str(receipt_path))
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["cloud_verified"] is False, "the fleet is genuinely not deployed"
+    assert proof["model_armor"]["configured"] is True
+    assert proof["model_armor"]["verification_errors"] == []
+    assert proof["model_armor"]["independent_of_agent_engine"] is True
+
+
+def test_model_armor_receipt_must_still_be_exercised(tmp_path, monkeypatch):
+    """Configuring a template is not evidence. The receipt has to have passed."""
+
+    template = "projects/1/locations/us-central1/templates/audit"
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    receipt_path = tmp_path / "model-armor-proof.json"
+    receipt_path.write_text(
+        json.dumps(_armor_receipt(template, adversarial_user_prompt="NO_MATCH_FOUND")),
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.setenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", template)
+    monkeypatch.setenv("ASSURANCEOS_MODEL_ARMOR_PROOF", str(receipt_path))
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["model_armor"]["configured"] is False
+    assert any("adversarial" in error for error in proof["model_armor"]["verification_errors"])
+
+
+def test_model_armor_without_a_template_stays_unconfigured(tmp_path, monkeypatch):
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_MODEL_ARMOR_PROOF", raising=False)
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["model_armor"]["configured"] is False
+    assert proof["model_armor"]["template"] is None

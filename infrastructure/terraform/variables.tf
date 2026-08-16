@@ -98,6 +98,23 @@ variable "agent_engine_resource_map_json" {
   }
 }
 
+variable "model_armor_proof_json" {
+  description = "Model Armor verification receipt emitted by scripts/verify_model_armor.py. Model Armor guards the request path whether or not an Agent Engine fleet is deployed, so its proof is supplied separately and stays valid after the fleet is torn down."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.model_armor_proof_json == "" || can(jsondecode(var.model_armor_proof_json))
+    error_message = "model_armor_proof_json must be empty or valid JSON"
+  }
+}
+
+variable "deployment_commit" {
+  description = "Commit the running revision was built from. The container has no .git, so a revision cannot otherwise be tied back to a commit in the repository."
+  type        = string
+  default     = ""
+}
+
 variable "database_tier" {
   description = "Cloud SQL Enterprise tier."
   type        = string

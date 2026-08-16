@@ -452,6 +452,16 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
+        name  = "ASSURANCEOS_MODEL_ARMOR_PROOF_JSON"
+        value = var.model_armor_proof_json
+      }
+
+      env {
+        name  = "ASSURANCEOS_DEPLOYMENT_COMMIT"
+        value = var.deployment_commit
+      }
+
+      env {
         name  = "ASSURANCEOS_AUTH_MODE"
         value = "jwt"
       }

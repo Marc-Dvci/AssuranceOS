@@ -218,3 +218,38 @@ def test_a_bound_agent_exposes_the_declared_tools(package, wiring, monkeypatch):
     capture = tools_by_name(agent.tools[1:])["evidence_capture"]
     reply = json.loads(capture(json.dumps({"locator": "gh://pr/42"})))
     assert reply["allowed"] is True
+
+
+def test_deployed_agent_carries_no_platform_specific_path():
+    """A WindowsPath in the pickle kills the Linux runtime after it is billed.
+
+    Agent Engine cloudpickles the agent object. A concrete Path pickles as the
+    deploying platform's flavour, so deploying from Windows produced
+    "NotImplementedError: cannot instantiate 'WindowsPath' on your system" when
+    the container loaded its own agent. The package therefore has to travel with
+    a platform-neutral path.
+    """
+
+    import pickle
+    from dataclasses import replace
+    from pathlib import PurePosixPath, PureWindowsPath
+
+    from assuranceos.registry import AgentPackage
+
+    package = AgentPackage(
+        agent_id="agent-a",
+        path=PureWindowsPath(r"D:\repo\agents\agent-a"),
+        manifest={"version": "1.0.0"},
+        tools={"tools": []},
+        policy={},
+        model_profiles={},
+        evaluations={},
+        release={"package_sha256": "abc123"},
+    )
+
+    portable = replace(package, path=PurePosixPath(package.path.as_posix()))
+
+    assert portable.path == PurePosixPath("D:/repo/agents/agent-a")
+    # The whole point: it survives a round trip on a machine of another flavour.
+    assert pickle.loads(pickle.dumps(portable)).path == portable.path
+    assert "WindowsPath" not in repr(type(portable.path))
