@@ -20,14 +20,24 @@ while the share of executives calling their funding sufficient fell from 53% to
 45%. The annual plan names what it will not reach, and a person signs for the
 residual risk.
 
-AssuranceOS is built around the constraints of that work, by an internal auditor
-with four years in the function. An audit is a chain of custody. Every
-conclusion resolves
-to hashed bytes, every agent acts inside a signed release and a default-deny
-gateway, every refusal stays on the record with its reason, and the decisions
-that carry accountability stay with a named human. The platform meters what it
-spends on every model call and renders the total on the cockpit's **What this
-cost to run** card, priced at published rates.
+I audit for a living, in a bank's third line of defence, and every constraint in
+this product is one I have had to satisfy in front of a real audit committee. An
+audit is a chain of custody. Every conclusion resolves to hashed bytes, every
+agent acts inside a signed release and a default-deny gateway, every refusal
+stays on the record with its reason, and the decisions that carry accountability
+stay with a named human. The platform meters what it spends on every model call
+and renders the total on the cockpit's **What this cost to run** card, priced at
+published rates.
+
+Internal audit already has a rulebook. The IIA's Standards require that the work
+rests on sufficient, reliable and relevant evidence, that the function stays
+independent of what it examines, and that agreed management actions are followed
+through to closure rather than reported once. What a rulebook cannot do is stop
+you skipping any of it under deadline. Most audit software records what you did.
+This enforces what you were required to do: a conclusion that cannot resolve to
+accepted evidence does not render, a retest by the finding's author is refused,
+and a remediation cannot close without fresh evidence from an independent
+identity.
 
 **Watch it run:** [four-minute walkthrough](https://youtu.be/MI6pnX5jWl0), from
 onboarding a company to what the audit it just ran cost.
