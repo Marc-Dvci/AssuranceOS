@@ -4,6 +4,18 @@
 > finding below is synthetic and exists only for the AssuranceOS demonstration.
 > Employee addresses use the reserved `.invalid` domain and never resolve.
 
+**The company is invented. The conditions inside it are not.** Asteria is a
+composite of engagements I worked across four years inside an internal audit
+function, rebuilt as publishable data: the contract amendment nobody propagated
+into the procedure, the automation configured from that stale procedure and
+never revisited, the terminated contractor whose account outlived the leaver
+feed, the change approved by the person who raised it. Every party, system, date
+and figure is replaced, and the corpus is generated rather than extracted, so
+none of it derives from any client's records and none of it can be traced back
+to one.
+
+That provenance is why the ledgers look the way they do.
+
 Fifty-six files across ten source systems, in the formats the systems actually
 export: JSON from APIs, CSV from directory and HR extracts, Markdown for wiki
 pages, and `.xlsx` for the registers control owners maintain by hand.

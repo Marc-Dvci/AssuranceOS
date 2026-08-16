@@ -199,16 +199,55 @@ names, addresses, emails and contract text.
 So: create the template with prompt-injection and jailbreak detection only, run
 the seed, and tighten afterwards if you want the stricter filters on camera.
 
-```bash
-gcloud model-armor templates create assuranceos-demo \
-  --location="$REGION" \
-  --pi-and-jailbreak-filter-settings-enforcement=enabled \
-  --pi-and-jailbreak-filter-settings-confidence-level=medium-and-above \
-  --template-metadata-enforcement-type=inspect-and-block \
-  --template-metadata-log-sanitize-operations
+**Grant `roles/modelarmor.admin` first.** Model Armor is not covered by
+`roles/owner`, so template administration is refused to the project owner until
+that role is granted explicitly. The symptom is a flat `PERMISSION_DENIED` on
+even *read* access, with the API enabled and billing active, which reads like a
+broken project rather than a missing role.
 
-export ARMOR_TEMPLATE="projects/${PROJECT_ID}/locations/${REGION}/templates/assuranceos-demo"
+```bash
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="user:$(gcloud config get-value account)" \
+  --role="roles/modelarmor.admin" --condition=None
 ```
+
+Model Armor answers on a **regional** endpoint, and that is the one
+`managed_armor.py` calls. If `gcloud model-armor` still reports
+`PERMISSION_DENIED` after the grant, address the API directly rather than
+debugging the project:
+
+```bash
+TOKEN="$(gcloud auth print-access-token)"
+ARMOR_API="https://modelarmor.${REGION}.rep.googleapis.com/v1"
+
+curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"filterConfig":{
+        "piAndJailbreakFilterSettings":{"filterEnforcement":"ENABLED","confidenceLevel":"LOW_AND_ABOVE"},
+        "maliciousUriFilterSettings":{"filterEnforcement":"ENABLED"},
+        "sdpSettings":{"basicConfig":{"filterEnforcement":"DISABLED"}}}}' \
+  "${ARMOR_API}/projects/${PROJECT_ID}/locations/${REGION}/templates?template_id=assuranceos-guardrails"
+
+export ARMOR_TEMPLATE="projects/${PROJECT_ID}/locations/${REGION}/templates/assuranceos-guardrails"
+```
+
+Sensitive-data inspection is disabled in that configuration for the reason above.
+
+**Then prove the filter fires once, and only once, before it goes near the seed.**
+A guardrail only ever observed staying quiet has not been observed working, and
+one that matches a benign export will stop the seed:
+
+```bash
+for f in $(find demo/asteria/sources -type f \( -name '*.md' -o -name '*.json' -o -name '*.csv' \)); do
+  python -c "import json,sys;print(json.dumps({'userPromptData':{'text':open(sys.argv[1],encoding='utf-8').read()[:8000]}}))" "$f" > /tmp/p.json
+  state=$(curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+    -d @/tmp/p.json "${ARMOR_API}/${ARMOR_TEMPLATE}:sanitizeUserPrompt" \
+    | python -c "import json,sys;print(json.load(sys.stdin)['sanitizationResult']['filterMatchState'])")
+  [ "$state" = "MATCH_FOUND" ] && echo "MATCH -> $f"
+done
+```
+
+Expect exactly one line, naming `confluence/change_management_policy.md`. On
+2026-08-16 that is what the 51 files produced: one match, fifty clean.
 
 Then run the release lifecycle. Every job uses `--wait`, so a failure cannot be
 mistaken for a success:

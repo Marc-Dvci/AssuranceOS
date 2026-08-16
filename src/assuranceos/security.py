@@ -13,6 +13,15 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 class Permission(StrEnum):
     AGENTS_READ = "agents:read"
     DEMO_OPERATE = "demo:operate"
+    # Replaying a published proof is held apart from operating the demonstration.
+    # `demo:operate` resets tenants and launches the golden audit, which is an
+    # administrator's move because it changes what the next observer sees. The
+    # two proof replays change nothing: the prompt-injection replay screens a
+    # committed file and returns the verdict, and the idempotency replay exists
+    # precisely to demonstrate that running it again opens no second remediation.
+    # They are therefore safe to grant to a read-only evaluator, and a control an
+    # evaluator cannot exercise is a control they have to take on trust.
+    PROOF_REPLAY = "proofs:replay"
     ENGAGEMENT_READ = "engagements:read"
     ENGAGEMENT_WRITE = "engagements:write"
     ENGAGEMENT_APPROVE = "engagements:approve"
@@ -73,6 +82,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
     "viewer": frozenset(
         {
             Permission.AGENTS_READ,
+            Permission.PROOF_REPLAY,
             Permission.ENGAGEMENT_READ,
             Permission.SCHEDULE_READ,
             Permission.EVIDENCE_READ,

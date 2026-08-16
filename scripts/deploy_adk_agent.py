@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any
 
@@ -16,12 +17,23 @@ from assuranceos.managed_fleet import deployment_context_spec, memory_bank_confi
 from assuranceos.registry import AgentRegistry  # noqa: E402
 
 
+#: What the managed runtime installs before it unpickles the agent.
+#:
+#: ``cloudpickle`` is declared because the Agent Engine SDK serialises the agent
+#: object with it and refuses to create anything while the deployment does not
+#: ask for it: "The following requirements are missing: {'cloudpickle'}". It
+#: arrives locally as a transitive dependency, which is why the omission stayed
+#: invisible until a real deployment was attempted, and why `--plan` cannot catch
+#: it. Pinned to the minor line the local interpreter pickles with: unpickling
+#: across a cloudpickle major is not guaranteed, and a runtime that cannot load
+#: its own agent fails after the resource has been created and billed.
 RUNTIME_REQUIREMENTS = [
     "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
     "google-genai>=2.9,<3",
     "PyYAML>=6,<7",
     "pydantic>=2.9,<3",
     "cryptography>=50,<51",
+    "cloudpickle~=3.1",
 ]
 
 
@@ -33,6 +45,54 @@ def _resource_name(resource: Any) -> str:
     )
 
 
+def _runtime_wheel() -> Path:
+    """Build the wheel the managed runtime installs `assuranceos` from.
+
+    Shipping ``src/assuranceos`` as a bare directory in ``extra_packages`` does
+    not work. The uploaded paths are recreated relative to the deployment
+    directory, so an absolute source path lands somewhere that is not on the
+    container's import path, and the engine is created, billed, and then dies on
+    ``ModuleNotFoundError: No module named 'assuranceos'`` while starting. A
+    wheel named in ``requirements`` is installed by pip inside the container
+    instead, which is the one placement that does not depend on where the
+    uploader chose to put the files.
+    """
+
+    dist = ROOT / "var" / "dist"
+    dist.mkdir(parents=True, exist_ok=True)
+    for stale in dist.glob("assuranceos-*.whl"):
+        stale.unlink()
+    subprocess.run(
+        [sys.executable, "-m", "build", "--wheel", "--outdir", str(dist)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )
+    wheels = sorted(dist.glob("assuranceos-*.whl"))
+    if len(wheels) != 1:
+        raise RuntimeError(f"expected exactly one built wheel, found {len(wheels)}")
+    # Staged flat at the repository root because the uploader does not recreate
+    # nested `extra_packages` paths under `user_code/`; a wheel left in
+    # `var/dist/` is uploaded to somewhere pip cannot address.
+    staged = ROOT / wheels[0].name
+    staged.write_bytes(wheels[0].read_bytes())
+    return staged
+
+
+def _uploaded(path: Path) -> str:
+    """How the builder addresses a path the deploy uploaded.
+
+    `extra_packages` entries travel as paths relative to the directory the
+    deploy runs from, so anything outside the repository is passed through
+    unchanged rather than raising here.
+    """
+
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _agent_engine_config(
     *,
     package: Any,
@@ -40,13 +100,20 @@ def _agent_engine_config(
     project: str,
     region: str,
     staging_bucket: str,
+    wheel: Path,
 ) -> dict[str, Any]:
     """Build a config accepted by the locked Agent Platform v1beta1 client."""
 
     return {
         "staging_bucket": staging_bucket,
-        "requirements": RUNTIME_REQUIREMENTS,
-        "extra_packages": [str(package.path), str(ROOT / "src" / "assuranceos")],
+        # Both paths are relative to the repository root, and the deploy runs
+        # from there. `extra_packages` entries are recreated under `user_code/`
+        # at the same relative path, so an absolute path produces a layout the
+        # builder cannot address and pip fails with "No such file or directory"
+        # after the resource has been created. pip itself runs one level above
+        # `user_code`, which is why the requirement carries the prefix.
+        "requirements": [*RUNTIME_REQUIREMENTS, f"user_code/{_uploaded(wheel)}"],
+        "extra_packages": [_uploaded(wheel), _uploaded(package.path)],
         "display_name": f"AssuranceOS · {package.manifest['display_name']}",
         "description": str(package.manifest["mandate"]),
         # Managed Agent Identity complements the signed in-application identity
@@ -193,6 +260,10 @@ def main() -> None:
         )
     except Exception as exc:
         raise SystemExit(f"Model Armor verification failed: {type(exc).__name__}: {exc}") from exc
+    # Built once for the whole fleet: nineteen deployments of the same runtime
+    # differ only in which signed package they carry.
+    wheel = _runtime_wheel()
+    print(f"runtime wheel: {wheel.name}")
     deployed: list[dict[str, Any]] = []
     failures: list[dict[str, str]] = []
     for agent_id in selected:
@@ -207,6 +278,7 @@ def main() -> None:
                     project=project,
                     region=region,
                     staging_bucket=staging_bucket,
+                    wheel=wheel,
                 ),
             )
             resource_name = _resource_name(remote)

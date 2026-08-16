@@ -76,6 +76,52 @@ def test_management_api_requires_jwt_and_enforces_tenant_scope():
         api.app.state.jwt_verifier = previous_verifier
 
 
+def test_a_read_only_evaluator_can_replay_the_proofs_but_cannot_operate_the_demo():
+    """The evaluator token is read-only, and the proof actions have to survive that.
+
+    Both directions are asserted, because a permission split that is only ever
+    exercised on its permissive side is not a split. `viewer` reaches the two
+    replays, which reach no canonical state; it is refused the two demo actions,
+    which reset the tenant and launch the golden audit, so one reviewer cannot
+    change what every reviewer after them sees.
+    """
+    from assuranceos import api
+    from assuranceos.security import Permission, ROLE_PERMISSIONS
+
+    assert Permission.PROOF_REPLAY in ROLE_PERMISSIONS["viewer"]
+    assert Permission.DEMO_OPERATE not in ROLE_PERMISSIONS["viewer"]
+
+    secret = "release-test-secret-with-more-than-thirty-two-bytes"
+    previous_settings = api.app.state.settings
+    previous_verifier = api.app.state.jwt_verifier
+    api.app.state.settings = SimpleNamespace(auth_mode="jwt")
+    api.app.state.jwt_verifier = JwtVerifier(
+        issuer="https://issuer.example",
+        audience="assuranceos",
+        algorithms=("HS256",),
+        secret=secret,
+    )
+    try:
+        client = TestClient(api.app)
+        token = _token(tenant_ids=["tnt_asteria_demo"], roles=["viewer"], secret=secret)
+        headers = {"Authorization": f"Bearer {token}"}
+
+        replay = client.post("/api/v1/judge/proofs/prompt-injection", headers=headers)
+        assert replay.status_code == 200
+        body = replay.json()
+        # The proof is only worth pressing if it still reports the attack.
+        assert body["tainted"] is True
+        assert body["canonical_state_mutated"] is False
+
+        for route in ("/api/v1/demo/reset", "/api/v1/demo/run"):
+            refused = client.post(route, headers=headers)
+            assert refused.status_code == 403, route
+            assert refused.json()["detail"] == "missing permission: demo:operate"
+    finally:
+        api.app.state.settings = previous_settings
+        api.app.state.jwt_verifier = previous_verifier
+
+
 def test_all_agent_packages_are_release_signed_and_tampering_is_detected(tmp_path: Path):
     root = Path("agents")
     packages = AgentRegistry(root).load()

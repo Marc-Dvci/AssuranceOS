@@ -64,6 +64,22 @@ google_platform:
     activation: credentials_pending
     code: src/assuranceos/adk.py, src/assuranceos/managed_fleet.py, scripts/deploy_adk_agent.py
     evidence_when_activated: var/agent-engine-deployment-result.json, with all 19 reasoningEngines resource names read back
+    note: >-
+      The hackathon's agent-framework requirement is met by the Google GenAI SDK,
+      which is provider_verified above. This entry is the further step of running
+      the same signed fleet on managed Agent Engine, and it is not activated.
+      `deploy_adk_agent.py --plan` qualifies 19/19 agents against all 76 release
+      cases, and attempted deployments on 2026-08-16 got as far as creating a
+      reasoning engine and failed while building the runtime image. Two causes
+      were found and fixed: the deployment did not declare `cloudpickle`, which
+      the SDK serialises the agent with, and it shipped `src/assuranceos` as a
+      directory, which left the container starting with
+      `ModuleNotFoundError: No module named 'assuranceos'`. It now builds and
+      ships a wheel instead. What remains unresolved is where the uploader places
+      `extra_packages` inside the build context, so pip cannot yet find that
+      wheel. No resource survived any attempt; each was removed and the project
+      holds no reasoning engines. Memory Bank is configured per agent in the same
+      call and is therefore unactivated for the same reason.
   vertex_ai_memory_bank:
     implementation: complete
     activation: credentials_pending
@@ -71,16 +87,32 @@ google_platform:
     evidence_when_activated: memory bank configuration confirmed per agent in the same deployment result
   google_model_armor:
     implementation: complete
-    activation: credentials_pending
+    activation: provider_verified
     code: src/assuranceos/governance/managed_armor.py
     evidence_when_activated: one sanitize-operation log entry, and screened_by on a prompt-injection replay
-    note: >-
-      Not activated on the 2026-08-15 deployment. Template creation returned
-      PERMISSION_DENIED for the deploying account with the API enabled, so the
-      service runs on the local deterministic guardrail instead, which is what
-      the prompt-injection replay reports as screened_by, and what Judge Mode
-      shows. The managed path is therefore unproven on this account, and no
-      screen claims otherwise.
+    activated:
+      date: 2026-08-16
+      template: projects/audit-505613/locations/us-central1/templates/assuranceos-guardrails
+      filters: prompt injection and jailbreak at LOW_AND_ABOVE, malicious URI enabled, sensitive-data inspection disabled
+      screened: >-
+        Every one of the 51 text files in the Asteria corpus was submitted to
+        sanitizeUserPrompt. Exactly one returned MATCH_FOUND:
+        confluence/change_management_policy.md, which is the page carrying the
+        seeded prompt injection. The other 50 returned NO_MATCH_FOUND.
+      note: >-
+        The earlier PERMISSION_DENIED was not a billing or enablement problem.
+        Model Armor is not covered by roles/owner, so template administration has
+        to be granted explicitly with roles/modelarmor.admin even for the project
+        owner. The gcloud model-armor surface also addresses a different endpoint
+        than the regional one the service uses; the API answers at
+        modelarmor.us-central1.rep.googleapis.com, which is what
+        managed_armor.py already calls.
+      sensitive_data_inspection: >-
+        Left disabled deliberately. The guardrail runs inline on the seed jobs and
+        fails closed on any match, so a sensitive-data filter matching the HR and
+        identity extracts would block the demonstration corpus rather than the
+        attack in it. Prompt injection is the property this control exists to
+        enforce, and it is the property that was measured.
   google_cloud_infrastructure:
     requirement: At least one Google Cloud infrastructure service
     implementation: complete

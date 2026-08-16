@@ -12,7 +12,7 @@
     {
       "path": ".env.example",
       "size_bytes": 5521,
-      "sha256": "d4031675a2bd672919dcef8a67f70e43aae28bbcd0a8a70bf18055fe9d58d1e3"
+      "sha256": "10f86c9a673286806667fc1e99ea3f12a4f89713ec9171d222153952a71e8673"
     },
     {
       "path": ".gitattributes",
@@ -66,8 +66,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 41629,
-      "sha256": "e1c116af2fce1e61f04894fb571187196a7e4b85477ff84728079a15a03b71ff"
+      "size_bytes": 42291,
+      "sha256": "e9b773804253f17f528c838ee24eb9a5d8ac4fe1a4680e098dffb1320d076fe8"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -1926,8 +1926,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 149715,
-      "sha256": "8189e7a5334278ea497d3dd9307478a37c456a63215dee99563489bd2ca14cc4"
+      "size_bytes": 150246,
+      "sha256": "e344c2a9544d1c73873b085fd604eda5d4a9eb59fe1f34dee9a717cb89f98996"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -2161,8 +2161,8 @@
     },
     {
       "path": "demo/asteria/CORPUS.md",
-      "size_bytes": 13451,
-      "sha256": "d3e25180b2997eddbfbbc93fdce8f858a527bac44bf18addadbacdc3dfbf7855"
+      "size_bytes": 14142,
+      "sha256": "d101f5f1fb7fdf1335bc9b8812be299b3e8abb4383b615f40261d0328f566686"
     },
     {
       "path": "demo/asteria/company.yaml",
@@ -2466,8 +2466,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 25844,
-      "sha256": "2dc686410eb102f3480fe6583425e4aa94598b0e77b3f565b0b73d285638b909"
+      "size_bytes": 26424,
+      "sha256": "20352e905752ac1548570e5e62386c27a7523f97dbfc0849646136cea371e24d"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2646,8 +2646,8 @@
     },
     {
       "path": "docs/implementation/capability-status.yaml",
-      "size_bytes": 8185,
-      "sha256": "66fdd86b8f2b212471e17277ea8ee04a99ec3e9d7337b067b0942f9b96d344d2"
+      "size_bytes": 10409,
+      "sha256": "4ebfc19e5031c809f8eeff762811b6ad40920025721ae8c0acd80403f0b418c5"
     },
     {
       "path": "docs/production-readiness.md",
@@ -2656,8 +2656,8 @@
     },
     {
       "path": "docs/runbooks/cloud-deploy.md",
-      "size_bytes": 15878,
-      "sha256": "80c26cd5766252211793f8a1d175b25f5e5ac72dc9f98a37d88b5c43ac974dad"
+      "size_bytes": 17946,
+      "sha256": "0942b070f7bdcce6ed4360f5b38ce1105c64822d0a882e907711cdd1e078ff1b"
     },
     {
       "path": "docs/runbooks/local-demo.md",
@@ -2961,8 +2961,8 @@
     },
     {
       "path": "scripts/deploy_adk_agent.py",
-      "size_bytes": 10237,
-      "sha256": "5536cdd8ff10221792ebab55aef4b2fb25a6afe04b1de8a4ecf8d8df7bf88403"
+      "size_bytes": 13620,
+      "sha256": "65f7753b0766e75419378b40b0847e68ad9df9ae927230b725e20a3ebe1161f8"
     },
     {
       "path": "scripts/generate_audit_pack_signing_key.py",
@@ -3367,7 +3367,7 @@
     {
       "path": "src/assuranceos/api.py",
       "size_bytes": 115382,
-      "sha256": "73bde78241b5f4a4f560846dcd97a40c72ca15cf657cd600570b8a22171fc205"
+      "sha256": "5e90f5ba6ebf8e8aea9839ef1c14c28d1d757e211783ed9f91ae8e53fbc1d4fb"
     },
     {
       "path": "src/assuranceos/audit_pack_release.py",
@@ -3996,8 +3996,8 @@
     },
     {
       "path": "src/assuranceos/security.py",
-      "size_bytes": 15229,
-      "sha256": "1b5f2c3f236e33bfb7cc4674fe96988bfeedb31fa18e13bda34cc3a7e674708d"
+      "size_bytes": 15946,
+      "sha256": "ab7e5fbc3c83e1a3c34deccc73c1870f366f705b4ae6f34c893624b96583cfe1"
     },
     {
       "path": "src/assuranceos/service_delivery_demo.py",
@@ -4371,8 +4371,8 @@
     },
     {
       "path": "tests/test_deploy_adk_agent.py",
-      "size_bytes": 1371,
-      "sha256": "9297d38effca5a0c31f7fd7a6f7b090e4bdb8ea75564575be97856ce61e593bd"
+      "size_bytes": 2206,
+      "sha256": "80e76e2c8b09fdf017a68f45859e9c1a8a1a5af1b5d25e7ae1e2e8dda81645c0"
     },
     {
       "path": "tests/test_deterministic.py",
@@ -4516,8 +4516,8 @@
     },
     {
       "path": "tests/test_release_hardening.py",
-      "size_bytes": 14790,
-      "sha256": "4f88d18dda8aab87f6d8c7bf239c4ad541ca32dfa5e68fd7694fc08cf2b4fb5e"
+      "size_bytes": 16871,
+      "sha256": "267e5f9f6de1c2d4ab6d557a9a73936453f34c8d75acdd01909c7a7c91a27f00"
     },
     {
       "path": "tests/test_reporting.py",

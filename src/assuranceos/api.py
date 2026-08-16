@@ -3199,7 +3199,7 @@ def judge_ground_truth() -> dict:
 @app.post(
     "/api/v1/judge/proofs/prompt-injection",
     response_model=PromptInjectionProofResponse,
-    dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
+    dependencies=[Depends(require_permission(Permission.PROOF_REPLAY))],
 )
 def replay_prompt_injection() -> dict:
     """Replay the published attack through the guardrail the runtime actually uses.
@@ -3242,7 +3242,7 @@ def replay_prompt_injection() -> dict:
 @app.post(
     "/api/v1/judge/proofs/idempotency",
     response_model=IdempotencyProofResponse,
-    dependencies=[Depends(require_permission(Permission.DEMO_OPERATE))],
+    dependencies=[Depends(require_permission(Permission.PROOF_REPLAY))],
 )
 def replay_idempotent_remediation() -> dict:
     """Replay the canonical assurance loop and expose its duplicate-action proofs.

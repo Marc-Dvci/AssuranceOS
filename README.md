@@ -556,6 +556,16 @@ uploads are bounded by `ASSURANCEOS_MAX_EVIDENCE_UPLOAD_BYTES`.
 The engagement runs on Asteria Systems DemoCo, a synthetic company with a
 complete evidence corpus rather than a handful of fixtures.
 
+**The company is invented. The conditions inside it are not.** Asteria is a
+composite of engagements I worked across four years inside an internal audit
+function, rebuilt as publishable data: the contract amendment nobody propagated
+into the procedure, the automation configured from that stale procedure, the
+terminated contractor whose account outlived the leaver feed, the change
+approved by the person who raised it. Every party, system, date and figure is
+replaced and the corpus is generated rather than extracted, so nothing here
+derives from a client's records. What carries over is the shape of the failure,
+which is the part a control has to survive.
+
 ```bash
 make corpus                              # regenerate; seeded, so hashes are stable
 python scripts/run_control_test_demo.py  # both signed tests, over the real populations

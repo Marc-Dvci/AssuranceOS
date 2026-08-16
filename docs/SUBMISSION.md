@@ -188,6 +188,15 @@ population, an 18-leaver termination population joined to 254 directory
 accounts, a nine-ticket priority-one incident population, and seventeen
 deliberate conditions.
 
+The company is invented and the conditions inside it are not. Asteria is a
+composite of engagements I worked across four years inside an internal audit
+function, rebuilt as publishable data. Every party, system, date and figure is
+replaced and the corpus is generated rather than extracted, so nothing derives
+from a client's records. What carries over is the shape of the failure: an
+amendment that never reached the procedure, an automation configured from the
+stale procedure, a contractor account that outlived the leaver feed, a change
+approved by the person who raised it.
+
 Eight must be reported. Five must be suppressed with a stated reason: an active
 approved waiver, a merge whose UTC offset places it outside the period, a
 retained account covered by a time-limited exception, an incident belonging to a
