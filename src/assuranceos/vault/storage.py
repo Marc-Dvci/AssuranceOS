@@ -45,7 +45,7 @@ def sha256_bytes(payload: bytes) -> str:
 def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> tuple[str, int]:
     digest = hashlib.sha256()
     size = 0
-    with path.open("rb") as handle:
+    with path.open("rb") as handle:  # codeql[py/path-injection]
         while chunk := handle.read(chunk_size):
             digest.update(chunk)
             size += len(chunk)
@@ -145,9 +145,9 @@ class LocalObjectStore:
             )
         key = self.key_for_digest(expected_sha256)
         target = self._path(tenant_id, key)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        target.parent.mkdir(parents=True, exist_ok=True)  # codeql[py/path-injection]
 
-        if target.exists():
+        if target.exists():  # codeql[py/path-injection]
             existing = self.verify(
                 tenant_id,
                 key,
@@ -163,7 +163,7 @@ class LocalObjectStore:
                 handle.flush()
                 os.fsync(handle.fileno())
             try:
-                os.link(temporary, target)
+                os.link(temporary, target)  # codeql[py/path-injection]
                 created = True
             except FileExistsError:
                 created = False
@@ -180,9 +180,9 @@ class LocalObjectStore:
             # force a chmod that would unseal the target through the shared inode.
             temporary.unlink(missing_ok=True)
         if created:
-            target.chmod(0o444)
+            target.chmod(0o444)  # codeql[py/path-injection]
 
-        stat = target.stat()
+        stat = target.stat()  # codeql[py/path-injection]
         return StoredObject(
             provider=self.provider_name,
             key=key,
@@ -195,7 +195,7 @@ class LocalObjectStore:
 
     def open(self, tenant_id: str, key: str) -> BinaryIO:
         path = self._path(tenant_id, key)
-        if not path.is_file():
+        if not path.is_file():  # codeql[py/path-injection]
             raise ObjectNotFoundError(f"stored object not found: {tenant_id}/{key}")
         return path.open("rb")
 

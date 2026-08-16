@@ -4191,8 +4191,8 @@
     },
     {
       "path": "src/assuranceos/vault/storage.py",
-      "size_bytes": 9884,
-      "sha256": "c654eaabfc9b5de3fc7f0e8a47b2f27ef0f56bef0b428b9f7152ed17488141dc"
+      "size_bytes": 10087,
+      "sha256": "a3d1dca03a5fc24744ea8fc6bcc6fa0505a3510c5e96eb699af256191dc578d3"
     },
     {
       "path": "src/assuranceos/walkthrough.py",
