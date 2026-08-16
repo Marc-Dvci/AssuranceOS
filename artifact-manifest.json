@@ -3781,8 +3781,8 @@
     },
     {
       "path": "src/assuranceos/governance/domain_tools.py",
-      "size_bytes": 38280,
-      "sha256": "506b930a410404977c40a4af4392957e88fb2deb6f445406c733334780b3db0b"
+      "size_bytes": 39953,
+      "sha256": "34440976fa7afbf7dc7ce1be7fb256a4f98bbc1594955320743070ec16164805"
     },
     {
       "path": "src/assuranceos/governance/embeddings.py",

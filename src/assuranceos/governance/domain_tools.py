@@ -24,6 +24,7 @@ whose evidence does not resolve.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -63,6 +64,40 @@ _TEST_DATASETS: dict[str, str] = {
 #: travels beside it, so the model is never misled about the size of what it is
 #: concluding on.
 _EXCEPTION_SAMPLE = 10
+
+#: A run of hexadecimal long enough to be mistaken for a credential.
+_LONG_HEX = re.compile(r"\b[0-9a-f]{32,}\b")
+
+#: Git's own abbreviation length, which is what a person reads and quotes.
+_ABBREVIATED = 12
+
+
+def _abbreviate_identifiers(value: Any) -> Any:
+    """Shorten long hex identifiers on their way into a prompt.
+
+    A guardrail that screens model-bound text for credentials cannot tell a
+    forty-character commit SHA from a token, and it is right not to guess: both
+    are long, high-entropy hex. When it decides, the whole tool result is
+    withheld and the agent concludes on nothing -- so the run reports a control
+    it never tested, which is the worst of the available outcomes.
+
+    Arguing with the detector would mean weakening it for the strings that
+    really are credentials. Abbreviating instead costs nothing that matters: the
+    model cites the run, not the SHA, and twelve characters is what a person
+    quotes anyway. The unabbreviated values stay in the signed run, which is
+    where anything reporting the result reads them from.
+
+    Applied only to control-test results, whose shape is known. Applying it to
+    evidence content would edit the document the model is supposed to be reading.
+    """
+
+    if isinstance(value, str):
+        return _LONG_HEX.sub(lambda match: match.group(0)[:_ABBREVIATED], value)
+    if isinstance(value, Mapping):
+        return {key: _abbreviate_identifiers(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_abbreviate_identifiers(item) for item in value]
+    return value
 
 
 class DomainToolError(RuntimeError):
@@ -428,9 +463,10 @@ def _tests_execute(context: DomainToolContext):
             # reasoning model thinks, then relays, then runs out of tokens
             # part-way through its own JSON, and the conclusion is lost while
             # the signed run beneath it was perfectly good.
-            "exceptions": exceptions[:_EXCEPTION_SAMPLE],
+            "exceptions": _abbreviate_identifiers(exceptions[:_EXCEPTION_SAMPLE]),
             "exceptions_shown": min(len(exceptions), _EXCEPTION_SAMPLE),
             "exceptions_total": len(exceptions),
+            "identifiers_abbreviated": True,
         }
 
     return handler
