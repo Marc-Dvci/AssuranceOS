@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -471,4 +472,70 @@ def test_a_provider_other_than_github_must_carry_a_credential(sandbox: Evaluator
             base_url="https://northwind.atlassian.net",
             stream="issues",
             scope_value="CHANGE",
+        )
+
+
+class _FakeSecretManager:
+    """Answers the way Secret Manager answers, which is the point of it.
+
+    The API echoes resource names with the **numeric** project, not the project
+    id it was addressed with. Both spellings name the same project and they
+    compare unequal, so a reference echoed from the response was refused by the
+    sandbox's own resolver as belonging to somebody else. Nothing local
+    reproduced that, because the in-process store never speaks this dialect.
+    """
+
+    PROJECT_NUMBER = "91995351602"
+
+    def __init__(self) -> None:
+        self.created: list[str] = []
+        self.versions: dict[str, bytes] = {}
+
+    def create_secret(self, request):
+        self.created.append(request["secret_id"])
+        return SimpleNamespace(name=f"projects/{self.PROJECT_NUMBER}/secrets/{request['secret_id']}")
+
+    def add_secret_version(self, request):
+        # The name comes back with the numeric project substituted for the id.
+        secret = str(request["parent"]).rsplit("/", 1)[-1]
+        self.versions[secret] = request["payload"]["data"]
+        return SimpleNamespace(
+            name=f"projects/{self.PROJECT_NUMBER}/secrets/{secret}/versions/1"
+        )
+
+    def access_secret_version(self, request, timeout=None):
+        secret = str(request["name"]).split("/secrets/", 1)[1].split("/versions/")[0]
+        if secret not in self.versions:
+            raise KeyError(secret)
+        return SimpleNamespace(payload=SimpleNamespace(data=self.versions[secret]))
+
+    def delete_secret(self, request):
+        self.versions.pop(str(request["name"]).rsplit("/", 1)[-1], None)
+
+
+def test_a_secret_manager_reference_resolves_in_the_project_it_was_minted_for():
+    """The reference must name the configured project, whatever the API echoes."""
+
+    from assuranceos.evaluator_sandbox import SecretManagerCredentialStore
+
+    client = _FakeSecretManager()
+    store = SecretManagerCredentialStore("audit-505613", client=client)
+    reference = store.put("assuranceos-eval-abc-github-1", {"Authorization": "Bearer t"})
+
+    assert reference.startswith("gcp-secret://projects/audit-505613/secrets/")
+    assert client.PROJECT_NUMBER not in reference
+
+    resolver = SandboxCredentialResolver(store, project_id="audit-505613")
+    provider = resolver.resolve(reference)
+    assert provider.headers() == {"Authorization": "Bearer t"}
+
+
+def test_the_resolver_still_refuses_another_projects_secret():
+    from assuranceos.evaluator_sandbox import SecretManagerCredentialStore
+
+    store = SecretManagerCredentialStore("audit-505613", client=_FakeSecretManager())
+    resolver = SandboxCredentialResolver(store, project_id="audit-505613")
+    with pytest.raises(SandboxError, match="outside this sandbox's project"):
+        resolver.resolve(
+            "gcp-secret://projects/someone-else/secrets/assuranceos-eval-x/versions/1"
         )

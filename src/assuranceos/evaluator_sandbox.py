@@ -615,7 +615,9 @@ class SecretManagerCredentialStore(SandboxCredentialStore):
         self.project_id = project_id
         self._client = client
 
-    def _api(self) -> Any:
+    def secret_client(self) -> Any:
+        """The API client, built once and shared with whatever resolves a reference."""
+
         if self._client is None:
             try:
                 from google.cloud import secretmanager
@@ -623,6 +625,9 @@ class SecretManagerCredentialStore(SandboxCredentialStore):
                 raise SandboxError("install the cloud extra to use Secret Manager") from exc
             self._client = secretmanager.SecretManagerServiceClient()
         return self._client
+
+    #: Kept as the old private name so the rest of this class reads unchanged.
+    _api = secret_client
 
     def put(self, secret_name: str, headers: dict[str, str]) -> str:
         import json
@@ -649,7 +654,17 @@ class SecretManagerCredentialStore(SandboxCredentialStore):
                 "payload": {"data": json.dumps(headers).encode("utf-8")},
             }
         )
-        return f"gcp-secret://{version.name}"
+        # Built from the project this store was configured with, rather than
+        # echoed from the response. Secret Manager answers with the *numeric*
+        # project, and the two spellings address the same project while comparing
+        # unequal -- so echoing the response produced a reference this sandbox
+        # then refused to resolve as belonging to somebody else's project. Only
+        # the version number is taken from the reply, because it is the only part
+        # the caller did not already know.
+        return (
+            f"gcp-secret://projects/{self.project_id}/secrets/{secret_name}"
+            f"/versions/{str(version.name).rsplit('/', 1)[-1]}"
+        )
 
     def delete(self, secret_name: str) -> None:
         client = self._api()
@@ -677,7 +692,14 @@ class SandboxCredentialResolver:
     def __init__(self, store: SandboxCredentialStore, *, project_id: str | None = None):
         self.store = store
         self.project_id = project_id
-        self._delegate = CredentialResolver()
+        # The store's own client, rather than a second one. Building a fresh
+        # client here would also mean a test that hands the store a fake watches
+        # the resolver reach past it for the real API.
+        self._delegate = CredentialResolver(
+            secret_manager_client=(
+                store.secret_client() if isinstance(store, SecretManagerCredentialStore) else None
+            )
+        )
 
     def resolve(self, reference: str | None) -> CredentialProvider:
         if reference is None:

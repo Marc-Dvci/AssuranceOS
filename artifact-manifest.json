@@ -3746,8 +3746,8 @@
     },
     {
       "path": "src/assuranceos/evaluator_sandbox.py",
-      "size_bytes": 52282,
-      "sha256": "b4adc2ee21a234ed8fad54833ed2a4367c9014434c71b97546c6520c3039bd08"
+      "size_bytes": 53499,
+      "sha256": "2342688924ce6d18918c0f7848ced6e06caf1a2a27006e818c8771f08560134d"
     },
     {
       "path": "src/assuranceos/evidence.py",
@@ -4531,8 +4531,8 @@
     },
     {
       "path": "tests/test_evaluator_sandbox.py",
-      "size_bytes": 17485,
-      "sha256": "77c4c297d1c048ff3efeb536d7ed28c8954d57c65572222d23c4cf43c9bea2df"
+      "size_bytes": 20390,
+      "sha256": "cb8f31c081bb4219f33cd3055365b293ea0ddfd7bbcede4c5b8277faeb98db39"
     },
     {
       "path": "tests/test_evaluator_sandbox_api.py",
