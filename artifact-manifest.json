@@ -3441,8 +3441,8 @@
     },
     {
       "path": "src/assuranceos/collection_projection.py",
-      "size_bytes": 10310,
-      "sha256": "cf4b521a9faa6acb3dc1e29ee64d94892954f1253ca968e85d6f5c9cd7a79289"
+      "size_bytes": 10669,
+      "sha256": "071f80e7f5cf24f3bbae56f9423d06689128439906c38e1247b813d9735d0564"
     },
     {
       "path": "src/assuranceos/config.py",
@@ -4191,8 +4191,8 @@
     },
     {
       "path": "src/assuranceos/vault/storage.py",
-      "size_bytes": 8126,
-      "sha256": "3fc6badddd8fe208b64d72b7b88816c6a4b42393b9e9a419a570c519d19d599c"
+      "size_bytes": 8788,
+      "sha256": "1f8d81a5bc325c3035d0a648dd095dabf1b4142f025d34cbb9d707b86d84aa92"
     },
     {
       "path": "src/assuranceos/walkthrough.py",

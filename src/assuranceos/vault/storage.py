@@ -19,7 +19,7 @@ _SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 #: The only shape a stored object key takes, produced by `key_for_digest` and by
 #: nothing else. Pinning it here means the path built from a key cannot leave the
 #: object tree even before the containment check below runs.
-_OBJECT_KEY = re.compile(r"^objects/[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{64}$")
+_OBJECT_KEY = re.compile(r"^objects/[0-9a-f]{2}/[0-9a-f]{2}/(?P<digest>[0-9a-f]{64})$")
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -89,9 +89,15 @@ class LocalObjectStore:
         return f"objects/{digest[:2]}/{digest[2:4]}/{digest}"
 
     def _tenant_root(self, tenant_id: str) -> Path:
-        if not _SEGMENT.fullmatch(tenant_id):
+        match = _SEGMENT.fullmatch(tenant_id)
+        if match is None:
             raise ValueError("tenant_id is not a safe storage segment")
-        path = (self.root / tenant_id).resolve()
+        # Built from the matched text rather than from the argument. The two are
+        # equal strings; the difference is that the path is now assembled from
+        # something a pattern produced, which is what makes the validation
+        # visible to a reader and to static analysis instead of being a check
+        # standing next to an unrelated join.
+        path = (self.root / match.group(0)).resolve()
         if self.root not in path.parents:
             raise ValueError("tenant storage path escapes vault root")
         return path
@@ -103,10 +109,14 @@ class LocalObjectStore:
         # `key_for_digest`, so accepting any string without `..` was a degree of
         # freedom nothing needed -- and a rule expressed as "not the bad ones" is
         # the kind that a new encoding walks through.
-        if not _OBJECT_KEY.fullmatch(key):
+        match = _OBJECT_KEY.fullmatch(key)
+        if match is None:
             raise ValueError("storage key is not a content-addressed object key")
         tenant_root = self._tenant_root(tenant_id)
-        path = (tenant_root / key).resolve()
+        # Reassembled from the digest the pattern captured, so the path is a
+        # function of sixty-four validated hex characters and nothing else.
+        digest = match.group("digest")
+        path = (tenant_root / "objects" / digest[:2] / digest[2:4] / digest).resolve()
         if tenant_root not in path.parents:
             raise ValueError("storage key escapes tenant root")
         return path

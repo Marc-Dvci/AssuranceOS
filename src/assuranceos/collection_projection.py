@@ -31,6 +31,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
+from urllib.parse import urlsplit
 
 from .connectors.repository import ConnectorRepository
 from .control_testing.definitions import ControlTestDataset
@@ -257,14 +258,20 @@ def _review_record(sha: str, review: CollectedRow) -> dict[str, Any]:
 
 
 def _repository_from_locator(locator: str) -> str:
-    """Recover ``owner/repo`` from a commit URL, for a payload that omits it."""
+    """Recover ``owner/repo`` from a commit URL, for a payload that omits it.
 
-    parts = [item for item in locator.split("/") if item]
-    if "github.com" in locator and len(parts) >= 4:
-        try:
-            index = parts.index("github.com")
-        except ValueError:
-            return ""
-        if len(parts) > index + 2:
-            return f"{parts[index + 1]}/{parts[index + 2]}"
-    return ""
+    The host is read off the parsed URL rather than looked for inside the
+    string. ``"github.com" in locator`` is true of
+    ``https://elsewhere.example/github.com/owner/repo``, so a substring test
+    here would take the repository name out of a path segment somebody else
+    chose, and this value ends up in an exception's subject reference.
+    """
+
+    parsed = urlsplit(locator)
+    host = (parsed.hostname or "").lower()
+    if host != "github.com" and not host.endswith(".github.com"):
+        return ""
+    parts = [item for item in parsed.path.split("/") if item]
+    if len(parts) < 2:
+        return ""
+    return f"{parts[0]}/{parts[1]}"
