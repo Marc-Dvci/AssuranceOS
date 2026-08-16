@@ -36,8 +36,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 310,
-      "sha256": "153f57c1f1e575db24b7e2e0df64a6f915cf98e93cbd837dddab3537c151dd8e"
+      "size_bytes": 581,
+      "sha256": "48f7cdba37548e9793fe5e49ac764db865976ff368e6f6a9566cf30a9b727924"
     },
     {
       "path": "Dockerfile",
