@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 924,
+  "file_count": 927,
   "files": [
     {
       "path": ".dockerignore",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".env.example",
-      "size_bytes": 5521,
-      "sha256": "10f86c9a673286806667fc1e99ea3f12a4f89713ec9171d222153952a71e8673"
+      "size_bytes": 5937,
+      "sha256": "dc720a8ffcf2f4e2e1191920e3c3269cb912922558f77d7873a01181e010edae"
     },
     {
       "path": ".gitattributes",
@@ -36,8 +36,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 581,
-      "sha256": "48f7cdba37548e9793fe5e49ac764db865976ff368e6f6a9566cf30a9b727924"
+      "size_bytes": 762,
+      "sha256": "f2f3a498abb09cb3a0ab5e1fc0df5a0f5883924e951453fed8615c726dc5849b"
     },
     {
       "path": "Dockerfile",
@@ -66,8 +66,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 42981,
-      "sha256": "71cf6c493797f7c8af72436d2b4498e4499bfe0de96a76c091de85614bd2624c"
+      "size_bytes": 43530,
+      "sha256": "2a465ba2843fc3d5184ab562fedb0bbd48cb9d10ed1a01f753d6d9784f682ceb"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -2466,8 +2466,8 @@
     },
     {
       "path": "docs/SUBMISSION.md",
-      "size_bytes": 26424,
-      "sha256": "20352e905752ac1548570e5e62386c27a7523f97dbfc0849646136cea371e24d"
+      "size_bytes": 26894,
+      "sha256": "e88bb9b1ce375e664f6e21d3c1894cebf724bb2b4ddd91d2c90a05ab07388153"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -2801,8 +2801,8 @@
     },
     {
       "path": "infrastructure/terraform/main.tf",
-      "size_bytes": 29834,
-      "sha256": "89e92752cbd2bd7feb75062b2f9b11f70359a90e7d658a54447243123529e419"
+      "size_bytes": 30058,
+      "sha256": "787dd9014d91957c050243ecb21716d82b223b5aa7ce0a17f6c5310685ddc0aa"
     },
     {
       "path": "infrastructure/terraform/outputs.tf",
@@ -2811,8 +2811,8 @@
     },
     {
       "path": "infrastructure/terraform/variables.tf",
-      "size_bytes": 6590,
-      "sha256": "4c92b10dce2ba049440401de1ace23d475e8e5181935e917826e92cd3ef9c7fc"
+      "size_bytes": 7365,
+      "sha256": "408d54439edb6ea994135f438c2b6cd0fe11c48cf01ff487505c3c3383519e70"
     },
     {
       "path": "infrastructure/terraform/versions.tf",
@@ -2955,6 +2955,16 @@
       "sha256": "70f2a1674d1ad81217b6cf0df6ece4931ed2a2e37c3548e03cb9ee95ab4f2d2f"
     },
     {
+      "path": "release/agent-engine-deployment-result.json",
+      "size_bytes": 20004,
+      "sha256": "ace458ff4a8f3e210da2d1734a3ddd79a790ebd0c6f762da595aad4c1bf23f86"
+    },
+    {
+      "path": "release/model-armor-proof.json",
+      "size_bytes": 365,
+      "sha256": "d2818441a39b28913ed9ed9ec894d8fcb07d1f7c28516d5e832a62f9453588d3"
+    },
+    {
       "path": "scripts/build_artifact_manifest.py",
       "size_bytes": 5682,
       "sha256": "d57dd67cf098c8038e87e52495caa876b04ed4646ae6763157177c90c2efeaa9"
@@ -2981,8 +2991,8 @@
     },
     {
       "path": "scripts/deploy_adk_agent.py",
-      "size_bytes": 13620,
-      "sha256": "65f7753b0766e75419378b40b0847e68ad9df9ae927230b725e20a3ebe1161f8"
+      "size_bytes": 13951,
+      "sha256": "12986210436f5d90ee1ef8279977167117f4b7f20765d205b459558e4389352f"
     },
     {
       "path": "scripts/generate_audit_pack_signing_key.py",
@@ -3163,6 +3173,11 @@
       "path": "scripts/verify_execution_envelope.py",
       "size_bytes": 977,
       "sha256": "20e88fffd134d4db4dd36bd2e7911e2d30878875e2dc20937a10734331c2c9eb"
+    },
+    {
+      "path": "scripts/verify_model_armor.py",
+      "size_bytes": 2533,
+      "sha256": "6f9e79ed7b39697b49171aa082631e2040c201943852beecc13e7489a4ae4eda"
     },
     {
       "path": "security/controls/claims-policy.md",
@@ -3371,8 +3386,8 @@
     },
     {
       "path": "src/assuranceos/adk.py",
-      "size_bytes": 9391,
-      "sha256": "a5f34b654005a7c9966f394681c3dadd73c2a61fc6d706776991c33ae2c6420b"
+      "size_bytes": 10047,
+      "sha256": "2f221fe62794bf4dda4373a5c780458e3ea977308c6703669005311ddd6c4e86"
     },
     {
       "path": "src/assuranceos/agent_audit_demo.py",
@@ -3786,8 +3801,8 @@
     },
     {
       "path": "src/assuranceos/managed_fleet.py",
-      "size_bytes": 13655,
-      "sha256": "b8d88b143bd049c54b6e3bef38afbe04768356f734c08d4d96fd9afa56f1b882"
+      "size_bytes": 15771,
+      "sha256": "f0534dedca12f6867982c7cf5fe10352d4ff3179919c5ca7b5480510f6da9978"
     },
     {
       "path": "src/assuranceos/model_fleet_demo.py",
@@ -4296,8 +4311,8 @@
     },
     {
       "path": "tests/test_adk_gateway_tools.py",
-      "size_bytes": 7715,
-      "sha256": "bddd2da3a89c52bfe6aeb1a72c5e443d3f74ba801b996af0e02e32dc89945028"
+      "size_bytes": 9025,
+      "sha256": "a74c22e71ef0a25561fe545ecb30239c90c0abd5ffbf66018a630c2478d3b891"
     },
     {
       "path": "tests/test_agent_audit_demo.py",
@@ -4391,8 +4406,8 @@
     },
     {
       "path": "tests/test_deploy_adk_agent.py",
-      "size_bytes": 2206,
-      "sha256": "80e76e2c8b09fdf017a68f45859e9c1a8a1a5af1b5d25e7ae1e2e8dda81645c0"
+      "size_bytes": 3628,
+      "sha256": "a4491929f8aba8a9ab62a07c216d02a47813f5ab11e266fc81e7ae2c6a65847f"
     },
     {
       "path": "tests/test_deterministic.py",
@@ -4451,8 +4466,8 @@
     },
     {
       "path": "tests/test_managed_fleet.py",
-      "size_bytes": 6824,
-      "sha256": "f2fd7ea2b7fd2fbb54d805518cf4592dbf5ee76ece9ab44380853ab9002bb406"
+      "size_bytes": 10236,
+      "sha256": "234b93a4574b1628184de6729564e6c11435e6f955b04d51c53d5ce653441981"
     },
     {
       "path": "tests/test_managed_model_armor.py",
