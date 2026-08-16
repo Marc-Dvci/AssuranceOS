@@ -4191,8 +4191,8 @@
     },
     {
       "path": "src/assuranceos/vault/storage.py",
-      "size_bytes": 7363,
-      "sha256": "1e94a385a8fac3c0decf324c27edaf61e62d668e49cc55c94fdae62537d290e8"
+      "size_bytes": 8126,
+      "sha256": "3fc6badddd8fe208b64d72b7b88816c6a4b42393b9e9a419a570c519d19d599c"
     },
     {
       "path": "src/assuranceos/walkthrough.py",
@@ -4536,8 +4536,8 @@
     },
     {
       "path": "tests/test_evaluator_sandbox_api.py",
-      "size_bytes": 10310,
-      "sha256": "a4b6541fc2a2024a9eb34f7a719006598dbf787bd6a6a1a01c98c45f5d51ce1b"
+      "size_bytes": 10624,
+      "sha256": "3101fc773555d103b6945739c811b3028ab594fbea48f44be69cdbff52fa6dbe"
     },
     {
       "path": "tests/test_execution_authority.py",
@@ -4726,8 +4726,8 @@
     },
     {
       "path": "tests/test_vault.py",
-      "size_bytes": 12699,
-      "sha256": "0f00efdbca847bfed30e7fef19c611a9fc2dd35cfcb4f02d21fadce525addd50"
+      "size_bytes": 14392,
+      "sha256": "6bbc519cc1de80d30f153727b080d4cccd08af527cf4f3ef2c3611eabe9b80b8"
     },
     {
       "path": "tests/test_vault_api.py",

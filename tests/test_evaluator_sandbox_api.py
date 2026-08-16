@@ -10,19 +10,17 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from types import SimpleNamespace
 
 import jwt
 import pytest
 from fastapi.testclient import TestClient
 
-from sqlalchemy import select
-
 from assuranceos import api
-from assuranceos.db.models import Tenant
-from assuranceos.db.repositories import TenantRepository
-from assuranceos.evaluator_sandbox import WORKSPACE_PREFIX
+from assuranceos.db.session import Database
 from assuranceos.security import JwtVerifier, Permission, ROLE_PERMISSIONS
+from assuranceos.vault import EvidenceVault
 
 SECRET = "sandbox-test-secret-with-more-than-thirty-two-bytes"
 
@@ -45,47 +43,52 @@ def _token(*, roles: list[str], tenant_ids: list[str]) -> str:
 
 
 @pytest.fixture()
-def client(monkeypatch: pytest.MonkeyPatch):
+def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """A client on a database of this test's own.
+
+    Two things here are the point rather than housekeeping.
+
+    The database is created here instead of being whatever the process happens
+    to be configured with. Reading the developer's database made this file pass
+    on a laptop that had run the product and fail on a machine that had not,
+    which is the worse kind of green: the suite disagreeing with itself across
+    machines about code that never changed.
+
+    And the application state is swapped *inside* the try. Setting it before,
+    with only the ``yield`` guarded, means a fixture that raises during setup
+    leaves the whole process demanding JWT authentication -- so one broken test
+    in this file turned every other API test in the suite red, for a reason
+    none of them had anything to do with.
+    """
+
     previous_settings = api.app.state.settings
     previous_verifier = api.app.state.jwt_verifier
-    api.app.state.settings = SimpleNamespace(auth_mode="jwt")
-    api.app.state.jwt_verifier = JwtVerifier(
-        issuer="https://issuer.example",
-        audience="assuranceos",
-        algorithms=("HS256",),
-        secret=SECRET,
-    )
-    # `Settings` is frozen on purpose, so the switch is flipped by replacing the
-    # value the module resolves rather than by mutating it.
-    monkeypatch.setattr(
-        api, "settings", replace(api.settings, evaluator_sandbox_enabled=True)
-    )
-    api._sandbox_instance.cache_clear()
-    before = _sandbox_tenants()
+    database = Database.from_sqlite_path(tmp_path / "api.db")
+    database.create_schema()
     try:
+        monkeypatch.setattr(api, "database", database)
+        monkeypatch.setattr(
+            api, "vault", EvidenceVault.local(database, tmp_path / "objects")
+        )
+        # `Settings` is frozen on purpose, so the switch is flipped by replacing
+        # the value the module resolves rather than by mutating it.
+        monkeypatch.setattr(
+            api, "settings", replace(api.settings, evaluator_sandbox_enabled=True)
+        )
+        api.app.state.settings = SimpleNamespace(auth_mode="jwt")
+        api.app.state.jwt_verifier = JwtVerifier(
+            issuer="https://issuer.example",
+            audience="assuranceos",
+            algorithms=("HS256",),
+            secret=SECRET,
+        )
+        api._sandbox_instance.cache_clear()
         yield TestClient(api.app)
     finally:
-        # These routes write to the process's real database, so the workspaces a
-        # test creates are swept here rather than left to accumulate against the
-        # workspace ceiling and fail some later run for an unrelated reason.
-        for tenant_id in _sandbox_tenants() - before:
-            with api.database.transaction() as session:
-                row = TenantRepository(session).get(tenant_id)
-                if row is not None:
-                    session.delete(row)
         api._sandbox_instance.cache_clear()
         api.app.state.settings = previous_settings
         api.app.state.jwt_verifier = previous_verifier
-
-
-def _sandbox_tenants() -> set[str]:
-    with api.database.read_session() as session:
-        return {
-            row.tenant_id
-            for row in session.scalars(
-                select(Tenant).where(Tenant.tenant_id.like(f"{WORKSPACE_PREFIX}%"))
-            ).all()
-        }
+        database.dispose()
 
 
 @pytest.fixture()

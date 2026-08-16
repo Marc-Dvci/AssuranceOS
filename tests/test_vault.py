@@ -365,3 +365,44 @@ def test_export_verifier_recomputes_embedded_custody_chain(vault: EvidenceVault,
     verification = vault.verify_export(tampered)
     assert verification.valid is False
     assert any("custody event hash mismatch" in error for error in verification.errors)
+
+
+def test_the_object_store_refuses_a_key_that_is_not_content_addressed(tmp_path: Path):
+    """Both path components are matched against a fixed shape, not screened for traversal.
+
+    A store that accepted any key without ``..`` in it was permitting a degree of
+    freedom nothing ever used: every key it holds comes from ``key_for_digest``.
+    Each of these is refused before anything is joined to a path, so the refusal
+    does not depend on the containment check behind it noticing afterwards.
+    """
+
+    store = LocalObjectStore(tmp_path / "objects")
+    refused = [
+        "../../etc/passwd",
+        "/etc/passwd",
+        "objects/../../escape",
+        "objects/ab/cd/not-a-digest",
+        "objects/AB/CD/" + "a" * 64,
+        "objects/ab/cd/" + "a" * 63,
+        "arbitrary/path",
+        "",
+    ]
+    for key in refused:
+        with pytest.raises(ValueError, match="content-addressed"):
+            store.open("tnt_example", key)
+
+    # And the shape it does produce is accepted, so the rule is not simply
+    # refusing everything.
+    digest = "a" * 64
+    assert store.key_for_digest(digest) == f"objects/aa/aa/{digest}"
+    with pytest.raises(Exception) as excinfo:
+        store.open("tnt_example", store.key_for_digest(digest))
+    assert "not a content-addressed" not in str(excinfo.value)
+
+
+def test_the_object_store_refuses_a_tenant_that_is_not_one_safe_segment(tmp_path: Path):
+    store = LocalObjectStore(tmp_path / "objects")
+    key = store.key_for_digest("b" * 64)
+    for tenant in ("../elsewhere", "/absolute", "tenant/with/slashes", ".hidden", ""):
+        with pytest.raises(ValueError, match="safe storage segment"):
+            store.open(tenant, key)

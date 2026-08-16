@@ -16,6 +16,10 @@ from .exceptions import (
 )
 
 _SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
+#: The only shape a stored object key takes, produced by `key_for_digest` and by
+#: nothing else. Pinning it here means the path built from a key cannot leave the
+#: object tree even before the containment check below runs.
+_OBJECT_KEY = re.compile(r"^objects/[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{64}$")
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -93,8 +97,14 @@ class LocalObjectStore:
         return path
 
     def _path(self, tenant_id: str, key: str) -> Path:
-        if key.startswith("/") or ".." in Path(key).parts:
-            raise ValueError("storage key is not safe")
+        # Both components are matched against a fixed shape before either is
+        # joined to a path, rather than only screened for the traversal spellings
+        # somebody thought of. Every key this store has ever held comes from
+        # `key_for_digest`, so accepting any string without `..` was a degree of
+        # freedom nothing needed -- and a rule expressed as "not the bad ones" is
+        # the kind that a new encoding walks through.
+        if not _OBJECT_KEY.fullmatch(key):
+            raise ValueError("storage key is not a content-addressed object key")
         tenant_root = self._tenant_root(tenant_id)
         path = (tenant_root / key).resolve()
         if tenant_root not in path.parents:
