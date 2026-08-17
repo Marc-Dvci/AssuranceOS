@@ -10,12 +10,16 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
 
 DEFAULT_GEMINI_MODEL = "gemini-3.7-flash"
 DEFAULT_MEMORY_TTL_SECONDS = 365 * 24 * 60 * 60
+AGENT_GATEWAY_RESOURCE = re.compile(
+    r"^projects/[^/]+/locations/[^/]+/agentGateways/[^/]+$"
+)
 
 
 def vertex_model_resource(project: str, location: str, model: str) -> str:
@@ -92,6 +96,30 @@ def deployment_context_spec(
     }
 
 
+def agent_gateway_config(resource: str) -> dict[str, Any]:
+    """Bind a deployed agent's outbound traffic to a Google-managed Agent Gateway.
+
+    This is the network layer, and it is not the same enforcement point as the
+    AssuranceOS gateway. Agent Gateway governs where a deployed agent may send
+    HTTP traffic, default-denying destinations absent from the Agent Registry.
+    The AssuranceOS gateway governs what a bounded task is authorised to do,
+    which is a question about audit authority rather than about a destination:
+    a network policy cannot express that the retester must be a different
+    identity from the finding's author.
+
+    Only ``AGENT_TO_ANYWHERE`` is configured here. Inbound routing stays with
+    the control plane, which authorises every tenant read against its own
+    identity model.
+    """
+
+    value = resource.strip()
+    if not AGENT_GATEWAY_RESOURCE.match(value):
+        raise ValueError(
+            "Agent Gateway must be projects/<project>/locations/<location>/agentGateways/<gateway>"
+        )
+    return {"agent_to_anywhere_config": {"agent_gateway": value}}
+
+
 def tenant_memory_subject(tenant_id: str, principal_id: str) -> str:
     """Create a stable, non-ambiguous ADK Memory Bank user scope."""
 
@@ -154,6 +182,63 @@ def _validate_model_armor_receipt(
     if not _is_utc_timestamp(receipt.get("verified_at")):
         errors.append("Model Armor verification timestamp is invalid")
     return errors
+
+
+def _validate_agent_gateway_receipt(
+    receipt: Any,
+    *,
+    resource: str,
+    expected_agents: Mapping[str, Any],
+) -> list[str]:
+    """Check an Agent Gateway receipt against the configured gateway.
+
+    The receipt records a read-back of the gateway resource and which deployed
+    agents were bound to it. Binding is reported per agent rather than for the
+    fleet, because a partially bound fleet is the normal state while the
+    binding is rolled out and reporting it as complete would be false.
+    """
+
+    if not isinstance(receipt, dict):
+        return ["Agent Gateway verification receipt is missing"]
+    errors: list[str] = []
+    if receipt.get("schema") != "assurance.agent_gateway_verification.v1":
+        errors.append("unsupported Agent Gateway verification schema")
+    if receipt.get("resource") != resource:
+        errors.append("Agent Gateway resource does not match deployment")
+    if receipt.get("method") != "networkservices.agentGateways.get":
+        errors.append("Agent Gateway was not verified through a live read-back")
+    if receipt.get("governed_access_path") != "AGENT_TO_ANYWHERE":
+        errors.append("Agent Gateway is not configured for governed agent egress")
+    if not _is_utc_timestamp(receipt.get("verified_at")):
+        errors.append("Agent Gateway verification timestamp is invalid")
+    bound = receipt.get("bound_agents")
+    if not isinstance(bound, list) or not bound:
+        errors.append("no deployed agent is bound to the Agent Gateway")
+    else:
+        unknown = sorted({str(item) for item in bound} - set(expected_agents))
+        if unknown:
+            errors.append(f"gateway binds agents absent from the signed fleet: {', '.join(unknown)}")
+    return errors
+
+
+def _load_agent_gateway_receipt(*, repository_root: Path) -> tuple[Any, str | None, list[str]]:
+    """Load a standalone Agent Gateway receipt, if the operator produced one."""
+
+    raw = os.getenv("ASSURANCEOS_AGENT_GATEWAY_PROOF_JSON", "").strip()
+    path_value = os.getenv("ASSURANCEOS_AGENT_GATEWAY_PROOF", "").strip()
+    try:
+        if raw:
+            return json.loads(raw), "environment", []
+        if path_value:
+            proof_path = Path(path_value)
+            if not proof_path.is_absolute():
+                proof_path = repository_root / proof_path
+            if not proof_path.is_file():
+                return None, str(proof_path), ["configured Agent Gateway proof file does not exist"]
+            return json.loads(proof_path.read_text(encoding="utf-8")), str(proof_path), []
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        return None, path_value or "environment", [f"Agent Gateway proof could not be loaded: {exc}"]
+    return None, None, []
 
 
 def _load_model_armor_receipt(*, repository_root: Path) -> tuple[Any, str | None, list[str]]:
@@ -308,6 +393,27 @@ def managed_fleet_proof(
         if verification.get("resource_count") != len(expected):
             errors.append("verified resource count does not match the signed fleet")
 
+    gateway_resource = os.getenv("ASSURANCEOS_AGENT_GATEWAY", "").strip()
+    gateway_errors: list[str] = []
+    gateway_verified = False
+    gateway_source: str | None = None
+    gateway_receipt: Any = None
+    if gateway_resource:
+        gateway_receipt, gateway_source, gateway_load_errors = _load_agent_gateway_receipt(
+            repository_root=repository_root
+        )
+        if gateway_receipt is None and not gateway_load_errors and document is not None:
+            managed_services = document.get("managed_services")
+            if isinstance(managed_services, dict):
+                gateway_receipt = managed_services.get("agent_gateway")
+                gateway_source = "agent_engine_deployment"
+        gateway_errors = gateway_load_errors + _validate_agent_gateway_receipt(
+            gateway_receipt,
+            resource=gateway_resource,
+            expected_agents=expected,
+        )
+        gateway_verified = not gateway_errors
+
     if model_armor_template:
         armor_receipt, armor_source, armor_load_errors = _load_model_armor_receipt(
             repository_root=repository_root
@@ -374,6 +480,27 @@ def managed_fleet_proof(
             "source": model_armor_source,
             "independent_of_agent_engine": True,
             "verification_errors": model_armor_errors,
+        },
+        "agent_gateway": {
+            "configured": gateway_verified,
+            "resource": gateway_resource or None,
+            "source": gateway_source,
+            "governed_access_path": "AGENT_TO_ANYWHERE" if gateway_verified else None,
+            "layer": "network egress, Google-managed",
+            # Named explicitly so the two enforcement points are never read as
+            # one. The managed gateway decides where a deployed agent may send
+            # traffic. The AssuranceOS gateway decides what a bounded task is
+            # authorised to do, and it is the one that carries the audit rules.
+            "authority_enforcement_point": "assuranceos_gateway",
+            "bound_agents": sorted(
+                str(item)
+                for item in (
+                    (gateway_receipt or {}).get("bound_agents") or []
+                    if isinstance(gateway_receipt, dict)
+                    else []
+                )
+            ),
+            "verification_errors": gateway_errors,
         },
         "verification_errors": errors,
         "deployed_at": (document or {}).get("deployed_at"),

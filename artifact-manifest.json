@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 952,
+  "file_count": 954,
   "files": [
     {
       "path": ".dockerignore",
@@ -66,8 +66,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 44855,
-      "sha256": "b49a634eb2ddc4ebc2e0eb15f62fa2c3c291aeaf838b74210874fe30729b7e40"
+      "size_bytes": 46182,
+      "sha256": "c4fede734063dd6f10ce2600f2dc2f475367c060ff6e5c8f013ffdb7bc891105"
     },
     {
       "path": "SECURITY.md",
@@ -3011,8 +3011,8 @@
     },
     {
       "path": "scripts/deploy_adk_agent.py",
-      "size_bytes": 14197,
-      "sha256": "b76b05dca97ae2bd3a73a74a9ea3a92e213d7a473d8bcacdba10ef0e8449b9e1"
+      "size_bytes": 15257,
+      "sha256": "b08ff7d27ee5656f0b5cafb783f3fce011a0accbeeba67347f94ff8abff1075c"
     },
     {
       "path": "scripts/generate_audit_pack_signing_key.py",
@@ -3815,6 +3815,11 @@
       "sha256": "6ba0c1f8b8b2c14b6cada42a1bee51016ef286d415d43d8105b1ee2db8330ac9"
     },
     {
+      "path": "src/assuranceos/governance/managed_gateway.py",
+      "size_bytes": 4197,
+      "sha256": "1728fbbfa45063675c43581c7be9389c8f0f8af1957ea4f641ad8bd4f8d7faa7"
+    },
+    {
       "path": "src/assuranceos/governance/models_client.py",
       "size_bytes": 19816,
       "sha256": "f2d11bfee5c31881fbdb01472f7d2c69d87d486caa1af3a3584fd4607af1bb07"
@@ -3851,8 +3856,8 @@
     },
     {
       "path": "src/assuranceos/managed_fleet.py",
-      "size_bytes": 16202,
-      "sha256": "1cba81c4ecfabed56ac8dcee312e99270c922e6fd903a78636ca8844917b91cf"
+      "size_bytes": 22140,
+      "sha256": "560c2e24eab0e4c48fc19723ba07eaba0531eff4fae8f7283110e4fc01eea1d6"
     },
     {
       "path": "src/assuranceos/model_fleet_demo.py",
@@ -4591,8 +4596,13 @@
     },
     {
       "path": "tests/test_managed_fleet.py",
-      "size_bytes": 10236,
-      "sha256": "234b93a4574b1628184de6729564e6c11435e6f955b04d51c53d5ce653441981"
+      "size_bytes": 14314,
+      "sha256": "c11d097053e95f255cc39d4fdb92349edf3f8c9cb68bb2513e72dd196cffb5de"
+    },
+    {
+      "path": "tests/test_managed_gateway.py",
+      "size_bytes": 2655,
+      "sha256": "22835e9e68d80202a48f5f302edafe2308d98687191b6a78a2148332254ae412"
     },
     {
       "path": "tests/test_managed_model_armor.py",

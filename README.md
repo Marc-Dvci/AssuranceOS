@@ -429,6 +429,27 @@ The Google ADK adapter binds each declared package tool as a shim that routes
 through the same gateway, so the ADK path and the in-process runtime share one
 enforcement point rather than two implementations kept in agreement by hand.
 
+**On the two gateways.** The Agent Gateway above is the AssuranceOS one, and it
+is deliberately not Google's managed Agent Gateway. They answer different
+questions. The managed product governs *where* a deployed agent may send HTTP
+traffic and default-denies destinations absent from an Agent Registry. This one
+governs *what a bounded task is authorised to do*: a network policy has no way
+to express that a retest must be performed by a different identity from the one
+that raised the finding, or that approval attributed to an agent is refused.
+
+The managed gateway is wired and gated. Set `ASSURANCEOS_AGENT_GATEWAY` to a
+`projects/*/locations/*/agentGateways/*` resource and `deploy_adk_agent.py`
+binds each deployed agent's egress to it, reads the gateway back through
+`networkservices.agentGateways.get`, and writes a receipt naming the agents it
+bound. `managed_fleet_proof` reports it as its own layer, never folded into the
+application gateway's decisions, and records
+`authority_enforcement_point: assuranceos_gateway` so no reader concludes the
+audit rules moved into Google's enforcement path.
+
+Binding is per agent rather than per fleet, because a partly bound fleet is the
+normal state during a rollout. Unset means unclaimed: with no gateway
+configured the proof reports `configured: false` and binds nothing.
+
 ### Components 9 and 11 to 15: company intelligence, reporting, continuous assurance, and product
 
 - resumable onboarding from minimal company input to a versioned canonical profile;

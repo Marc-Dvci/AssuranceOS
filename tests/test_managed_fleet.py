@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from assuranceos.managed_fleet import (
+    agent_gateway_config,
     managed_fleet_proof,
     memory_bank_config,
     persist_reviewed_session,
@@ -276,3 +277,106 @@ def test_model_armor_without_a_template_stays_unconfigured(tmp_path, monkeypatch
 
     assert proof["model_armor"]["configured"] is False
     assert proof["model_armor"]["template"] is None
+
+
+GATEWAY = "projects/1/locations/us-central1/agentGateways/fleet-egress"
+
+
+def _gateway_receipt(**overrides) -> dict:
+    receipt = {
+        "schema": "assurance.agent_gateway_verification.v1",
+        "resource": GATEWAY,
+        "verified_at": "2026-08-17T00:01:00Z",
+        "method": "networkservices.agentGateways.get",
+        "governed_access_path": "AGENT_TO_ANYWHERE",
+        "protocols": ["MCP"],
+        "bound_agents": ["agent-a"],
+        "authority_enforcement_point": "assuranceos_gateway",
+    }
+    receipt.update(overrides)
+    return receipt
+
+
+def test_agent_gateway_config_rejects_a_name_that_is_not_a_gateway():
+    with pytest.raises(ValueError):
+        agent_gateway_config("projects/1/locations/us-central1/templates/audit")
+
+
+def test_agent_gateway_binds_outbound_traffic_only():
+    """Inbound routing stays with the control plane, which authorises tenant reads."""
+
+    config = agent_gateway_config(GATEWAY)
+    assert config == {"agent_to_anywhere_config": {"agent_gateway": GATEWAY}}
+    assert "client_to_agent_config" not in config
+
+
+def test_agent_gateway_is_reported_as_its_own_layer(tmp_path, monkeypatch):
+    """The managed gateway is the network boundary, not the audit authority.
+
+    Reporting them as one component would let a reader conclude that Google
+    enforces the independence and human-gate rules. It does not; those live in
+    the AssuranceOS gateway, and the proof says so on every render.
+    """
+
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    receipt_path = tmp_path / "agent-gateway-proof.json"
+    receipt_path.write_text(json.dumps(_gateway_receipt()), encoding="utf-8")
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_RESOURCE_MAP_JSON", raising=False)
+    monkeypatch.setenv("ASSURANCEOS_AGENT_GATEWAY", GATEWAY)
+    monkeypatch.setenv("ASSURANCEOS_AGENT_GATEWAY_PROOF", str(receipt_path))
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["agent_gateway"]["configured"] is True
+    assert proof["agent_gateway"]["verification_errors"] == []
+    assert proof["agent_gateway"]["bound_agents"] == ["agent-a"]
+    assert proof["agent_gateway"]["authority_enforcement_point"] == "assuranceos_gateway"
+
+
+def test_agent_gateway_binding_is_reported_per_agent(tmp_path, monkeypatch):
+    """A partly bound fleet is the normal state, and it is not a bound fleet."""
+
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    receipt_path = tmp_path / "agent-gateway-proof.json"
+    receipt_path.write_text(
+        json.dumps(_gateway_receipt(bound_agents=["agent-a", "agent-unknown"])),
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.setenv("ASSURANCEOS_AGENT_GATEWAY", GATEWAY)
+    monkeypatch.setenv("ASSURANCEOS_AGENT_GATEWAY_PROOF", str(receipt_path))
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["agent_gateway"]["configured"] is False
+    assert any(
+        "absent from the signed fleet" in error
+        for error in proof["agent_gateway"]["verification_errors"]
+    )
+
+
+def test_an_unbound_gateway_is_not_claimed(tmp_path, monkeypatch):
+    """Standing a gateway up is not binding one. Unset means unclaimed."""
+
+    packages = {"agent-a": SimpleNamespace(release={"package_sha256": "sha-a"})}
+    monkeypatch.delenv("ASSURANCEOS_AGENT_ENGINE_PROOF", raising=False)
+    monkeypatch.delenv("ASSURANCEOS_AGENT_GATEWAY", raising=False)
+
+    proof = managed_fleet_proof(
+        repository_root=tmp_path,
+        expected_packages=packages,
+        model="gemini-3.7-flash",
+    )
+
+    assert proof["agent_gateway"]["configured"] is False
+    assert proof["agent_gateway"]["resource"] is None
+    assert proof["agent_gateway"]["bound_agents"] == []

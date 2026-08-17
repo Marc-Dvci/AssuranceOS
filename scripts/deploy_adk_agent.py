@@ -13,7 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from assuranceos.evaluation import AgentEvaluationRunner  # noqa: E402
-from assuranceos.managed_fleet import deployment_context_spec, memory_bank_config  # noqa: E402
+from assuranceos.managed_fleet import (  # noqa: E402
+    agent_gateway_config,
+    deployment_context_spec,
+    memory_bank_config,
+)
 from assuranceos.registry import AgentRegistry  # noqa: E402
 
 
@@ -101,10 +105,15 @@ def _agent_engine_config(
     region: str,
     staging_bucket: str,
     wheel: Path,
+    agent_gateway: str | None = None,
 ) -> dict[str, Any]:
     """Build a config accepted by the locked Agent Platform v1beta1 client."""
 
+    gateway = (
+        {"agent_gateway_config": agent_gateway_config(agent_gateway)} if agent_gateway else {}
+    )
     return {
+        **gateway,
         "staging_bucket": staging_bucket,
         # Both paths are relative to the repository root, and the deploy runs
         # from there, because an absolute path produces a layout the builder
@@ -223,6 +232,7 @@ def main() -> None:
     region = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
     staging_bucket = os.getenv("ASSURANCEOS_AGENT_ENGINE_STAGING_BUCKET")
     model_armor_template = os.getenv("ASSURANCEOS_MODEL_ARMOR_TEMPLATE", "").strip() or None
+    agent_gateway = os.getenv("ASSURANCEOS_AGENT_GATEWAY", "").strip() or None
     plan = _deployment_plan(
         packages=packages,
         selected=selected,
@@ -251,6 +261,7 @@ def main() -> None:
         raise SystemExit("install the agent-cloud extra: pip install -e '.[agent-cloud]'") from exc
     from assuranceos.adk import build_agent_engine_app
     from assuranceos.governance.managed_armor import verify_model_armor_template
+    from assuranceos.governance.managed_gateway import verify_agent_gateway
 
     # Managed Agent Identity is currently exposed by the v1beta1 client surface.
     client = agentplatform.Client(
@@ -285,6 +296,7 @@ def main() -> None:
                     region=region,
                     staging_bucket=staging_bucket,
                     wheel=wheel,
+                    agent_gateway=agent_gateway,
                 ),
             )
             resource_name = _resource_name(remote)
@@ -315,6 +327,20 @@ def main() -> None:
             if not args.continue_on_error:
                 break
 
+    # Verified after the loop rather than before it: the receipt names the
+    # agents actually bound, and only a resource that was created knows that.
+    agent_gateway_verification = None
+    if agent_gateway and deployed:
+        try:
+            agent_gateway_verification = verify_agent_gateway(
+                agent_gateway,
+                bound_agents=[item["agent_id"] for item in deployed],
+            )
+        except Exception as exc:
+            raise SystemExit(
+                f"Agent Gateway verification failed: {type(exc).__name__}: {exc}"
+            ) from exc
+
     result = {
         **plan,
         "schema": "assurance.agent_engine_deployment_result.v2",
@@ -329,6 +355,7 @@ def main() -> None:
         },
         "managed_services": {
             "model_armor": model_armor_verification,
+            "agent_gateway": agent_gateway_verification,
         },
     }
     output = args.output or ROOT / "var" / "agent-engine-deployment-result.json"
