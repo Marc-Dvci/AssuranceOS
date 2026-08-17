@@ -16,6 +16,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from assuranceos.db import Database
 from assuranceos.db.models import Engagement, EngagementTask, Tenant
 from assuranceos.db.repositories import TenantRepository
+from assuranceos.governance.armor import _PII_PATTERNS
 from assuranceos.governance import (
     AgentGateway,
     AgentIdentityError,
@@ -261,6 +262,52 @@ def test_armor_redacts_personal_data_and_blocks_secrets():
     secret = armor.inspect_output("Use AKIAIOSFODNN7EXAMPLE to authenticate.")
     assert secret.blocked
     assert any(f.severity == "critical" for f in secret.findings)
+
+
+#: One real-shape sample per declared personal-data detector. The test below is
+#: driven from the declaration rather than from this list, so a detector added
+#: later has to arrive with a sample and cannot be counted as working on the
+#: strength of having been written down.
+PII_SAMPLES = {
+    "email": "alice.martin@asteria.example",
+    "iban": "FR76 3000 6000 0112 3456 7890 189",
+    "us_ssn": "123-45-6789",
+    "fr_nir": "255081416802538",
+    "phone_e164": "+33612345678",
+    "ipv4": "192.168.1.14",
+}
+
+
+@pytest.mark.parametrize("detector", sorted(PII_SAMPLES))
+def test_every_declared_personal_data_detector_matches_its_own_shape(detector: str):
+    """A detector nobody has watched match is a line in a tuple.
+
+    Two of these could not fire on the thing they name: the IBAN pattern stopped
+    at the space in front of an IBAN's short final group, and the NIR pattern was
+    one character short of the fifteen a NIR has. Each detector is now exercised
+    against text of the shape it exists to catch.
+    """
+    armor = ModelArmor()
+    sample = PII_SAMPLES[detector]
+
+    result = armor.inspect_output(f"Recorded {sample} in the working paper.")
+
+    assert detector in {finding.detector for finding in result.findings}
+    assert sample not in result.sanitized_text
+
+
+def test_the_personal_data_samples_cover_every_declared_detector():
+    """A detector added without a sample would go unobserved the same way."""
+    assert {name for name, _, _ in _PII_PATTERNS} == set(PII_SAMPLES)
+
+
+def test_a_corsican_nir_is_personal_data_too():
+    """The department is two characters and reads 2A or 2B for Corsica."""
+    armor = ModelArmor()
+
+    result = armor.inspect_output("Employee record 180052A12345678 was reviewed.")
+
+    assert any(finding.detector == "fr_nir" for finding in result.findings)
 
 
 def test_armor_leaves_ordinary_audit_text_untouched():

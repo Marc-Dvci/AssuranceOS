@@ -67,7 +67,7 @@
     {
       "path": "README.md",
       "size_bytes": 44855,
-      "sha256": "c96beabe57a9ea275abacf91f828790785f0946e04a9e5d5ce14cdeb22fec0fc"
+      "sha256": "b49a634eb2ddc4ebc2e0eb15f62fa2c3c291aeaf838b74210874fe30729b7e40"
     },
     {
       "path": "agents/company-intelligence/README.md",
@@ -2467,7 +2467,7 @@
     {
       "path": "docs/SUBMISSION.md",
       "size_bytes": 27632,
-      "sha256": "54f4a2bb6b90d2af8f80a077a68d510a63a489314f167cd16232a7bd57181244"
+      "sha256": "7e3964b146bc547ce0fc1e2331c68e8c533205ab400a7a26ddc1a89b3e7e3b2f"
     },
     {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
@@ -3776,8 +3776,8 @@
     },
     {
       "path": "src/assuranceos/governance/armor.py",
-      "size_bytes": 18203,
-      "sha256": "47e0522cd0a89b17ac25d48d18af9067caf3425d2482e7560cf60c63b1d53023"
+      "size_bytes": 18606,
+      "sha256": "f717a36c7e366c06a175bc66304429d258d96c987da217734ce2386e3f96e88f"
     },
     {
       "path": "src/assuranceos/governance/demo.py",
@@ -4421,8 +4421,8 @@
     },
     {
       "path": "tests/test_agent_governance.py",
-      "size_bytes": 27855,
-      "sha256": "eea856aa24ee2256d26d83acc907c219c00a7bffec60621fb70f29a438f08454"
+      "size_bytes": 29727,
+      "sha256": "bbd6f7cd41d4749e2257f360d75c0c71dfdfe76cb79fbce14b95f244e693d9ca"
     },
     {
       "path": "tests/test_agent_tool_loop.py",

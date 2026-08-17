@@ -178,9 +178,14 @@ _SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
 
 _PII_PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
     ("email", re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b"), "medium"),
-    ("iban", re.compile(r"\b[A-Z]{2}[0-9]{2}(?:[ ]?[A-Z0-9]{4}){2,7}[A-Z0-9]{1,4}\b"), "high"),
+    # The trailing group carries its own optional space. Without it the pattern
+    # reads an IBAN written the way people write one, four characters at a time,
+    # up to the final short group and then stops at the space in front of it.
+    ("iban", re.compile(r"\b[A-Z]{2}[0-9]{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,3})?\b"), "high"),
     ("us_ssn", re.compile(r"\b(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b"), "critical"),
-    ("fr_nir", re.compile(r"\b[12][0-9]{2}(?:0[1-9]|1[0-2])[0-9AB0-9][0-9]{8}\b"), "critical"),
+    # Sex, year, month, department, commune, order, key: fifteen characters, of
+    # which the department is two and may be 2A or 2B for Corsica.
+    ("fr_nir", re.compile(r"\b[12][0-9]{2}(?:0[1-9]|1[0-2])(?:[0-9]{2}|2[AB])[0-9]{8}\b"), "critical"),
     ("phone_e164", re.compile(r"(?<![\w.])\+[1-9]\d{1,14}(?![\w.])"), "medium"),
     ("ipv4", re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}"
                         r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b"), "low"),
