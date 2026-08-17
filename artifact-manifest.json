@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 951,
+  "file_count": 952,
   "files": [
     {
       "path": ".dockerignore",
@@ -68,6 +68,11 @@
       "path": "README.md",
       "size_bytes": 44855,
       "sha256": "b49a634eb2ddc4ebc2e0eb15f62fa2c3c291aeaf838b74210874fe30729b7e40"
+    },
+    {
+      "path": "SECURITY.md",
+      "size_bytes": 2798,
+      "sha256": "46a9baf7eae6450a5d7d897bf79a40212a55bb774896f977b806ec61a2556b4b"
     },
     {
       "path": "agents/company-intelligence/README.md",
