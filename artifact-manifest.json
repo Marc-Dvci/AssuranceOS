@@ -1931,8 +1931,8 @@
     },
     {
       "path": "apps/web/judge.html",
-      "size_bytes": 176047,
-      "sha256": "f286176960bf407dd09051ff601251dce442141d2533f64d904b18dfb592eea0"
+      "size_bytes": 176062,
+      "sha256": "40af73c8cb80086cbde40d46aee47413332ca66120a1f719f69a667e3a2db537"
     },
     {
       "path": "audit-packs/identity-access/README.md",
@@ -3751,8 +3751,8 @@
     },
     {
       "path": "src/assuranceos/evaluator_audit.py",
-      "size_bytes": 37345,
-      "sha256": "1a9b3ca5baab7ac10bcb23f15e399f80252a8527dc572397dcb8831cb17eb84c"
+      "size_bytes": 37785,
+      "sha256": "07dc1fb141d20d83a94ed5e8b0e65a51cf53bda496cd2f575a48cc90c76a3d6f"
     },
     {
       "path": "src/assuranceos/evaluator_sandbox.py",
@@ -3851,8 +3851,8 @@
     },
     {
       "path": "src/assuranceos/managed_fleet.py",
-      "size_bytes": 15771,
-      "sha256": "f0534dedca12f6867982c7cf5fe10352d4ff3179919c5ca7b5480510f6da9978"
+      "size_bytes": 16202,
+      "sha256": "1cba81c4ecfabed56ac8dcee312e99270c922e6fd903a78636ca8844917b91cf"
     },
     {
       "path": "src/assuranceos/model_fleet_demo.py",
