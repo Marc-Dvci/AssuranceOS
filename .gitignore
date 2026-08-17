@@ -19,6 +19,7 @@ terraform.tfstate*
 # where deployment inputs collect. Neither belongs in a public repository, even
 # when today's copy happens to carry only secret identifiers and public URLs.
 *.tfplan
+tfplan*
 *.tfvars
 *.tfvars.tmp
 .DS_Store
