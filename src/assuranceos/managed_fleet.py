@@ -224,8 +224,16 @@ def managed_fleet_proof(
                 if not isinstance(loaded, dict):
                     raise ValueError("deployment proof must be a JSON object")
                 document = loaded
-    except (OSError, json.JSONDecodeError, ValueError) as exc:
-        load_errors.append(f"deployment proof could not be loaded: {exc}")
+    # Each branch states the failure in the same voice as the checks below, and
+    # none of them reproduces the exception's own text: this list is rendered to
+    # anyone holding an evaluator token, and a parser's message carries file
+    # paths and fragments of the document it choked on.
+    except OSError:
+        load_errors.append("deployment proof could not be read")
+    except json.JSONDecodeError:
+        load_errors.append("deployment proof is not valid JSON")
+    except ValueError:
+        load_errors.append("deployment proof must be a JSON object")
 
     expected = {
         agent_id: str(package.release.get("package_sha256") or "")

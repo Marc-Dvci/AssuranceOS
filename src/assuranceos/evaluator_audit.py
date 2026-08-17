@@ -755,6 +755,7 @@ class WorkspaceAudit:
             }
 
         from .adjudication import AdjudicationService, SkepticReviewer
+        from .adjudication.exceptions import AdjudicationError
         from .adjudication.service import finding_from_exceptions
 
         evidence_ids = sorted(
@@ -815,8 +816,14 @@ class WorkspaceAudit:
                 skeptic=skeptic,
                 exception_rows=exceptions,
             )
-        except Exception as exc:  # a finding that will not write must not hide the audit
-            return {"proposed": False, "reason": f"the finding could not be recorded: {exc}"}
+        # A finding that will not write must not hide the audit, so both branches
+        # return rather than raise. Neither reproduces the exception's own text:
+        # this reason is rendered in a browser, and a refusal is on the record in
+        # the adjudication trail, where it can be read with its context.
+        except AdjudicationError:
+            return {"proposed": False, "reason": "the adjudication service refused the finding"}
+        except Exception:
+            return {"proposed": False, "reason": "the finding could not be recorded"}
         return {
             "proposed": True,
             "finding_id": finding_id,
