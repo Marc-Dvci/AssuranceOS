@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 949,
+  "file_count": 951,
   "files": [
     {
       "path": ".dockerignore",
@@ -31,8 +31,8 @@
     },
     {
       "path": ".github/workflows/security.yml",
-      "size_bytes": 2953,
-      "sha256": "174a490682248e6f8233f0f40cc76e04874b015fefdbbec460fbfc55951971ae"
+      "size_bytes": 3277,
+      "sha256": "45a306559eb6149bc1404759fedc90c770955420baf205cced1a4e4599a0f8aa"
     },
     {
       "path": ".gitignore",
@@ -2996,8 +2996,8 @@
     },
     {
       "path": "scripts/check_codeql_sarif.py",
-      "size_bytes": 4615,
-      "sha256": "068be97cc55c95f4e13fc33f93fe5616d90cb0d0dba28edff24ed2177fed5f89"
+      "size_bytes": 9239,
+      "sha256": "d86ecc683eb4040c4656fc2b600dabdb60d3d6f7544e20a7f18f077dc91c3370"
     },
     {
       "path": "scripts/check_gemini.py",
@@ -3203,6 +3203,11 @@
       "path": "scripts/verify_model_armor.py",
       "size_bytes": 2738,
       "sha256": "1d2be14d130874c76e9a3cb67b0616bdf2648e2388edca259f70140d3fea91af"
+    },
+    {
+      "path": "security/codeql-exclusions.toml",
+      "size_bytes": 3191,
+      "sha256": "68d5998ecbb580096e6a400a9896a85d27af9987240e4213680188b76cd29d74"
     },
     {
       "path": "security/controls/claims-policy.md",
@@ -4191,8 +4196,8 @@
     },
     {
       "path": "src/assuranceos/vault/storage.py",
-      "size_bytes": 10087,
-      "sha256": "a3d1dca03a5fc24744ea8fc6bcc6fa0505a3510c5e96eb699af256191dc578d3"
+      "size_bytes": 9163,
+      "sha256": "3263ef715cab27b7868a0180da3054fd91bbd1d871aa9f4a73c49a3b26aa9250"
     },
     {
       "path": "src/assuranceos/walkthrough.py",
@@ -4438,6 +4443,11 @@
       "path": "tests/test_briefing.py",
       "size_bytes": 12016,
       "sha256": "baedb94e3741de3e4346dbd322fde7eb98df9aad5075d2235c41d343f7df700e"
+    },
+    {
+      "path": "tests/test_codeql_gate.py",
+      "size_bytes": 6177,
+      "sha256": "0fc006a4370c510d3426dbe0f161553c28e7dee7460ac803c80ce668a620e935"
     },
     {
       "path": "tests/test_connector_api.py",

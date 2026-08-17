@@ -19,22 +19,11 @@ _SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 #: The only shape a stored object key takes, produced by `key_for_digest` and by
 #: nothing else. Pinning it here means the path built from a key cannot leave the
 #: object tree even before the containment check below runs.
-# Why the two path constructions below carry a `codeql[py/path-injection]`
-# suppression, rather than the threshold being lowered to hide them.
-#
-# The query is right that a caller-supplied string reaches a path. What it does
-# not model is that neither string survives to the join: `_tenant_root` matches
-# `_SEGMENT` and builds from the matched text, and `_path` matches `_OBJECT_KEY`
-# and rebuilds the path from the sixty-four hex characters it captured, so the
-# result is a function of validated text and of nothing the caller wrote.
-# Containment is then re-checked against the root after `resolve()`.
-#
-# Three independent controls, and each one is observed refusing in
-# `tests/test_vault.py`: a key that is not content-addressed, a tenant that is
-# not one safe segment, and a path that escapes its root. A suppression that
-# rests on tested refusals is a different thing from one that rests on a
-# reading of the code, and the checker counts suppressions separately so this
-# stays visible in the log rather than disappearing.
+# The path query reports every file operation in this module, because a
+# caller-supplied string does reach a path here. Why that is not a defect, which
+# tests hold the reasoning up, and which control is deliberately untested are
+# recorded in `security/codeql-exclusions.toml`, where the decision is one
+# reviewable entry rather than a marker beside each line it touches.
 _OBJECT_KEY = re.compile(r"^objects/[0-9a-f]{2}/[0-9a-f]{2}/(?P<digest>[0-9a-f]{64})$")
 
 
@@ -45,7 +34,7 @@ def sha256_bytes(payload: bytes) -> str:
 def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> tuple[str, int]:
     digest = hashlib.sha256()
     size = 0
-    with path.open("rb") as handle:  # codeql[py/path-injection]
+    with path.open("rb") as handle:
         while chunk := handle.read(chunk_size):
             digest.update(chunk)
             size += len(chunk)
@@ -113,7 +102,7 @@ class LocalObjectStore:
         # something a pattern produced, which is what makes the validation
         # visible to a reader and to static analysis instead of being a check
         # standing next to an unrelated join.
-        path = (self.root / match.group(0)).resolve()  # codeql[py/path-injection]
+        path = (self.root / match.group(0)).resolve()
         if self.root not in path.parents:
             raise ValueError("tenant storage path escapes vault root")
         return path
@@ -132,7 +121,7 @@ class LocalObjectStore:
         # Reassembled from the digest the pattern captured, so the path is a
         # function of sixty-four validated hex characters and nothing else.
         digest = match.group("digest")
-        path = (tenant_root / "objects" / digest[:2] / digest[2:4] / digest).resolve()  # codeql[py/path-injection]
+        path = (tenant_root / "objects" / digest[:2] / digest[2:4] / digest).resolve()
         if tenant_root not in path.parents:
             raise ValueError("storage key escapes tenant root")
         return path
@@ -145,9 +134,9 @@ class LocalObjectStore:
             )
         key = self.key_for_digest(expected_sha256)
         target = self._path(tenant_id, key)
-        target.parent.mkdir(parents=True, exist_ok=True)  # codeql[py/path-injection]
+        target.parent.mkdir(parents=True, exist_ok=True)
 
-        if target.exists():  # codeql[py/path-injection]
+        if target.exists():
             existing = self.verify(
                 tenant_id,
                 key,
@@ -163,7 +152,7 @@ class LocalObjectStore:
                 handle.flush()
                 os.fsync(handle.fileno())
             try:
-                os.link(temporary, target)  # codeql[py/path-injection]
+                os.link(temporary, target)
                 created = True
             except FileExistsError:
                 created = False
@@ -180,9 +169,9 @@ class LocalObjectStore:
             # force a chmod that would unseal the target through the shared inode.
             temporary.unlink(missing_ok=True)
         if created:
-            target.chmod(0o444)  # codeql[py/path-injection]
+            target.chmod(0o444)
 
-        stat = target.stat()  # codeql[py/path-injection]
+        stat = target.stat()
         return StoredObject(
             provider=self.provider_name,
             key=key,
@@ -195,7 +184,7 @@ class LocalObjectStore:
 
     def open(self, tenant_id: str, key: str) -> BinaryIO:
         path = self._path(tenant_id, key)
-        if not path.is_file():  # codeql[py/path-injection]
+        if not path.is_file():
             raise ObjectNotFoundError(f"stored object not found: {tenant_id}/{key}")
         return path.open("rb")
 

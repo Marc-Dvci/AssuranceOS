@@ -1,0 +1,59 @@
+# Scanner findings this repository has read and decided are not defects.
+#
+# A result is either something to fix or a claim about the code that a person has
+# checked and rejected. The second kind still has to live somewhere. Left as a
+# comment beside the line, it reads as a decision but changes nothing, because the
+# suppression syntax a scanner documents is honoured by the service that ingests
+# its output and not by a gate reading the report from disk. The finding then
+# stays in the report, the build stays red, and the reasoning gets rewritten every
+# time somebody looks at it again.
+#
+# So the exclusions are declared here instead, where the reason sits next to the
+# thing it excuses and one file answers "what is this repository knowingly not
+# fixing". `scripts/check_codeql_sarif.py` reads it, prints every excluded result
+# with its reason, and counts them apart from the findings that passed.
+#
+# Each entry is keyed on the rule and the file, never on a line. A line number
+# moves with every edit above it, so a line-pinned exclusion stops covering the
+# code it was written for without ever saying so. An entry that matches nothing
+# fails the build: a finding that has been fixed, renamed or moved should take its
+# exclusion with it rather than leave one behind covering whatever lands there
+# next.
+
+[[exclusion]]
+rule = "py/path-injection"
+path = "src/assuranceos/vault/storage.py"
+reason = """
+The query is right that a caller-supplied string reaches a filesystem path. What
+it does not model is that neither string survives to the join. `_tenant_root`
+matches the tenant id against one safe segment and builds the path from the
+matched text; `_path` matches the storage key against a content-addressed shape
+and rebuilds the path from the sixty-four hexadecimal characters it captured. Both
+paths are therefore a function of validated text and of nothing the caller wrote,
+and every key this store has ever held comes from `key_for_digest`.
+
+Two of those refusals are observed in the tests below, against traversal
+spellings, absolute paths, wrong-length and wrong-case digests, and a tenant id
+carrying a separator. The third control is the containment re-check after
+`resolve()`, which has no test because the pattern match makes it unreachable
+through the public API. It stays as the guard that would still refuse if a future
+edit loosened a pattern, and it is recorded here as untested rather than counted
+as evidence.
+"""
+controls = [
+  "tests/test_vault.py::test_the_object_store_refuses_a_key_that_is_not_content_addressed",
+  "tests/test_vault.py::test_the_object_store_refuses_a_tenant_that_is_not_one_safe_segment",
+]
+
+[[exclusion]]
+rule = "py/clear-text-logging-sensitive-data"
+path = "scripts/verify_evaluator_sandbox.py"
+reason = """
+The printed value is `secrets_destroyed`, the count of Secret Manager secrets the
+teardown removed. The rule matches the name and reports the integer beside it. The
+credential this script may use is read from the environment and is never printed,
+and the workspace it creates holds nothing else worth reading.
+"""
+controls = [
+  "tests/test_evaluator_sandbox.py::test_deleting_a_workspace_destroys_the_credential",
+]
