@@ -73,7 +73,7 @@ jobs:
       # written to disk, where the next step decides the outcome. The gate is
       # then the analysis itself rather than the feature flag, and it behaves
       # the same whichever side of public the repository is on.
-      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+      - uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           upload: ${{ github.event.repository.private && 'never' || 'always' }}
           output: var/codeql-results
