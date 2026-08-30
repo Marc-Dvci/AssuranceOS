@@ -1,7 +1,7 @@
 # retrieval-service
 
 **Implementation status:** `extension_contract`
-**Current implementation or contract:** `docs/source/assuranceos_hackathon_implementation_plan.md`
+**Current implementation or contract:** `README.md`
 
 The versioned access-aware retrieval boundary is ready for a provider-specific search backend.
 

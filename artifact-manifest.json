@@ -2,7 +2,7 @@
   "artifact": "assuranceos-backend",
   "version": "0.8.0",
   "component": "components-01-06-control-test-engine",
-  "file_count": 954,
+  "file_count": 952,
   "files": [
     {
       "path": ".dockerignore",
@@ -2470,11 +2470,6 @@
       "sha256": "e890a59fba2e7eee8eabd151ddd07914bffd138280b42289cc778bbec9e751c4"
     },
     {
-      "path": "docs/SUBMISSION.md",
-      "size_bytes": 27632,
-      "sha256": "7e3964b146bc547ce0fc1e2331c68e8c533205ab400a7a26ddc1a89b3e7e3b2f"
-    },
-    {
       "path": "docs/adr/0001-manifest-driven-agent-packages.md",
       "size_bytes": 178,
       "sha256": "5d09401e767d66e50d9d57074a96a3b150ad954763378850cec607c0871a9a2f"
@@ -2698,11 +2693,6 @@
       "path": "docs/runbooks/release-checklist.md",
       "size_bytes": 1341,
       "sha256": "d7fcbf6d67d3320749d8283820a71147384bb473a4bb796dd17c9a5216943fbb"
-    },
-    {
-      "path": "docs/source/assuranceos_hackathon_implementation_plan.md",
-      "size_bytes": 209807,
-      "sha256": "e39e9786c0f105e5d9233728cdc9e8c4ead4a4da6ae6ba01577bb7f0beba3021"
     },
     {
       "path": "edge/bundle-manifests/README.md",
@@ -3341,8 +3331,8 @@
     },
     {
       "path": "services/retrieval-service/README.md",
-      "size_bytes": 702,
-      "sha256": "c7f7d1020c3573df624a9d9c7a29d8c9c39b28eae8a9a9b3a30640a57ecfddb8"
+      "size_bytes": 655,
+      "sha256": "5622bd1712451b19b200d26a0dcf38e98b38bdece344832024dfc4e12469291a"
     },
     {
       "path": "services/risk-recommendation-service/README.md",
