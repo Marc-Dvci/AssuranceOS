@@ -58,7 +58,7 @@ gcp-runtime = [
   "opentelemetry-exporter-gcp-trace>=1.9,<2",
 ]
 agent-cloud = [
-  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
+  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<3",
   # Also the transport for EmbeddingGemma on Vertex AI.
   "google-genai>=2.9,<3",
 ]
@@ -76,7 +76,7 @@ cloud = [
   "google-cloud-logging>=3.11,<4",
   "opentelemetry-sdk>=1.27,<2",
   "opentelemetry-exporter-gcp-trace>=1.9,<2",
-  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<2",
+  "google-cloud-aiplatform[agent_engines,adk]>=1.163,<3",
   "google-genai>=2.9,<3",
   "google-cloud-speech>=2.28,<3",
 ]
